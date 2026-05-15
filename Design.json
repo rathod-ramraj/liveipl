@@ -1,0 +1,178 @@
+{
+  "design_system": {
+    "name": "Glassmorphism Streaming UI",
+    "version": "1.0",
+    "style": {
+      "theme": "dark_glass",
+      "design_principles": [
+        "glassmorphism",
+        "soft gradients",
+        "depth through blur and transparency",
+        "minimal borders",
+        "focus on content layering"
+      ],
+      "color_palette": {
+        "primary_bg": "#121019",
+        "secondary_bg": "rgba(255, 255, 255, 0.05)",
+        "glass_surface": "rgba(255, 255, 255, 0.08)",
+        "glass_border": "rgba(38, 35, 53, 0.55)",
+        "highlight": "#ff4d6d",
+        "text_primary": "#ffffff",
+        "text_secondary": "rgba(255,255,255,0.7)"
+      },
+      "typography": {
+        "font_family": "Inter, SF Pro Display, sans-serif",
+        "heading_weight": 600,
+        "body_weight": 400,
+        "scale": {
+          "hero": "48px",
+          "title": "28px",
+          "subtitle": "18px",
+          "body": "14px"
+        }
+      },
+      "spacing": {
+        "unit": 8,
+        "scale": [4, 8, 16, 24, 32, 48, 64]
+      },
+      "radius": {
+        "small": "8px",
+        "medium": "16px",
+        "large": "24px",
+        "pill": "999px"
+      },
+      "shadows": {
+        "soft": "0 8px 32px rgba(0,0,0,0.4)",
+        "glass": "inset 0 0 0 1px rgba(255,255,255,0.1)"
+      },
+      "blur": {
+        "glass_blur": "backdrop-filter: blur(20px)",
+        "intensity": "high"
+      }
+    },
+
+    "layout": {
+      "type": "layered",
+      "sections": [
+        "hero_banner",
+        "floating_navbar",
+        "content_carousel"
+      ],
+      "grid": {
+        "columns": 12,
+        "gutter": "16px",
+        "margin": "32px"
+      }
+    },
+
+    "components": {
+      "navbar": {
+        "type": "floating_glass",
+        "position": "top_center",
+        "style": {
+          "background": "glass_surface",
+          "border_radius": "pill",
+          "blur": "glass_blur",
+          "border": "glass_border"
+        },
+        "items": {
+          "layout": "horizontal",
+          "spacing": "24px",
+          "icon_size": "20px"
+        },
+        "interaction": {
+          "hover": {
+            "background": "rgba(255,255,255,0.1)",
+            "transition": "0.3s ease"
+          },
+          "active": {
+            "background": "rgba(255,255,255,0.2)"
+          }
+        }
+      },
+
+      "hero_section": {
+        "type": "full_width_banner",
+        "overlay": {
+          "gradient": "linear-gradient(to right, rgba(0,0,0,0.7), transparent)"
+        },
+        "content_alignment": "left",
+        "elements": [
+          "title",
+          "primary_button",
+          "secondary_button"
+        ]
+      },
+
+      "buttons": {
+        "primary": {
+          "background": "#ffffff",
+          "color": "#000000",
+          "radius": "pill",
+          "padding": "12px 24px"
+        },
+        "secondary": {
+          "background": "glass_surface",
+          "blur": "glass_blur",
+          "border": "glass_border",
+          "color": "#ffffff"
+        }
+      },
+
+      "carousel": {
+        "type": "horizontal_scroll",
+        "card_style": {
+          "background": "rgba(255,255,255,0.05)",
+          "radius": "medium",
+          "hover_scale": 1.05
+        },
+        "scroll_behavior": "snap",
+        "controls": "overlay_buttons"
+      }
+    },
+
+    "animations": {
+      "global": {
+        "duration": "300ms",
+        "easing": "ease-in-out"
+      },
+      "hover": {
+        "scale": 1.05,
+        "shadow": "soft"
+      },
+      "glass_effect": {
+        "blur_transition": "smooth",
+        "opacity_shift": "0.05 → 0.1"
+      },
+      "carousel": {
+        "scroll_smooth": true,
+        "snap_alignment": "center"
+      },
+      "fade_in": {
+        "type": "opacity + translateY",
+        "values": {
+          "start": "opacity 0, translateY(20px)",
+          "end": "opacity 1, translateY(0)"
+        }
+      }
+    },
+
+    "interaction_patterns": {
+      "focus": "soft_glow",
+      "hover": "scale + brightness increase",
+      "click": "slight shrink (0.97)",
+      "keyboard_shortcuts": {
+        "space": "play_pause",
+        "f": "fullscreen",
+        "esc": "exit_fullscreen"
+      }
+    },
+
+    "performance_guidelines": {
+      "use_gpu_acceleration": true,
+      "limit_blur_layers": 3,
+      "lazy_load_images": true,
+      "optimize_assets": true
+    }
+  }
+}

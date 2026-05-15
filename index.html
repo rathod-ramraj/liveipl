@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LiveStream — Watch Live Cricket</title>
+  <meta name="description" content="Watch live cricket in HD. Fast, free, always on.">
+  <link rel="icon" href="/favicon.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  <!-- Inter font for premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- ShapeGrid background — no deps, deferred -->
+  <script src="./ShapeGrid.js" defer></script>
+
+  <!-- DNS + TCP warm-up for API and HLS.js CDN -->
+  <link rel="preconnect" href="https://allrounderid2.pages.dev" crossorigin>
+  <link rel="dns-prefetch" href="https://allrounderid2.pages.dev">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" as="script">
+
+  <!-- Kick off channel fetch IMMEDIATELY — runs before DOM is even parsed -->
+  <script>window._chFetch = fetch('https://allrounderid2.pages.dev/id.json').then(function(r){return r.json();});</script>
+
+  <!-- HLS.js: defer so it never blocks first paint; loaded in background -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" defer></script>
+  <script src="./js/player-config.js" defer></script>
+  <script src="./js/network-profile.js" defer></script>
+  <script src="./js/player-prefetch.js" defer></script>
+  <script src="./js/player-core.js" defer></script>
+  <script src="./js/player-analytics.js" defer></script>
+
+  <!-- Service Worker registration: fires after page load, zero impact on LCP -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+      });
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #121019;
+      --surface:      rgba(255,255,255,0.08);
+      --surface-2:    rgba(255,255,255,0.04);
+      --glass-border: rgba(38, 35, 53, 0.55);
+      --glass-border-2: rgba(38, 35, 53, 0.35);
+      --highlight:    #ff4d6d;
+      --text-1:       #ffffff;
+      --text-2:       rgba(255,255,255,0.65);
+      --text-3:       rgba(255,255,255,0.35);
+      --shadow-soft:  0 8px 32px rgba(0,0,0,0.5);
+      --shadow-glass: inset 0 0 0 1px rgba(255,255,255,0.08);
+      --blur:         blur(20px);
+      /* Design.json — buttons.primary */
+      --btn-primary-bg: #ffffff;
+      --btn-primary-fg: #000000;
+      --r-sm:         8px;
+      --r-md:         16px;
+      --r-lg:         24px;
+      --r-pill:       999px;
+      --font:         'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-1);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Edge shade — matches violet/charcoal grid scene */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 1;
+      background:
+        radial-gradient(ellipse 85% 75% at 50% 42%, transparent 0%, rgba(8, 6, 14, 0.5) 100%);
+      pointer-events: none;
+    }
+
+    body > *:not(#dt-block):not(#sg-global-bg):not(#ks-toast) { position: relative; z-index: 2; }
+
+    /* ─── ENTRANCE ANIMATIONS ────────────────────────── */
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn   { from{opacity:0} to{opacity:1} }
+    @keyframes slideDown{ from{opacity:0;transform:translateX(-50%) translateY(-20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+    @keyframes livepulse{ 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(239,68,68,0.5)} 50%{opacity:.6;box-shadow:0 0 0 5px rgba(239,68,68,0)} }
+    @keyframes orbFloat { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-12px)} }
+    @keyframes shimmer  { 0%{background-position:200% center} 100%{background-position:-200% center} }
+    @keyframes spin     { to { transform: rotate(360deg); } }
+    @keyframes glowPulse{ 0%,100%{opacity:0.7} 50%{opacity:1} }
+
+    .anim-fade-up { animation: fadeUp 0.6s cubic-bezier(.22,.68,0,1.2) both; }
+    .anim-fade-up-1 { animation: fadeUp 0.6s .1s cubic-bezier(.22,.68,0,1.2) both; }
+    .anim-fade-up-2 { animation: fadeUp 0.6s .2s cubic-bezier(.22,.68,0,1.2) both; }
+    .anim-fade-up-3 { animation: fadeUp 0.6s .3s cubic-bezier(.22,.68,0,1.2) both; }
+
+    /* ─── NAV ─────────────────────────────────────── */
+    nav {
+      position: fixed; top: 20px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      width: calc(100% - 48px); max-width: 920px;
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-pill);
+      padding: 0 8px 0 20px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: var(--shadow-soft), var(--shadow-glass);
+      animation: slideDown 0.6s .05s cubic-bezier(.22,.68,0,1.2) both;
+      will-change: transform;
+    }
+
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-mark {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, #ff4d6d, #c93cff);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 18px rgba(255,77,109,0.35);
+    }
+    .nav-logo-mark svg { display: block; }
+    .nav-logo-text {
+      font-size: 15px; font-weight: 700; color: var(--text-1);
+      letter-spacing: -.3px;
+    }
+    .nav-right { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; }
+    .nav-link {
+      text-decoration: none; color: var(--text-2);
+      font-size: 13.5px; font-weight: 500;
+      padding: 6px 14px; border-radius: var(--r-pill);
+      transition: color .2s, background .2s;
+    }
+    .nav-link:hover { color: var(--text-1); background: rgba(255,255,255,0.08); }
+    .nav-cta {
+      background: var(--btn-primary-bg, #ffffff) !important;
+      color: var(--btn-primary-fg, #0a0a0f) !important;
+      border: 1px solid transparent !important;
+      padding: 7px 18px; border-radius: var(--r-pill);
+      font-size: 13.5px; font-weight: 600;
+      transition: background .2s, transform .15s, box-shadow .2s;
+    }
+    .nav-cta:hover {
+      background: #f2f2f2 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
+      color: #ff6b81;
+      background: rgba(255,77,109,0.12);
+      border: 1px solid rgba(255,77,109,0.3);
+      padding: 3px 10px; border-radius: var(--r-pill);
+    }
+    .live-dot {
+      width: 6px; height: 6px;
+      background: #ff4d6d; border-radius: 50%;
+      animation: livepulse 1.8s ease-in-out infinite;
+    }
+
+    /* ─── SHAPEGRID FULL-VIEWPORT BACKGROUND ─────────── */
+    #sg-global-bg {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+    }
+    #sg-global-bg canvas { width: 100% !important; height: 100% !important; display: block; }
+
+    /* ─── HERO (centered landing layout) ─────────────── */
+    .hero-outer {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 96px 28px 56px;
+      box-sizing: border-box;
+    }
+    .hero-outer .hero { position: relative; z-index: 1; width: 100%; }
+
+    /* ─── HERO ────────────────────────────────────── */
+    .hero {
+      padding: 0;
+      text-align: center;
+      max-width: 900px; margin: 0 auto;
+    }
+    /* Badge: “NEW” chip + muted label (layout like reference) */
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0;
+      font-size: 13px; font-weight: 500; color: var(--text-2);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--glass-border-2);
+      padding: 4px 4px 4px 0; border-radius: var(--r-pill);
+      margin-bottom: 28px;
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    }
+    .hero-badge-tag {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--btn-primary-fg, #0a0a0f);
+      background: var(--btn-primary-bg, #fff);
+      padding: 6px 12px; border-radius: var(--r-pill);
+      margin: 0 10px 0 4px;
+    }
+    .hero-badge-msg { padding-right: 16px; color: var(--text-2); font-weight: 500; }
+    .hero h1 {
+      font-size: clamp(40px, 6.5vw, 72px);
+      font-weight: 800; letter-spacing: -2.5px; line-height: 1.04;
+      color: var(--text-1); margin-bottom: 22px;
+    }
+    .g {
+      background: linear-gradient(135deg, #ff4d6d 0%, #c93cff 50%, #3b82f6 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: shimmer 4s linear infinite;
+    }
+    .hero p.hero-lead {
+      font-size: 17px; color: var(--text-2);
+      max-width: 520px; margin: 0 auto 32px;
+      line-height: 1.7;
+    }
+
+    .hero-cta-row {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+      gap: 12px;
+    }
+    .btn-primary {
+      background: var(--btn-primary-bg, #ffffff);
+      color: var(--btn-primary-fg, #0a0a0f);
+      box-shadow: none;
+      border-radius: var(--r-pill);
+      padding: 12px 26px;
+      font-size: 14px;
+    }
+    .btn-primary:hover {
+      background: #f2f2f2;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+    }
+    .btn-secondary-outline {
+      background: rgba(255,255,255,0.04);
+      color: var(--text-2);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-pill);
+      padding: 12px 26px;
+      font-size: 14px;
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    }
+    .btn-secondary-outline:hover {
+      color: var(--text-1);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.22);
+    }
+
+    /* ─── BUTTONS ──────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: var(--r-lg);
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      border: none; text-decoration: none;
+      transition: transform .2s, box-shadow .2s, background .2s;
+      font-family: var(--font);
+    }
+    .btn:hover  { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0) scale(.97); }
+
+    .btn-dark {
+      background: rgba(255,255,255,0.9); color: #0a0a0f;
+    }
+    .btn-dark:hover {
+      background: #ffffff;
+      box-shadow: 0 8px 24px rgba(255,255,255,0.15);
+    }
+    .btn-grad {
+      background: linear-gradient(135deg, #ff4d6d, #c93cff);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(255,77,109,0.3);
+    }
+    .btn-grad:hover {
+      box-shadow: 0 8px 30px rgba(255,77,109,0.45);
+    }
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--text-2);
+      border: 1px solid var(--glass-border-2);
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.12);
+      color: var(--text-1);
+      border-color: var(--glass-border);
+    }
+    .btn-sm { padding: 6px 14px; font-size: 12.5px; border-radius: var(--r-sm); }
+    .btn.btn-secondary-outline { border: 1px solid var(--glass-border); }
+
+    /* ─── PLAYER ──────────────────────────────────── */
+    .player-wrap {
+      padding: 0 24px 72px;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .player-card {
+      background: var(--surface);
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-soft), var(--shadow-glass);
+      overflow: hidden;
+      contain: layout style;
+    }
+    .player-bar {
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--glass-border-2);
+      background: rgba(255,255,255,0.03);
+    }
+    .player-info { display: flex; align-items: center; gap: 12px; }
+    .ch-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #ff4d6d, #c93cff);
+      border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 14px rgba(255,77,109,0.3);
+      overflow: hidden;
+    }
+    .ch-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-sm); }
+    .ch-name { font-size: 14px; font-weight: 600; color: var(--text-1); }
+    .ch-meta { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+
+    .player-ratio {
+      position: relative; width: 100%; padding-top: 56.25%;
+      background: #050507;
+    }
+    .player-ratio iframe,
+    .player-ratio video,
+    .player-ratio .player-ph {
+      position: absolute; inset: 0; width: 100%; height: 100%; border: none;
+    }
+    .player-ratio video { object-fit: contain; background: #050507; }
+    .player-ratio video.live-video {
+      transform: translateZ(0);
+      will-change: transform;
+      contain: strict;
+    }
+    .player-ph {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+    }
+    .spinner {
+      width: 34px; height: 34px;
+      border: 3px solid rgba(255,255,255,.08);
+      border-top-color: #ff4d6d;
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+
+    /* Buffer overlay */
+    #buf-overlay {
+      position: absolute; inset: 0; z-index: 5;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      background: rgba(6, 5, 10, 0.55);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+      opacity: 0; pointer-events: none;
+      transition: opacity .28s ease;
+    }
+    #buf-overlay.show { opacity: 1; }
+    #buf-overlay span { font-size: 12px; color: rgba(255,255,255,.5); letter-spacing: .3px; }
+
+    /* Keyboard toast */
+    #ks-toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 13px; font-weight: 500;
+      padding: 8px 20px; border-radius: var(--r-pill);
+      z-index: 99999; opacity: 0; pointer-events: none;
+      white-space: nowrap;
+      transition: opacity .2s, transform .2s;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    #ks-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ─── SECTION SHELL ───────────────────────────── */
+    .section { padding: 72px 32px; max-width: 1100px; margin: 0 auto; }
+    .section-sm { max-width: 720px; }
+    .s-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--highlight);
+      margin-bottom: 10px;
+      opacity: .8;
+    }
+    .s-title {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 700; letter-spacing: -1.2px;
+      color: var(--text-1); margin-bottom: 12px;
+      line-height: 1.15;
+    }
+    .s-desc {
+      font-size: 16px; color: var(--text-2);
+      max-width: 480px; margin-bottom: 48px;
+      line-height: 1.7;
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--glass-border-2), transparent);
+      max-width: 1100px; margin: 0 auto;
+    }
+
+    /* ─── CHANNELS GRID ───────────────────────────── */
+    .ch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 12px;
+    }
+    .ch-card {
+      background: var(--surface);
+      border: 1px solid var(--glass-border-2);
+      border-radius: var(--r-md);
+      padding: 22px 16px; text-align: center; cursor: pointer;
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      transition: box-shadow .25s, transform .25s, border-color .25s, background .25s;
+      will-change: transform;
+    }
+    .ch-card:hover {
+      box-shadow: var(--shadow-soft);
+      transform: translateY(-4px) scale(1.02);
+      border-color: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.11);
+    }
+    .ch-card.active {
+      border-color: rgba(255,77,109,0.55);
+      background: rgba(255,77,109,0.08);
+      box-shadow: 0 0 0 1px rgba(255,77,109,0.28), var(--shadow-soft);
+    }
+    .ch-card.active .ch-icon {
+      border-color: rgba(255,77,109,0.45);
+      color: #a89fc4;
+    }
+    .ch-icon {
+      width: 46px; height: 46px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      margin: 0 auto 14px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(38, 35, 53, 0.5);
+      color: #6f6a84;
+    }
+    .ch-icon .ch-svg { display: block; flex-shrink: 0; }
+    .ch-label { font-size: 12.5px; font-weight: 600; color: var(--text-1); margin-bottom: 6px; }
+    .ch-status {
+      font-size: 11px; color: var(--text-3);
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .sdot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); }
+    .sdot.on { background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,.5); }
+
+    /* ─── FEATURES GRID ───────────────────────────── */
+    .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .feat-card {
+      background: var(--surface);
+      border: 1px solid var(--glass-border-2);
+      border-radius: var(--r-md); padding: 28px 24px;
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      transition: box-shadow .25s, transform .25s, border-color .25s;
+      will-change: transform;
+    }
+    .feat-card:hover {
+      box-shadow: var(--shadow-soft);
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.15);
+    }
+    .feat-icon {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+      border: 1px solid var(--glass-border-2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px;
+    }
+    .feat-title { font-size: 15px; font-weight: 600; color: var(--text-1); margin-bottom: 8px; }
+    .feat-desc { font-size: 13.5px; color: var(--text-2); line-height: 1.65; }
+
+    /* ─── STATS ───────────────────────────────────── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--glass-border-2);
+      border: 1px solid var(--glass-border-2);
+      border-radius: var(--r-md);
+      overflow: hidden; margin-top: 52px;
+    }
+    .stat {
+      background: var(--surface);
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      padding: 32px 20px; text-align: center;
+      transition: background .2s;
+    }
+    .stat:hover { background: rgba(255,255,255,0.1); }
+    .stat-n {
+      font-size: 40px; font-weight: 800; letter-spacing: -2px;
+      background: linear-gradient(135deg, #ff4d6d, #c93cff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stat-l { font-size: 13px; color: var(--text-2); margin-top: 6px; font-weight: 500; }
+
+    /* ─── GLASS CTA ───────────────────────────────── */
+    .glass-wrap { padding: 72px 32px; max-width: 1100px; margin: 0 auto; }
+    .glass-card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-lg);
+      padding: 56px 52px;
+      display: flex; align-items: center; gap: 56px;
+      box-shadow: var(--shadow-soft), var(--shadow-glass);
+      position: relative; overflow: hidden;
+    }
+    .glass-card::before {
+      content: ''; position: absolute; top: -80px; right: -80px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(201,60,255,.12) 0%, transparent 70%);
+      pointer-events: none; animation: orbFloat 6s ease-in-out infinite;
+    }
+    .glass-card::after {
+      content: ''; position: absolute; bottom: -60px; left: -60px;
+      width: 240px; height: 240px;
+      background: radial-gradient(circle, rgba(59,130,246,.10) 0%, transparent 70%);
+      pointer-events: none; animation: orbFloat 8s ease-in-out infinite reverse;
+    }
+    .glass-text { flex: 1; position: relative; z-index: 1; }
+    .glass-text h2 {
+      font-size: 36px; font-weight: 700; letter-spacing: -1.5px;
+      color: var(--text-1); margin-bottom: 14px; line-height: 1.15;
+    }
+    .glass-text p { font-size: 16px; color: var(--text-2); margin-bottom: 28px; line-height: 1.65; }
+    .glass-vis { flex: 1; position: relative; z-index: 1; }
+    .glass-mock {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--glass-border-2);
+      border-radius: var(--r-md);
+      padding: 20px;
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    }
+    .glass-mock-screen {
+      background: #050507;
+      border-radius: 10px; aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+      margin: 14px 0;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .glass-mock-footer {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--text-3);
+    }
+
+    /* ─── ALT FEATURE ROWS ──────────────────────────── */
+    .alt-section { padding: 72px 32px; max-width: 1100px; margin: 0 auto; }
+    .alt-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 72px; align-items: center; padding: 64px 0;
+      border-bottom: 1px solid var(--glass-border-2);
+    }
+    .alt-row:last-child { border-bottom: none; }
+    .alt-section:has(.alt-row:only-child) .alt-row { border-bottom: none; }
+    .alt-text h3 {
+      font-size: clamp(24px, 3vw, 34px); font-weight: 700;
+      letter-spacing: -1px; color: var(--text-1); margin-bottom: 16px; line-height: 1.2;
+    }
+    .alt-text p { font-size: 15px; color: var(--text-2); line-height: 1.8; margin-bottom: 24px; }
+    .alt-check-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .alt-check-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; color: var(--text-2); }
+    .chk {
+      width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;
+      background: linear-gradient(135deg, #ff4d6d, #c93cff);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 10px rgba(255,77,109,0.3);
+    }
+    .alt-visual-card {
+      background: var(--surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-lg); padding: 22px;
+      box-shadow: var(--shadow-soft), var(--shadow-glass);
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    }
+    .alt-screen {
+      background: #050507;
+      border-radius: 12px; aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; position: relative; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .alt-screen::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,77,109,.08), rgba(201,60,255,.06));
+    }
+    .alt-screen-bar { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); }
+    .ch-list-mock { display: flex; flex-direction: column; gap: 8px; }
+    .ch-list-item {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px; padding: 11px 14px;
+      border: 1px solid transparent; font-size: 13px;
+      transition: background .2s, border-color .2s;
+    }
+    .ch-list-item:hover { background: rgba(255,255,255,0.08); }
+    .ch-list-item.sel {
+      border-color: rgba(255,77,109,0.4);
+      background: rgba(255,77,109,0.07);
+    }
+    .cli-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; flex-shrink: 0; box-shadow: 0 0 6px rgba(16,185,129,.5); }
+    .cli-name { font-weight: 500; color: var(--text-1); flex: 1; }
+    .cli-meta { color: var(--text-3); font-size: 11px; }
+
+    /* ─── TESTIMONIALS ───────────────────────────────── */
+    /* ─── FOOTER ──────────────────────────────────── */
+    footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 40px;
+      border-top: 1px solid var(--glass-border-2);
+      background: rgba(255,255,255,0.02);
+    }
+    .footer-copy { font-size: 13px; color: var(--text-3); }
+
+    /* ─── DEVTOOLS BLOCK OVERLAY ─────────────────────── */
+    #dt-block {
+      display: none; position: fixed; inset: 0; z-index: 999999;
+      background: rgba(10,10,15,.97);
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; font-family: var(--font); user-select: none;
+    }
+    #dt-block.show { display: flex; }
+    #dt-block svg { color: var(--highlight); }
+    #dt-block h2 { font-size: 20px; font-weight: 700; color: var(--text-1); letter-spacing: -.4px; margin: 0; }
+    #dt-block p { font-size: 14px; color: var(--text-2); margin: 0; }
+
+    /* ─── RESPONSIVE ──────────────────────────────── */
+    @media (max-width: 768px) {
+      nav { width: calc(100% - 24px); padding: 0 6px 0 14px; }
+      .nav-link { display: none; }
+      .hero-outer { min-height: min(100vh, 860px); padding: 88px 18px 48px; }
+      .hero h1 { font-size: clamp(32px, 8vw, 48px); letter-spacing: -1.5px; }
+      .player-wrap { padding: 0 12px 52px; }
+      .section { padding: 52px 16px; }
+      .alt-section { padding: 52px 16px; }
+      .glass-wrap { padding: 52px 16px; }
+      .glass-card { flex-direction: column; padding: 32px 24px; gap: 28px; }
+      .feat-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr; }
+      .alt-row { grid-template-columns: 1fr; gap: 32px; }
+      .alt-row .alt-visual-card { display: none; }
+      footer { flex-direction: column; gap: 8px; text-align: center; padding: 24px 20px; }
+    }
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .feat-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .alt-row { gap: 44px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ SHAPEGRID GLOBAL BACKGROUND ═════════════════ -->
+<div id="sg-global-bg" aria-hidden="true"></div>
+
+<!-- ═══ DEVTOOLS BLOCK OVERLAY ══════════════════════ -->
+<div id="dt-block">
+  <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+  </svg>
+  <h2>Access Restricted</h2>
+  <p>This function is not allowed here.</p>
+  <p style="font-size:13px;color:var(--text-3)">Please close Developer Tools to continue watching.</p>
+</div>
+
+<!-- ═══ KEYBOARD TOAST ════════════════════════════════ -->
+<div id="ks-toast"></div>
+
+<!-- ═══ NAVBAR ═══════════════════════════════════════ -->
+<nav>
+  <a href="#" class="nav-logo">
+    <img src="favicon.png" alt="Logo" style="width:28px;height:28px;margin-right:8px">
+    <!-- <div class="nav-logo-mark"> -->
+      <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg> -->
+    <!-- </div> -->
+    <span class="nav-logo-text">LiveStream</span>
+    <div class="live-badge" style="margin-left:6px">
+      <div class="live-dot"></div>Live
+    </div>
+  </a>
+  <div class="nav-right">
+    <a href="#channels" class="nav-link">Channels</a>
+    <a href="#features" class="nav-link">Features</a>
+    <a href="https://liveipl.ramx.workers.dev/" class="nav-link" target="_blank">Change Version</a>
+    <a href="#player" class="nav-link nav-cta">Watch Now</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ══════════════════════════════════════════ -->
+<div class="hero-outer">
+<div class="hero anim-fade-up">
+  <div class="hero-badge" role="note">
+    <span class="hero-badge-tag">New</span>
+    <span class="hero-badge-msg">HD · Free · Always on</span>
+  </div>
+  <h1 class="anim-fade-up-1">Watch Live Cricket<br><span class="g">Anywhere, Anytime</span></h1>
+  <p class="anim-fade-up-2 hero-lead">Premium live streaming for cricket fans. HD quality, low latency, multiple channels.</p>
+  <div class="hero-cta-row anim-fade-up-3">
+    <a href="#player" class="btn btn-primary">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Watch live now
+    </a>
+    <a href="#features" class="btn btn-secondary-outline">Learn more</a>
+  </div>
+</div>
+</div><!-- end .hero-outer -->
+
+<!-- ═══ PLAYER ════════════════════════════════════════ -->
+<div class="player-wrap" id="player">
+  <div class="player-card">
+    <div class="player-bar">
+      <div class="player-info">
+        <div class="ch-icon">
+          <img src="favicon.png" alt="Logo">
+        </div>
+        <div>
+          <div class="ch-name" id="curName">Loading Channel…</div>
+          <div class="ch-meta" id="curMeta">Connecting to stream</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="live-badge"><div class="live-dot"></div>Live</div>
+        <button class="btn btn-ghost btn-sm" onclick="reload()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.1"/>
+          </svg>
+          Reload
+        </button>
+      </div>
+    </div>
+    <div class="player-ratio" id="playerRatio">
+      <div class="player-ph" id="playerPh">
+        <div class="spinner"></div>
+        <span style="font-size:13px;color:var(--text-3)">Loading stream…</span>
+      </div>
+      <div id="buf-overlay">
+        <div class="spinner"></div>
+        <span>Buffering…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CHANNELS ══════════════════════════════════════ -->
+<div class="section" id="channels">
+  <div class="s-label">Live Channels</div>
+  <div class="s-title">Switch instantly</div>
+  <div class="s-desc">Click any channel card to switch. Streams update in real time.</div>
+  <div class="ch-grid" id="chGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-3);font-size:14px">
+      <div class="spinner" style="margin:0 auto 12px;border-top-color:rgba(255,255,255,.3)"></div>
+      Loading channels…
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ STATS ═════════════════════════════════════════ -->
+<div class="section">
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n">HD</div><div class="stat-l">Stream Quality</div></div>
+    <div class="stat"><div class="stat-n">0s</div><div class="stat-l">Average Buffer</div></div>
+    <div class="stat"><div class="stat-n">24/7</div><div class="stat-l">Always Live</div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ FEATURES ══════════════════════════════════════ -->
+<div class="section" id="features">
+  <div class="s-label">Why LiveStream</div>
+  <div class="s-title">Built for cricket fans</div>
+  <div class="s-desc">Everything you need to never miss a ball.</div>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4d6d" stroke-width="2" stroke-linecap="round">
+          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+      </div>
+      <div class="feat-title">Crystal HD Quality</div>
+      <div class="feat-desc">Watch every ball, every catch in stunning HD resolution with smooth playback.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c93cff" stroke-width="2" stroke-linecap="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <div class="feat-title">Instant Load</div>
+      <div class="feat-desc">Streams start in under a second. No waiting, no buffering, no frustration.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 2L12 7 8 2"/>
+        </svg>
+      </div>
+      <div class="feat-title">Reliable & Stable</div>
+      <div class="feat-desc">Backup streams ensure you stay connected even when one source goes down.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round">
+          <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+        </svg>
+      </div>
+      <div class="feat-title">Works on Mobile</div>
+      <div class="feat-desc">Fully responsive. Watch comfortably on any device, any screen size.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="feat-title">Always Live</div>
+      <div class="feat-desc">24/7 streaming for international matches, tournaments, and exclusive coverage.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ ALTERNATING FEATURE ROWS ════════════════════════ -->
+<div class="alt-section">
+  <div class="alt-row">
+    <div class="alt-text">
+      <div class="s-label" style="margin-bottom:12px">HD Streaming</div>
+      <h3>Every frame, delivered in <span class="g">crystal clarity</span></h3>
+      <p>Our adaptive stream engine detects your connection and serves the highest quality your network can handle — from 480p all the way to full 1080p HD.</p>
+      <ul class="alt-check-list">
+        <li>
+          <div class="chk"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          Adaptive bitrate for smooth playback
+        </li>
+        <li>
+          <div class="chk"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          HD 720p and 1080p on supported channels
+        </li>
+        <li>
+          <div class="chk"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          Low-latency pipeline — under 3 seconds
+        </li>
+      </ul>
+    </div>
+    <div class="alt-visual-card">
+      <div class="alt-screen">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="rgba(255,255,255,.12)" style="position:relative;z-index:1"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+      <div class="alt-screen-bar">
+        <div class="live-badge" style="font-size:10px;padding:2px 8px"><div class="live-dot"></div>Live</div>
+        <span style="font-size:12px;color:var(--text-3)">Sky Sports · 1080p · HD</span>
+        <span style="margin-left:auto;font-size:12px;color:#10b981;font-weight:600">2.1s latency</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ GLASS CTA ══════════════════════════════════════ -->
+<div class="glass-wrap">
+  <div class="glass-card">
+    <div class="glass-text">
+      <h2>Never miss a<br><span class="g">match again.</span></h2>
+      <p>Instant HD streaming. No account. No subscription. Just press play.</p>
+      <a href="#player" class="btn btn-dark">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#0a0a0f"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Watch Now — It's Free
+      </a>
+    </div>
+    <div class="glass-vis">
+      <div class="glass-mock">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="live-badge"><div class="live-dot"></div>Live Now</div>
+          <span style="font-size:13px;color:var(--text-2);font-weight:500">HD · 1080p</span>
+        </div>
+        <div class="glass-mock-screen">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="rgba(255,255,255,.15)"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <div class="glass-mock-footer">
+          <span>Live Cricket</span>
+          <span>Low latency</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══ FOOTER ════════════════════════════════════════ -->
+<footer>
+  <div>
+    <div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:5px">LiveStream</div>
+    <div class="footer-copy">Free live cricket streaming. No signup required.</div>
+  </div>
+  <div class="footer-copy" style="text-align:right">
+    <div>© 2025 LiveStream</div>
+    <div style="margin-top:4px">Made for cricket fans</div>
+  </div>
+</footer>
+
+<script>
+// ════════════════════════════════════════════════════
+//  CACHED DOM REFS  (resolved once at startup)
+// ════════════════════════════════════════════════════
+var elName    = document.getElementById('curName');
+var elMeta    = document.getElementById('curMeta');
+var elRatio   = document.getElementById('playerRatio');
+var elGrid    = document.getElementById('chGrid');
+var elPlayer  = document.getElementById('player');
+var elDtBlock = document.getElementById('dt-block');
+var elBufOv   = document.getElementById('buf-overlay');
+var elToast   = document.getElementById('ks-toast');
+var elPh      = document.getElementById('playerPh');
+
+// ════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════
+var channels   = [];
+var cur        = null;
+var retryMap   = {};
+var stallTimer = null;
+var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.buildHlsConfig
+
+var ALLOWED = new Set(['eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv']);
+
+/* Inline SVGs — muted lavender stroke, themed per channel (replaces emoji) */
+var CH_SVG = {
+  _default: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 20h8"/><path d="M12 17v3"/></svg>',
+  eng: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none"><rect x="2.5" y="4" width="19" height="13" rx="2" stroke="currentColor" stroke-width="1.65"/><path d="M2.5 9.5h19" stroke="currentColor" stroke-width="1.65"/><path d="M8 20h8M12 17v3" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/><circle cx="12" cy="11" r="2.25" fill="currentColor"/></svg>',
+  star: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linejoin="round"><polygon points="12 2.5 14.6 9 21.5 9 16 13.8 18 21 12 17.3 6 21 8 13.8 2.5 9 9.4 9 12 2.5"/></svg>',
+  hindi: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a3 3 0 013 3v5a3 3 0 01-6 0V6a3 3 0 013-3z"/><path d="M19 11a7 7 0 01-14 0"/><path d="M12 18v4"/><path d="M8 22h8"/></svg>',
+  zee: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9.5h18M3 14.5h18"/><circle cx="8.5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="15.5" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>',
+  crichd: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a8 8 0 0116 0"/><path d="M7.5 11a4.5 4.5 0 019 0"/><circle cx="12" cy="11" r="1.75" fill="currentColor"/></svg>',
+  sonyliv: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.65"/><polygon points="10 9.5 16.5 12 10 14.5 10 9.5" fill="currentColor" stroke="none"/></svg>',
+};
+
+function channelIconSvg(id) {
+  var k = (id || '').toLowerCase();
+  if (k === 'eng') return CH_SVG.eng;
+  if (k === 'star') return CH_SVG.star;
+  if (k === 'starhindi' || k === 'star_hindi' || k === 'hindi') return CH_SVG.hindi;
+  if (k === 'zee') return CH_SVG.zee;
+  if (k === 'crichd') return CH_SVG.crichd;
+  if (k === 'sonyliv') return CH_SVG.sonyliv;
+  return CH_SVG._default;
+}
+
+var META = {
+  eng:        { name: 'Star Sports HD 1 English', sub: 'Star Sports English' },
+  star:       { name: 'Star Sports 1',            sub: 'India Coverage' },
+  starhindi:  { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
+  star_hindi: { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
+  hindi:      { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
+  zee:        { name: 'Zee Cinema',               sub: 'Premium Movie' },
+  crichd:     { name: 'CricHD',                   sub: 'HD Cricket' },
+  sonyliv:    { name: 'Sony LIV',                 sub: 'Sony Sports' },
+};
+
+function getMeta(id) {
+  return META[id] || { name: id.toUpperCase(), sub: 'Live Channel' };
+}
+
+// ════════════════════════════════════════════════════
+//  TOAST  (keyboard feedback, error messages)
+// ════════════════════════════════════════════════════
+function showToast(msg, dur) {
+  if (!elToast) return;
+  clearTimeout(elToast._t);
+  elToast.textContent = msg;
+  elToast.classList.add('show');
+  elToast._t = setTimeout(function () { elToast.classList.remove('show'); }, dur || 1600);
+}
+
+// ════════════════════════════════════════════════════
+//  BUFFER OVERLAY
+// ════════════════════════════════════════════════════
+function showBuffer() { if (elBufOv) elBufOv.classList.add('show'); }
+function hideBuffer() { if (elBufOv) elBufOv.classList.remove('show'); }
+
+// ════════════════════════════════════════════════════
+//  STREAM LOADER — HLS.js / Safari native / iframe (see js/player-core.js)
+// ════════════════════════════════════════════════════
+function setStream(ch) {
+  if (elPh) elPh.style.display = 'none';
+
+  showBuffer();
+  armStallTimer(ch.id);
+
+  if (!window.LivePlayerCore) {
+    console.warn('LivePlayerCore missing — check script load order');
+    return;
+  }
+
+  LivePlayerCore.load(ch, {
+    container: elRatio,
+    bufOverlay: elBufOv,
+    lowLatency: lowLatMode,
+    showBuffer: showBuffer,
+    hideBuffer: hideBuffer,
+    onFragBuffered: function () {
+      clearTimeout(stallTimer);
+      hideBuffer();
+    },
+    onFatal: function (c) {
+      retryChannel(c.id);
+    },
+    onLevelSwitch: function () {},
+  });
+}
+
+// ════════════════════════════════════════════════════
+//  CHANNEL SWITCH
+// ════════════════════════════════════════════════════
+function switchChannel(id) {
+  var ch = null;
+  for (var i = 0; i < channels.length; i++) {
+    if (channels[i].id === id) { ch = channels[i]; break; }
+  }
+  if (!ch) return;
+  cur = id;
+  retryMap[id] = 0;
+
+  var cards = document.querySelectorAll('.ch-card');
+  for (var j = 0; j < cards.length; j++) {
+    cards[j].classList.toggle('active', cards[j].dataset.id === id);
+  }
+
+  var m = getMeta(id);
+  elName.textContent = m.name;
+  elMeta.textContent = m.sub + ' · HD Live';
+
+  setStream(ch);
+  elPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ════════════════════════════════════════════════════
+//  RELOAD  (button + R key)
+// ════════════════════════════════════════════════════
+function reload() {
+  if (!cur) return;
+  showBuffer();
+  setTimeout(function () { switchChannel(cur); }, 350);
+}
+
+// ════════════════════════════════════════════════════
+//  AUTO-RETRY  (3× with exponential back-off)
+// ════════════════════════════════════════════════════
+function retryChannel(id) {
+  if (!retryMap[id]) retryMap[id] = 0;
+  if (retryMap[id] >= 3) return;
+  retryMap[id]++;
+  var delay = retryMap[id] * 3000;
+  showToast('⚠ Stream error — retrying in ' + (delay / 1000) + 's…', delay);
+  setTimeout(function () { if (cur === id) switchChannel(id); }, delay);
+}
+
+// Stall guard: if overlay still showing 12 s after switch, trigger retry
+function armStallTimer(id) {
+  clearTimeout(stallTimer);
+  stallTimer = setTimeout(function () {
+    if (cur === id && elBufOv && elBufOv.classList.contains('show')) {
+      retryChannel(id);
+    }
+  }, 12000);
+}
+
+// ════════════════════════════════════════════════════
+//  DOUBLE-CLICK → FULLSCREEN TOGGLE
+// ════════════════════════════════════════════════════
+elRatio.addEventListener('dblclick', function () {
+  if (!document.fullscreenElement) {
+    elRatio.requestFullscreen && elRatio.requestFullscreen();
+  } else {
+    document.exitFullscreen && document.exitFullscreen();
+  }
+}, { passive: true });
+
+// ════════════════════════════════════════════════════
+//  KEYBOARD — js/player-keyboard.js
+// ════════════════════════════════════════════════════
+if (window.PlayerKeyboard) {
+  PlayerKeyboard.install({
+    elRatio: elRatio,
+    onReload: reload,
+    showToast: showToast,
+    toggleLowLatency: function () {
+      lowLatMode = !lowLatMode;
+      showToast(lowLatMode ? 'Low-latency ON — reloading' : 'Standard mode — reloading');
+      setTimeout(reload, 400);
+    },
+  });
+}
+
+// ════════════════════════════════════════════════════
+//  CHANNEL LIST  — consume early fetch from <head>
+// ════════════════════════════════════════════════════
+window._chFetch
+  .then(function (data) {
+    var aliasMap = {
+      'cricbuzzlive':  'cricbuzz',
+      'cricbuzz-live': 'cricbuzz',
+      'cricbuzz_live': 'cricbuzz',
+      'cricbuzz live': 'cricbuzz',
+    };
+
+    var raw = data.iframes || [];
+
+    var localChannels = [{
+      id: 'zee', name: 'Zee Cinema', type: 'iframe',
+      iframeSrc: 'https://zee-seven.vercel.app/'
+    }];
+
+    var allRaw = raw.concat(localChannels);
+    var seen   = new Set();
+    var normalized = [];
+
+    for (var i = 0; i < allRaw.length; i++) {
+      var item  = allRaw[i];
+      var idRaw = (item.id || '').toString();
+      var key   = idRaw.toLowerCase();
+      var canon = aliasMap[key] || key;
+      if (!ALLOWED.has(canon) || seen.has(canon)) continue;
+      seen.add(canon);
+      normalized.push(Object.assign({}, item, { id: canon }));
+    }
+
+    var orderMap = { eng: 1, starhindi: 2, star_hindi: 2, hindi: 2, zee: 3 };
+    normalized.sort(function (a, b) {
+      return (orderMap[a.id] || 99) - (orderMap[b.id] || 99);
+    });
+
+    channels = normalized;
+
+    if (!channels.length) {
+      elGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-3);font-size:14px">No channels available</div>';
+      return;
+    }
+
+    // Single DOM write via DocumentFragment — no repeated reflow
+    var frag = document.createDocumentFragment();
+    channels.forEach(function (ch) {
+      var m   = getMeta(ch.id);
+      var div = document.createElement('div');
+      div.className  = 'ch-card';
+      div.dataset.id = ch.id;
+      div.innerHTML  =
+        '<div class="ch-icon">' + channelIconSvg(ch.id) + '</div>' +
+        '<div class="ch-label">' + m.name  + '</div>' +
+        '<div class="ch-status"><div class="sdot on"></div>Live</div>';
+      div.addEventListener('click', function () { switchChannel(ch.id); }, { passive: true });
+      frag.appendChild(div);
+    });
+    elGrid.innerHTML = '';
+    elGrid.appendChild(frag);
+
+    var defaultCh = channels.find(function (c) { return c.id === 'eng'; }) || channels[0];
+    switchChannel(defaultCh.id);
+  })
+  .catch(function () {
+    elGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-3);font-size:14px">Failed to load channels</div>';
+    hideBuffer();
+    if (elPh) {
+      elPh.style.display = '';
+      var span = elPh.querySelector('span');
+      if (span) span.textContent = 'Failed to load stream';
+    }
+  });
+
+// ════════════════════════════════════════════════════
+//  DEVTOOLS + RIGHT-CLICK PROTECTION  (unchanged)
+// ════════════════════════════════════════════════════
+(function () {
+  function showBlock() {
+    try { alert('This function is not allowed here.'); } catch (_) {}
+  }
+
+  document.addEventListener('contextmenu', function (e) {
+    e.preventDefault(); showBlock();
+  }, true);
+
+  document.addEventListener('keydown', function (e) {
+    var key = e.key || '';
+    if (key === 'F12') { e.preventDefault(); showBlock(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I','J','C','K','E'].indexOf(key.toUpperCase()) !== -1) {
+      e.preventDefault(); showBlock(); return;
+    }
+    if ((e.ctrlKey || e.metaKey) && key.toLowerCase() === 'u') { e.preventDefault(); showBlock(); return; }
+    if (e.metaKey && e.altKey && ['i','j','c','u'].indexOf(key.toLowerCase()) !== -1) {
+      e.preventDefault(); showBlock();
+    }
+  }, true);
+
+  var dtOpen = false;
+  setInterval(function () {
+    var wDiff  = Math.abs(window.outerWidth  - window.innerWidth);
+    var hDiff  = Math.abs(window.outerHeight - window.innerHeight);
+    var isOpen = wDiff > 160 || hDiff > 160;
+    if (isOpen === dtOpen) return;
+    dtOpen = isOpen;
+    if (dtOpen) { elDtBlock.classList.add('show'); showBlock(); }
+    else         { elDtBlock.classList.remove('show'); }
+  }, 3000);
+})();
+
+// ════════════════════════════════════════════════════
+//  DESIGN.JSON → CSS variables + full-viewport ShapeGrid
+// ════════════════════════════════════════════════════
+(function () {
+  function hexToRgba(hex, a) {
+    if (!hex || hex.indexOf('#') !== 0) return 'rgba(255,77,109,' + a + ')';
+    var h = hex.slice(1);
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    var n = parseInt(h, 16);
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+
+  function applyDesignPalette(pal, comp) {
+    var r = document.documentElement;
+    if (!pal) return;
+    if (pal.primary_bg) r.style.setProperty('--bg', pal.primary_bg);
+    if (pal.glass_surface) {
+      r.style.setProperty('--surface', pal.glass_surface);
+      r.style.setProperty('--surface-2', pal.secondary_bg || pal.glass_surface);
+    }
+    if (pal.glass_border) r.style.setProperty('--glass-border', pal.glass_border);
+    if (pal.highlight) r.style.setProperty('--highlight', pal.highlight);
+    if (pal.text_primary) r.style.setProperty('--text-1', pal.text_primary);
+    if (pal.text_secondary) r.style.setProperty('--text-2', pal.text_secondary);
+    var btn = comp && comp.buttons && comp.buttons.primary;
+    if (btn && btn.background) r.style.setProperty('--btn-primary-bg', btn.background);
+    if (btn && btn.color) r.style.setProperty('--btn-primary-fg', btn.color);
+  }
+
+  function tryInitShapeGrid(pal) {
+    var el = document.getElementById('sg-global-bg');
+    if (!el || !window.ShapeGridApp) return;
+    var hoverFill = pal && pal.highlight
+      ? hexToRgba(pal.highlight, 0.2)
+      : 'rgba(115, 95, 165, 0.2)';
+    try {
+      window.ShapeGridApp.init(el, {
+        direction:        'diagonal',
+        speed:            0.45,
+        squareSize:       40,
+        shape:            'square',
+        backgroundColor:  '#121019',
+        borderColor:      '#262335',
+        hoverFillColor:   hoverFill,
+        hoverTrailAmount: 7,
+        vignetteEdge:     'rgba(5, 3, 14, 0.44)',
+      });
+    } catch (e) { console.warn('ShapeGrid init error:', e); }
+  }
+
+  function waitForShapeGrid(pal) {
+    var tries = 0;
+    function tick() {
+      if (window.ShapeGridApp) {
+        tryInitShapeGrid(pal);
+        return;
+      }
+      if (++tries < 50) setTimeout(tick, 40);
+    }
+    tick();
+  }
+
+  function run() {
+    fetch('./Design.json')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        var ds = data.design_system || {};
+        var pal = ds.style && ds.style.color_palette;
+        applyDesignPalette(pal, ds.components || {});
+        waitForShapeGrid(pal);
+      })
+      .catch(function () {
+        waitForShapeGrid(null);
+      });
+  }
+
+  if (document.readyState !== 'loading') run();
+  else document.addEventListener('DOMContentLoaded', run);
+})();
+</script>
+</body>
+</html>
