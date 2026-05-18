@@ -32,6 +32,8 @@
   <script src="./js/player-prefetch.js" defer></script>
   <script src="./js/player-core.js" defer></script>
   <script src="./js/player-analytics.js" defer></script>
+  <script src="./js/player-keyboard.js" defer></script>
+  <script src="./js/perf-controller.js" defer></script>
 
   <!-- Service Worker registration: fires after page load, zero impact on LCP -->
   <script>
@@ -68,7 +70,7 @@
       --font:         'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+    html { scroll-behavior: smooth; scroll-padding-top: 112px; }
 
     body {
       font-family: var(--font);
@@ -101,6 +103,55 @@
     @keyframes spin     { to { transform: rotate(360deg); } }
     @keyframes glowPulse{ 0%,100%{opacity:0.7} 50%{opacity:1} }
 
+    /* ─── PERF: GPU-friendly layers (visual unchanged) ─ */
+    nav, .ch-btn, .feat-card, .player-card, .glass-card {
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+    .live-dot, .glass-card::before, .glass-card::after, .spinner {
+      will-change: transform, opacity;
+    }
+    nav.anim-running, .ch-btn { will-change: transform; }
+
+    /* Pause infinite UI motion during playback / mobile grid-off (same look when idle) */
+    html.perf-pause-animations .live-dot,
+    html.perf-pause-animations .glass-card::before,
+    html.perf-pause-animations .glass-card::after,
+    html.perf-pause-animations .spinner,
+    html.perf-pause-animations .perf-offscreen {
+      animation-play-state: paused !important;
+    }
+    html.perf-mobile .glass-card::before,
+    html.perf-mobile .glass-card::after {
+      animation: none !important;
+    }
+    html.perf-mobile .live-dot { animation-duration: 2.4s; }
+
+  /* Lighter glass while decoding video (similar opacity, less GPU blur) */
+    html.perf-streaming nav,
+    html.perf-streaming .player-card,
+    html.perf-streaming .ch-btn,
+    html.perf-streaming .feat-card,
+    html.perf-streaming #buf-overlay.show {
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    html.perf-streaming .glass-card,
+    html.perf-streaming .glass-mock,
+    html.perf-streaming .stat {
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Mobile: slower entrance only; grid motion handled in JS */
+    @media (max-width: 768px) {
+      .anim-fade-up, .anim-fade-up-1, .anim-fade-up-2, .anim-fade-up-3 {
+        animation-duration: 0.45s;
+      }
+      nav { animation-duration: 0.45s; }
+      .ch-btn:hover { transform: translateY(-1px); }
+    }
+
     .anim-fade-up { animation: fadeUp 0.6s cubic-bezier(.22,.68,0,1.2) both; }
     .anim-fade-up-1 { animation: fadeUp 0.6s .1s cubic-bezier(.22,.68,0,1.2) both; }
     .anim-fade-up-2 { animation: fadeUp 0.6s .2s cubic-bezier(.22,.68,0,1.2) both; }
@@ -108,22 +159,25 @@
 
     /* ─── NAV ─────────────────────────────────────── */
     nav {
-      position: fixed; top: 20px; left: 50%;
+      position: fixed; top: 36px; left: 50%;
       transform: translateX(-50%);
       z-index: 200;
-      width: calc(100% - 48px); max-width: 920px;
-      background: rgba(255,255,255,0.07);
+      width: auto;
+      max-width: min(820px, calc(100% - 40px));
+      min-width: min(360px, calc(100% - 40px));
+      background: rgba(255,255,255,0.09);
       backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid rgba(255,255,255,0.14);
       border-radius: var(--r-pill);
-      padding: 0 8px 0 20px; height: 56px;
+      padding: 0 14px 0 24px; height: 62px;
       display: flex; align-items: center; justify-content: space-between;
-      box-shadow: var(--shadow-soft), var(--shadow-glass);
+      gap: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.06);
       animation: slideDown 0.6s .05s cubic-bezier(.22,.68,0,1.2) both;
       will-change: transform;
     }
 
-    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
     .nav-logo-mark {
       width: 30px; height: 30px;
       background: linear-gradient(135deg, #ff4d6d, #c93cff);
@@ -133,23 +187,24 @@
     }
     .nav-logo-mark svg { display: block; }
     .nav-logo-text {
-      font-size: 15px; font-weight: 700; color: var(--text-1);
+      font-size: 16px; font-weight: 700; color: var(--text-1);
       letter-spacing: -.3px;
     }
-    .nav-right { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; }
+    .nav-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
     .nav-link {
       text-decoration: none; color: var(--text-2);
-      font-size: 13.5px; font-weight: 500;
-      padding: 6px 14px; border-radius: var(--r-pill);
+      font-size: 14.5px; font-weight: 500;
+      padding: 8px 16px; border-radius: var(--r-pill);
       transition: color .2s, background .2s;
+      white-space: nowrap;
     }
     .nav-link:hover { color: var(--text-1); background: rgba(255,255,255,0.08); }
     .nav-cta {
       background: var(--btn-primary-bg, #ffffff) !important;
       color: var(--btn-primary-fg, #0a0a0f) !important;
       border: 1px solid transparent !important;
-      padding: 7px 18px; border-radius: var(--r-pill);
-      font-size: 13.5px; font-weight: 600;
+      padding: 9px 20px; border-radius: var(--r-pill);
+      font-size: 14.5px; font-weight: 600;
       transition: background .2s, transform .15s, box-shadow .2s;
     }
     .nav-cta:hover {
@@ -158,6 +213,17 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.2);
     }
 
+    .nav-logo .live-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: .75px; text-transform: uppercase;
+      color: #ff6b81;
+      background: rgba(255,77,109,0.14);
+      border: 1px solid rgba(255,77,109,0.35);
+      padding: 5px 12px; border-radius: var(--r-pill);
+      margin-left: 6px;
+      flex-shrink: 0;
+    }
+    .nav-logo .live-dot { width: 7px; height: 7px; }
     .live-badge {
       display: inline-flex; align-items: center; gap: 5px;
       font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
@@ -176,8 +242,16 @@
     #sg-global-bg {
       position: fixed; inset: 0; z-index: 0;
       pointer-events: none;
+      contain: strict;
+      transform: translateZ(0);
     }
-    #sg-global-bg canvas { width: 100% !important; height: 100% !important; display: block; }
+    #sg-global-bg canvas {
+      width: 100% !important; height: 100% !important; display: block;
+      will-change: transform;
+    }
+    html.perf-pause-animations #sg-global-bg canvas {
+      will-change: auto;
+    }
 
     /* ─── HERO (centered landing layout) ─────────────── */
     .hero-outer {
@@ -186,7 +260,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 96px 28px 56px;
+      padding: 118px 28px 56px;
       box-sizing: border-box;
     }
     .hero-outer .hero { position: relative; z-index: 1; width: 100%; }
@@ -426,53 +500,55 @@
       max-width: 1100px; margin: 0 auto;
     }
 
-    /* ─── CHANNELS GRID ───────────────────────────── */
+    /* ─── CHANNEL PILLS (Learn more style) ─────────── */
     .ch-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-      gap: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
-    .ch-card {
-      background: var(--surface);
-      border: 1px solid var(--glass-border-2);
-      border-radius: var(--r-md);
-      padding: 22px 16px; text-align: center; cursor: pointer;
-      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      transition: box-shadow .25s, transform .25s, border-color .25s, background .25s;
+    .ch-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.2;
+      color: var(--text-2);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-pill);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      cursor: pointer;
+      font-family: var(--font);
+      white-space: nowrap;
+      transition: color .2s, background .2s, border-color .2s, transform .2s, box-shadow .2s;
       will-change: transform;
     }
-    .ch-card:hover {
-      box-shadow: var(--shadow-soft);
-      transform: translateY(-4px) scale(1.02);
-      border-color: rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.11);
+    .ch-btn:hover {
+      color: var(--text-1);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.22);
+      transform: translateY(-2px);
     }
-    .ch-card.active {
+    .ch-btn.active {
+      color: var(--text-1);
       border-color: rgba(255,77,109,0.55);
       background: rgba(255,77,109,0.08);
       box-shadow: 0 0 0 1px rgba(255,77,109,0.28), var(--shadow-soft);
     }
-    .ch-card.active .ch-icon {
-      border-color: rgba(255,77,109,0.45);
-      color: #a89fc4;
+    .ch-btn .ch-link-icon {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      opacity: 0.75;
     }
-    .ch-icon {
-      width: 46px; height: 46px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 12px;
-      margin: 0 auto 14px;
-      display: flex; align-items: center; justify-content: center;
-      border: 1px solid rgba(38, 35, 53, 0.5);
-      color: #6f6a84;
-    }
-    .ch-icon .ch-svg { display: block; flex-shrink: 0; }
-    .ch-label { font-size: 12.5px; font-weight: 600; color: var(--text-1); margin-bottom: 6px; }
-    .ch-status {
-      font-size: 11px; color: var(--text-3);
-      display: flex; align-items: center; justify-content: center; gap: 5px;
-    }
-    .sdot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); }
-    .sdot.on { background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,.5); }
+    .ch-btn:hover .ch-link-icon,
+    .ch-btn.active .ch-link-icon { opacity: 1; }
 
     /* ─── FEATURES GRID ───────────────────────────── */
     .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
@@ -657,8 +733,26 @@
 
     /* ─── RESPONSIVE ──────────────────────────────── */
     @media (max-width: 768px) {
-      nav { width: calc(100% - 24px); padding: 0 6px 0 14px; }
+      nav {
+        top: 28px;
+        max-width: calc(100% - 20px);
+        min-width: 0;
+        width: calc(100% - 20px);
+        height: 54px;
+        padding: 0 8px 0 16px;
+      }
+      .nav-logo-text { font-size: 15px; }
+      .nav-logo .live-badge { font-size: 10px; padding: 4px 10px; }
+      .nav-cta { padding: 7px 16px !important; font-size: 13.5px !important; }
       .nav-link { display: none; }
+      .ch-grid { gap: 8px; }
+      .ch-btn {
+        padding: 10px 16px;
+        font-size: 12.5px;
+        white-space: normal;
+        text-align: center;
+        max-width: 100%;
+      }
       .hero-outer { min-height: min(100vh, 860px); padding: 88px 18px 48px; }
       .hero h1 { font-size: clamp(32px, 8vw, 48px); letter-spacing: -1.5px; }
       .player-wrap { padding: 0 12px 52px; }
@@ -705,7 +799,7 @@
       <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg> -->
     <!-- </div> -->
     <span class="nav-logo-text">LiveStream</span>
-    <div class="live-badge" style="margin-left:6px">
+    <div class="live-badge">
       <div class="live-dot"></div>Live
     </div>
   </a>
@@ -776,9 +870,9 @@
 <div class="section" id="channels">
   <div class="s-label">Live Channels</div>
   <div class="s-title">Switch instantly</div>
-  <div class="s-desc">Click any channel card to switch. Streams update in real time.</div>
+  <div class="s-desc">Click any channel to switch. Streams update in real time.</div>
   <div class="ch-grid" id="chGrid">
-    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-3);font-size:14px">
+    <div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">
       <div class="spinner" style="margin:0 auto 12px;border-top-color:rgba(255,255,255,.3)"></div>
       Loading channels…
     </div>
@@ -957,36 +1051,26 @@ var retryMap   = {};
 var stallTimer = null;
 var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.buildHlsConfig
 
-var ALLOWED = new Set(['eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv']);
+var ALLOWED = new Set([
+  'eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
+  'starsp1tel','willowextra','willowhd','willow'
+]);
 
-/* Inline SVGs — muted lavender stroke, themed per channel (replaces emoji) */
-var CH_SVG = {
-  _default: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 20h8"/><path d="M12 17v3"/></svg>',
-  eng: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none"><rect x="2.5" y="4" width="19" height="13" rx="2" stroke="currentColor" stroke-width="1.65"/><path d="M2.5 9.5h19" stroke="currentColor" stroke-width="1.65"/><path d="M8 20h8M12 17v3" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/><circle cx="12" cy="11" r="2.25" fill="currentColor"/></svg>',
-  star: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linejoin="round"><polygon points="12 2.5 14.6 9 21.5 9 16 13.8 18 21 12 17.3 6 21 8 13.8 2.5 9 9.4 9 12 2.5"/></svg>',
-  hindi: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a3 3 0 013 3v5a3 3 0 01-6 0V6a3 3 0 013-3z"/><path d="M19 11a7 7 0 01-14 0"/><path d="M12 18v4"/><path d="M8 22h8"/></svg>',
-  zee: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9.5h18M3 14.5h18"/><circle cx="8.5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="15.5" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>',
-  crichd: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a8 8 0 0116 0"/><path d="M7.5 11a4.5 4.5 0 019 0"/><circle cx="12" cy="11" r="1.75" fill="currentColor"/></svg>',
-  sonyliv: '<svg class="ch-svg" viewBox="0 0 24 24" width="24" height="24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.65"/><polygon points="10 9.5 16.5 12 10 14.5 10 9.5" fill="currentColor" stroke="none"/></svg>',
-};
-
-function channelIconSvg(id) {
-  var k = (id || '').toLowerCase();
-  if (k === 'eng') return CH_SVG.eng;
-  if (k === 'star') return CH_SVG.star;
-  if (k === 'starhindi' || k === 'star_hindi' || k === 'hindi') return CH_SVG.hindi;
-  if (k === 'zee') return CH_SVG.zee;
-  if (k === 'crichd') return CH_SVG.crichd;
-  if (k === 'sonyliv') return CH_SVG.sonyliv;
-  return CH_SVG._default;
-}
+var CH_LINK_ICON =
+  '<svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
+  '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 
 var META = {
   eng:        { name: 'Star Sports HD 1 English', sub: 'Star Sports English' },
-  star:       { name: 'Star Sports 1',            sub: 'India Coverage' },
   starhindi:  { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
   star_hindi: { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
   hindi:      { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
+  starsp1tel: { name: 'Star Sports Telugu',       sub: 'Telugu Commentary' },
+  willow:     { name: 'Willow',                   sub: 'Cricket Live' },
+  willowhd:   { name: 'Willow HD',                sub: 'Cricket HD' },
+  willowextra:{ name: 'Willow Extra',             sub: 'Cricket HD' },
+  star:       { name: 'Star Sports 1',            sub: 'India Coverage' },
   zee:        { name: 'Zee Cinema',               sub: 'Premium Movie' },
   crichd:     { name: 'CricHD',                   sub: 'HD Cricket' },
   sonyliv:    { name: 'Sony LIV',                 sub: 'Sony Sports' },
@@ -994,6 +1078,40 @@ var META = {
 
 function getMeta(id) {
   return META[id] || { name: id.toUpperCase(), sub: 'Live Channel' };
+}
+
+function sortChannels(list) {
+  var byId = {};
+  for (var i = 0; i < list.length; i++) byId[list[i].id] = list[i];
+  var out = [];
+  var used = {};
+
+  function take(id) {
+    if (byId[id] && !used[id]) {
+      out.push(byId[id]);
+      used[id] = true;
+    }
+  }
+
+  take('eng');
+  if (!used.starhindi) take('starhindi');
+  if (!used.starhindi) take('star_hindi');
+  if (!used.starhindi) take('hindi');
+  take('starsp1tel');
+  take('willow');
+  take('willowhd');
+
+  var rest = [];
+  for (var j = 0; j < list.length; j++) {
+    if (!used[list[j].id]) rest.push(list[j]);
+  }
+  for (var k = rest.length - 1; k > 0; k--) {
+    var r = Math.floor(Math.random() * (k + 1));
+    var tmp = rest[k];
+    rest[k] = rest[r];
+    rest[r] = tmp;
+  }
+  return out.concat(rest);
 }
 
 // ════════════════════════════════════════════════════
@@ -1036,12 +1154,15 @@ function setStream(ch) {
     onFragBuffered: function () {
       clearTimeout(stallTimer);
       hideBuffer();
+      if (window.PerfController) PerfController.onStreamStarted(elRatio);
     },
     onFatal: function (c) {
       retryChannel(c.id);
     },
     onLevelSwitch: function () {},
   });
+
+  if (window.PerfController) PerfController.onStreamStarted(elRatio);
 }
 
 // ════════════════════════════════════════════════════
@@ -1056,9 +1177,11 @@ function switchChannel(id) {
   cur = id;
   retryMap[id] = 0;
 
-  var cards = document.querySelectorAll('.ch-card');
-  for (var j = 0; j < cards.length; j++) {
-    cards[j].classList.toggle('active', cards[j].dataset.id === id);
+  var pills = document.querySelectorAll('.ch-btn');
+  for (var j = 0; j < pills.length; j++) {
+    var on = pills[j].dataset.id === id;
+    pills[j].classList.toggle('active', on);
+    pills[j].setAttribute('aria-pressed', on ? 'true' : 'false');
   }
 
   var m = getMeta(id);
@@ -1114,17 +1237,32 @@ elRatio.addEventListener('dblclick', function () {
 // ════════════════════════════════════════════════════
 //  KEYBOARD — js/player-keyboard.js
 // ════════════════════════════════════════════════════
-if (window.PlayerKeyboard) {
-  PlayerKeyboard.install({
-    elRatio: elRatio,
-    onReload: reload,
-    showToast: showToast,
-    toggleLowLatency: function () {
-      lowLatMode = !lowLatMode;
-      showToast(lowLatMode ? 'Low-latency ON — reloading' : 'Standard mode — reloading');
-      setTimeout(reload, 400);
-    },
+function bootPlayerUX() {
+  if (window.PerfController) {
+    PerfController.init({ playerEl: elPlayer });
+  }
+  if (window.PlayerKeyboard) {
+    PlayerKeyboard.install({
+      elRatio: elRatio,
+      onReload: reload,
+      showToast: showToast,
+      toggleLowLatency: function () {
+        lowLatMode = !lowLatMode;
+        showToast(lowLatMode ? 'Low-latency ON — reloading' : 'Standard mode — reloading');
+        setTimeout(reload, 400);
+      },
+    });
+  }
+  document.addEventListener('fullscreenchange', function () {
+    if (document.fullscreenElement && window.PerfController) {
+      PerfController.setStreaming(true);
+    }
   });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootPlayerUX);
+} else {
+  bootPlayerUX();
 }
 
 // ════════════════════════════════════════════════════
@@ -1141,10 +1279,13 @@ window._chFetch
 
     var raw = data.iframes || [];
 
-    var localChannels = [{
-      id: 'zee', name: 'Zee Cinema', type: 'iframe',
-      iframeSrc: 'https://zee-seven.vercel.app/'
-    }];
+    var localChannels = [
+      { id: 'starsp1tel',  name: 'Star Sports',  type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=starsp1tel' },
+      { id: 'willowextra', name: 'Willow Extra', type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willowextra' },
+      { id: 'willowhd',    name: 'Willow HD',    type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willowhd' },
+      { id: 'willow',      name: 'Willow',       type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willow' },
+      { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
+    ];
 
     var allRaw = raw.concat(localChannels);
     var seen   = new Set();
@@ -1160,15 +1301,10 @@ window._chFetch
       normalized.push(Object.assign({}, item, { id: canon }));
     }
 
-    var orderMap = { eng: 1, starhindi: 2, star_hindi: 2, hindi: 2, zee: 3 };
-    normalized.sort(function (a, b) {
-      return (orderMap[a.id] || 99) - (orderMap[b.id] || 99);
-    });
-
-    channels = normalized;
+    channels = sortChannels(normalized);
 
     if (!channels.length) {
-      elGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-3);font-size:14px">No channels available</div>';
+      elGrid.innerHTML = '<div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">No channels available</div>';
       return;
     }
 
@@ -1176,15 +1312,14 @@ window._chFetch
     var frag = document.createDocumentFragment();
     channels.forEach(function (ch) {
       var m   = getMeta(ch.id);
-      var div = document.createElement('div');
-      div.className  = 'ch-card';
-      div.dataset.id = ch.id;
-      div.innerHTML  =
-        '<div class="ch-icon">' + channelIconSvg(ch.id) + '</div>' +
-        '<div class="ch-label">' + m.name  + '</div>' +
-        '<div class="ch-status"><div class="sdot on"></div>Live</div>';
-      div.addEventListener('click', function () { switchChannel(ch.id); }, { passive: true });
-      frag.appendChild(div);
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ch-btn';
+      btn.dataset.id = ch.id;
+      btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + m.name + '</span>';
+      btn.setAttribute('aria-pressed', 'false');
+      btn.addEventListener('click', function () { switchChannel(ch.id); }, { passive: true });
+      frag.appendChild(btn);
     });
     elGrid.innerHTML = '';
     elGrid.appendChild(frag);
@@ -1193,7 +1328,7 @@ window._chFetch
     switchChannel(defaultCh.id);
   })
   .catch(function () {
-    elGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-3);font-size:14px">Failed to load channels</div>';
+    elGrid.innerHTML = '<div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">Failed to load channels</div>';
     hideBuffer();
     if (elPh) {
       elPh.style.display = '';
@@ -1274,7 +1409,7 @@ window._chFetch
       ? hexToRgba(pal.highlight, 0.2)
       : 'rgba(115, 95, 165, 0.2)';
     try {
-      window.ShapeGridApp.init(el, {
+      var sgHandle = window.ShapeGridApp.init(el, {
         direction:        'diagonal',
         speed:            0.45,
         squareSize:       40,
@@ -1282,9 +1417,16 @@ window._chFetch
         backgroundColor:  '#121019',
         borderColor:      '#262335',
         hoverFillColor:   hoverFill,
-        hoverTrailAmount: 7,
+        hoverTrailAmount: window.PerfController && PerfController.isMobile() ? 0 : 7,
         vignetteEdge:     'rgba(5, 3, 14, 0.44)',
       });
+      window._sgHandle = sgHandle;
+      if (window.PerfController) {
+        PerfController.setShapeGrid(sgHandle);
+        if (PerfController.isMobile() && sgHandle.setSpeedMultiplier) {
+          sgHandle.setSpeedMultiplier(0);
+        }
+      }
     } catch (e) { console.warn('ShapeGrid init error:', e); }
   }
 

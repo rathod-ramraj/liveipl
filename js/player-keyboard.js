@@ -17,13 +17,25 @@
 
         if (key === 'f' || key === 'F') {
           e.preventDefault();
+          var fsTarget = elRatio;
           if (!document.fullscreenElement) {
-            elRatio.requestFullscreen && elRatio.requestFullscreen();
-            showToast && showToast('Fullscreen');
+            var req =
+              fsTarget.requestFullscreen ||
+              fsTarget.webkitRequestFullscreen ||
+              fsTarget.msRequestFullscreen;
+            if (req) {
+              Promise.resolve(req.call(fsTarget)).catch(function () {});
+            }
+            showToast && showToast('Fullscreen (F)');
           } else {
-            document.exitFullscreen && document.exitFullscreen();
+            var exit =
+              document.exitFullscreen ||
+              document.webkitExitFullscreen ||
+              document.msExitFullscreen;
+            if (exit) exit.call(document);
             showToast && showToast('Exit fullscreen');
           }
+          if (global.PerfController) global.PerfController.setStreaming(true);
           return;
         }
 

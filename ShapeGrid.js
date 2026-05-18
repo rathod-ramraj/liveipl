@@ -44,6 +44,9 @@
 
     var rafId    = null;
     var disposed = false;
+    var paused   = false;
+    var frozen   = false;
+    var speedMul = 1;
 
     var gridOffset   = { x: 0, y: 0 };
     var hoveredSquare = null;
@@ -178,7 +181,7 @@
 
     /* ── animation offset ─────────────────────────────── */
     function updateOffset() {
-      var sp   = Math.max(speed, 0.1);
+      var sp   = Math.max(speed * speedMul, 0.1);
       var wrapX = isHex ? hexH * 2 : squareSize;
       var wrapY = isHex ? hexV  : isTri ? squareSize * 2 : squareSize;
       switch (direction) {
@@ -214,12 +217,26 @@
     }
 
     function frame() {
-      if (disposed) return;
+      if (disposed || paused || frozen) return;
       updateOffset();
       updateOpacities();
       drawGrid();
       rafId = requestAnimationFrame(frame);
     }
+
+    function startLoop() {
+      if (disposed || paused || frozen) return;
+      if (rafId != null) return;
+      rafId = requestAnimationFrame(frame);
+    }
+
+    function stopLoop() {
+      if (rafId != null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    }
+
     rafId = requestAnimationFrame(frame);
 
     /* ── mouse tracking ───────────────────────────────── */
@@ -272,9 +289,35 @@
     canvas.addEventListener('mouseleave', onMouseLeave);
 
     return {
+      pause: function () {
+        paused = true;
+        stopLoop();
+      },
+      resume: function () {
+        if (disposed || frozen) return;
+        paused = false;
+        startLoop();
+      },
+      freeze: function () {
+        frozen = true;
+        paused = true;
+        stopLoop();
+        drawGrid();
+      },
+      unfreeze: function () {
+        frozen = false;
+        paused = false;
+        startLoop();
+      },
+      setSpeedMultiplier: function (m) {
+        speedMul = typeof m === 'number' && m > 0 ? m : 1;
+      },
+      isRunning: function () {
+        return rafId != null && !paused && !frozen;
+      },
       dispose: function () {
         disposed = true;
-        cancelAnimationFrame(rafId);
+        stopLoop();
         window.removeEventListener('resize', resize);
         canvas.removeEventListener('mousemove',  onMouseMove);
         canvas.removeEventListener('mouseleave', onMouseLeave);
