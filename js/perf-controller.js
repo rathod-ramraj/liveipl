@@ -10,6 +10,7 @@
 
   var sg = null;
   var streaming = false;
+  var iframeActive = false;
   var playerVisible = true;
   var io = null;
   var videoWatchTimer = null;
@@ -35,9 +36,11 @@
     root.classList.toggle('perf-mobile', isMobile());
     root.classList.toggle('perf-low-power', isLowPowerDevice());
     root.classList.toggle('perf-streaming', streaming);
+    root.classList.toggle('perf-iframe-active', iframeActive);
     root.classList.toggle('perf-player-visible', playerVisible);
     var pauseFx =
       streaming ||
+      iframeActive ||
       isMobile() ||
       mqReduceMotion.matches ||
       !playerVisible;
@@ -50,7 +53,7 @@
       sg.freeze && sg.freeze();
       return;
     }
-    if (streaming && playerVisible) {
+    if ((streaming || iframeActive) && playerVisible) {
       sg.freeze && sg.freeze();
     } else if (sg.unfreeze) {
       sg.unfreeze();
@@ -71,6 +74,13 @@
 
   function setStreaming(active) {
     streaming = !!active;
+    applyRootClasses();
+    syncShapeGrid();
+  }
+
+  function setIframeActive(active) {
+    iframeActive = !!active;
+    if (iframeActive) streaming = true;
     applyRootClasses();
     syncShapeGrid();
   }
@@ -202,6 +212,7 @@
     init: init,
     setShapeGrid: setShapeGrid,
     setStreaming: setStreaming,
+    setIframeActive: setIframeActive,
     onStreamStarted: onStreamStarted,
     onStreamStopped: onStreamStopped,
     isMobile: isMobile,

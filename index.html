@@ -19,6 +19,15 @@
   <!-- DNS + TCP warm-up for API and HLS.js CDN -->
   <link rel="preconnect" href="https://allrounderid2.pages.dev" crossorigin>
   <link rel="dns-prefetch" href="https://allrounderid2.pages.dev">
+  <link rel="preconnect" href="https://allrounder-live11.pages.dev" crossorigin>
+  <link rel="dns-prefetch" href="https://allrounder-live11.pages.dev">
+  <link rel="preconnect" href="https://allrounderlive.pages.dev" crossorigin>
+  <link rel="preconnect" href="https://allrounder-live4.pages.dev" crossorigin>
+  <link rel="preconnect" href="https://playerado.top" crossorigin>
+  <link rel="preconnect" href="https://tvsen5.aynaott.com" crossorigin>
+  <link rel="preconnect" href="https://cinearena.fun" crossorigin>
+  <link rel="dns-prefetch" href="https://cinearena.fun">
+  <link rel="dns-prefetch" href="https://tvsen5.aynaott.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preload" href="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" as="script">
 
@@ -30,6 +39,7 @@
   <script src="./js/player-config.js" defer></script>
   <script src="./js/network-profile.js" defer></script>
   <script src="./js/player-prefetch.js" defer></script>
+  <script src="./js/iframe-player.js" defer></script>
   <script src="./js/player-core.js" defer></script>
   <script src="./js/player-analytics.js" defer></script>
   <script src="./js/player-keyboard.js" defer></script>
@@ -137,10 +147,24 @@
       -webkit-backdrop-filter: blur(10px);
     }
     html.perf-streaming .glass-card,
-    html.perf-streaming .glass-mock,
-    html.perf-streaming .stat {
+    html.perf-streaming .glass-mock {
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Iframe playback — max GPU savings */
+    html.perf-iframe-active nav,
+    html.perf-iframe-active .player-card,
+    html.perf-iframe-active .ch-btn,
+    html.perf-iframe-active .feat-card {
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    }
+    html.perf-iframe-active .hero-badge,
+    html.perf-iframe-active .glass-card::before,
+    html.perf-iframe-active .glass-card::after {
+      animation-play-state: paused !important;
     }
 
     /* Mobile: slower entrance only; grid motion handled in JS */
@@ -161,7 +185,9 @@
     nav {
       position: fixed; top: 36px; left: 50%;
       transform: translateX(-50%);
-      z-index: 200;
+      z-index: 500;
+      pointer-events: auto;
+      isolation: isolate;
       width: auto;
       max-width: min(820px, calc(100% - 40px));
       min-width: min(360px, calc(100% - 40px));
@@ -177,7 +203,8 @@
       will-change: transform;
     }
 
-    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    nav a, nav button { pointer-events: auto; position: relative; z-index: 1; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; cursor: pointer; }
     .nav-logo-mark {
       width: 30px; height: 30px;
       background: linear-gradient(135deg, #ff4d6d, #c93cff);
@@ -241,7 +268,7 @@
     /* ─── SHAPEGRID FULL-VIEWPORT BACKGROUND ─────────── */
     #sg-global-bg {
       position: fixed; inset: 0; z-index: 0;
-      pointer-events: none;
+      pointer-events: none !important;
       contain: strict;
       transform: translateZ(0);
     }
@@ -415,19 +442,33 @@
     .ch-meta { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
 
     .player-ratio {
-      position: relative; width: 100%; padding-top: 56.25%;
+      position: relative; width: 100%;
+      padding-top: clamp(52%, 56.25%, 58%);
       background: #050507;
+      contain: layout style;
+    }
+    .player-ratio.is-iframe-active {
+      contain: strict;
     }
     .player-ratio iframe,
     .player-ratio video,
     .player-ratio .player-ph {
       position: absolute; inset: 0; width: 100%; height: 100%; border: none;
     }
+    .player-ratio iframe.live-iframe {
+      z-index: 2;
+      background: #050507;
+      contain: strict;
+    }
     .player-ratio video { object-fit: contain; background: #050507; }
     .player-ratio video.live-video {
       transform: translateZ(0);
       will-change: transform;
       contain: strict;
+      z-index: 3;
+    }
+    .player-ratio video.live-video::-webkit-media-controls-panel {
+      background: linear-gradient(transparent, rgba(0,0,0,0.65));
     }
     .player-ph {
       display: flex; flex-direction: column;
@@ -453,7 +494,7 @@
       opacity: 0; pointer-events: none;
       transition: opacity .28s ease;
     }
-    #buf-overlay.show { opacity: 1; }
+    #buf-overlay.show { opacity: 1; pointer-events: none; }
     #buf-overlay span { font-size: 12px; color: rgba(255,255,255,.5); letter-spacing: .3px; }
 
     /* Keyboard toast */
@@ -575,29 +616,6 @@
     }
     .feat-title { font-size: 15px; font-weight: 600; color: var(--text-1); margin-bottom: 8px; }
     .feat-desc { font-size: 13.5px; color: var(--text-2); line-height: 1.65; }
-
-    /* ─── STATS ───────────────────────────────────── */
-    .stats-row {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      background: var(--glass-border-2);
-      border: 1px solid var(--glass-border-2);
-      border-radius: var(--r-md);
-      overflow: hidden; margin-top: 52px;
-    }
-    .stat {
-      background: var(--surface);
-      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      padding: 32px 20px; text-align: center;
-      transition: background .2s;
-    }
-    .stat:hover { background: rgba(255,255,255,0.1); }
-    .stat-n {
-      font-size: 40px; font-weight: 800; letter-spacing: -2px;
-      background: linear-gradient(135deg, #ff4d6d, #c93cff);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .stat-l { font-size: 13px; color: var(--text-2); margin-top: 6px; font-weight: 500; }
 
     /* ─── GLASS CTA ───────────────────────────────── */
     .glass-wrap { padding: 72px 32px; max-width: 1100px; margin: 0 auto; }
@@ -753,6 +771,7 @@
         text-align: center;
         max-width: 100%;
       }
+      .player-ratio { padding-top: clamp(50%, 52%, 56%); }
       .hero-outer { min-height: min(100vh, 860px); padding: 88px 18px 48px; }
       .hero h1 { font-size: clamp(32px, 8vw, 48px); letter-spacing: -1.5px; }
       .player-wrap { padding: 0 12px 52px; }
@@ -761,14 +780,12 @@
       .glass-wrap { padding: 52px 16px; }
       .glass-card { flex-direction: column; padding: 32px 24px; gap: 28px; }
       .feat-grid { grid-template-columns: 1fr; }
-      .stats-row { grid-template-columns: 1fr; }
       .alt-row { grid-template-columns: 1fr; gap: 32px; }
       .alt-row .alt-visual-card { display: none; }
       footer { flex-direction: column; gap: 8px; text-align: center; padding: 24px 20px; }
     }
     @media (min-width: 769px) and (max-width: 1024px) {
       .feat-grid { grid-template-columns: repeat(2, 1fr); }
-      .stats-row { grid-template-columns: repeat(3, 1fr); }
       .alt-row { gap: 44px; }
     }
   </style>
@@ -793,7 +810,7 @@
 
 <!-- ═══ NAVBAR ═══════════════════════════════════════ -->
 <nav>
-  <a href="#" class="nav-logo">
+  <a href="#" class="nav-logo" id="navLogoHome">
     <!-- <img src="favicon.png" alt="Logo" style="width:28px;height:28px;margin-right:8px"> -->
     <!-- <div class="nav-logo-mark"> -->
       <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg> -->
@@ -876,17 +893,6 @@
       <div class="spinner" style="margin:0 auto 12px;border-top-color:rgba(255,255,255,.3)"></div>
       Loading channels…
     </div>
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<!-- ═══ STATS ═════════════════════════════════════════ -->
-<div class="section">
-  <div class="stats-row">
-    <div class="stat"><div class="stat-n">HD</div><div class="stat-l">Stream Quality</div></div>
-    <div class="stat"><div class="stat-n">0s</div><div class="stat-l">Average Buffer</div></div>
-    <div class="stat"><div class="stat-n">24/7</div><div class="stat-l">Always Live</div></div>
   </div>
 </div>
 
@@ -1023,11 +1029,11 @@
     <div class="footer-copy">Free live cricket streaming. No signup required.</div>
   </div>
   <div class="footer-copy" style="text-align:right">
+    <div style="margin-top:4px"> Made with ❤️ by DIAMOND STAR</div>
     <div>Disclaimer: We only link to streams available on the internet. We do not host any content.</div>
-    <div style="margin-top:4px"> Made with ❤️ by Rathod Ram</div>
   </div>
 </footer>
-
+<script src="devtools-guard.js"></script>
 <script>
 // ════════════════════════════════════════════════════
 //  CACHED DOM REFS  (resolved once at startup)
@@ -1053,8 +1059,10 @@ var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.build
 
 var ALLOWED = new Set([
   'eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
-  'starsp1tel','willowextra','willowhd','willow'
+  'starsp1tel','star_telugu','star_tamil','willowextra','willowhd','willow','willow2','skynz'
 ]);
+
+var SITE_TITLE = 'LiveStream';
 
 var CH_LINK_ICON =
   '<svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
@@ -1066,10 +1074,14 @@ var META = {
   starhindi:  { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
   star_hindi: { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
   hindi:      { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
+  star_telugu:{ name: 'Star Sports 1 HD Telugu',  sub: 'Telugu HD' },
+  star_tamil: { name: 'Star Sports 1 HD Tamil',   sub: 'Tamil HD' },
   starsp1tel: { name: 'Star Sports Telugu',       sub: 'Telugu Commentary' },
   willow:     { name: 'Willow',                   sub: 'Cricket Live' },
+  willow2:    { name: 'Willow 2',                 sub: 'HLS Live' },
   willowhd:   { name: 'Willow HD',                sub: 'Cricket HD' },
   willowextra:{ name: 'Willow Extra',             sub: 'Cricket HD' },
+  skynz:      { name: 'Sky Sports Live 1',        sub: 'Sky NZ · Live' },
   star:       { name: 'Star Sports 1',            sub: 'India Coverage' },
   zee:        { name: 'Zee Cinema',               sub: 'Premium Movie' },
   crichd:     { name: 'CricHD',                   sub: 'HD Cricket' },
@@ -1078,6 +1090,11 @@ var META = {
 
 function getMeta(id) {
   return META[id] || { name: id.toUpperCase(), sub: 'Live Channel' };
+}
+
+function updatePageTitle(id) {
+  var m = getMeta(id);
+  document.title = m.name + ' — ' + SITE_TITLE;
 }
 
 function sortChannels(list) {
@@ -1097,9 +1114,13 @@ function sortChannels(list) {
   if (!used.starhindi) take('starhindi');
   if (!used.starhindi) take('star_hindi');
   if (!used.starhindi) take('hindi');
+  take('star_telugu');
+  take('star_tamil');
   take('starsp1tel');
   take('willow');
   take('willowhd');
+  take('willow2');
+  take('skynz');
 
   var rest = [];
   for (var j = 0; j < list.length; j++) {
@@ -1134,8 +1155,35 @@ function hideBuffer() { if (elBufOv) elBufOv.classList.remove('show'); }
 // ════════════════════════════════════════════════════
 //  STREAM LOADER — HLS.js / Safari native / iframe (see js/player-core.js)
 // ════════════════════════════════════════════════════
+function playerCtx(ch) {
+  return {
+    container: elRatio,
+    bufOverlay: elBufOv,
+    lowLatency: lowLatMode,
+    showBuffer: showBuffer,
+    hideBuffer: hideBuffer,
+    onBeforeLoad: function () {
+      showBuffer();
+      armStallTimer(ch.id, false);
+    },
+    onFragBuffered: function () {
+      clearTimeout(stallTimer);
+      hideBuffer();
+      if (elRatio) {
+        elRatio.classList.add('is-iframe-active');
+      }
+      if (window.PerfController) PerfController.onStreamStarted(elRatio);
+    },
+    onFatal: function (c) {
+      retryChannel(c.id);
+    },
+    onLevelSwitch: function () {},
+  };
+}
+
 function setStream(ch) {
   if (elPh) elPh.style.display = 'none';
+  if (elRatio) elRatio.classList.remove('is-iframe-active');
 
   showBuffer();
   armStallTimer(ch.id);
@@ -1145,24 +1193,7 @@ function setStream(ch) {
     return;
   }
 
-  LivePlayerCore.load(ch, {
-    container: elRatio,
-    bufOverlay: elBufOv,
-    lowLatency: lowLatMode,
-    showBuffer: showBuffer,
-    hideBuffer: hideBuffer,
-    onFragBuffered: function () {
-      clearTimeout(stallTimer);
-      hideBuffer();
-      if (window.PerfController) PerfController.onStreamStarted(elRatio);
-    },
-    onFatal: function (c) {
-      retryChannel(c.id);
-    },
-    onLevelSwitch: function () {},
-  });
-
-  if (window.PerfController) PerfController.onStreamStarted(elRatio);
+  LivePlayerCore.load(ch, playerCtx(ch));
 }
 
 // ════════════════════════════════════════════════════
@@ -1176,7 +1207,6 @@ function switchChannel(id) {
   if (!ch) return;
   cur = id;
   retryMap[id] = 0;
-
   var pills = document.querySelectorAll('.ch-btn');
   for (var j = 0; j < pills.length; j++) {
     var on = pills[j].dataset.id === id;
@@ -1187,6 +1217,7 @@ function switchChannel(id) {
   var m = getMeta(id);
   elName.textContent = m.name;
   elMeta.textContent = m.sub + ' · HD Live';
+  updatePageTitle(id);
 
   setStream(ch);
   elPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1217,9 +1248,8 @@ function retryChannel(id) {
 function armStallTimer(id) {
   clearTimeout(stallTimer);
   stallTimer = setTimeout(function () {
-    if (cur === id && elBufOv && elBufOv.classList.contains('show')) {
-      retryChannel(id);
-    }
+    if (cur !== id || !elBufOv || !elBufOv.classList.contains('show')) return;
+    retryChannel(id);
   }, 12000);
 }
 
@@ -1238,6 +1268,13 @@ elRatio.addEventListener('dblclick', function () {
 //  KEYBOARD — js/player-keyboard.js
 // ════════════════════════════════════════════════════
 function bootPlayerUX() {
+  var navLogo = document.getElementById('navLogoHome');
+  if (navLogo) {
+    navLogo.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
   if (window.PerfController) {
     PerfController.init({ playerEl: elPlayer });
   }
@@ -1280,10 +1317,13 @@ window._chFetch
     var raw = data.iframes || [];
 
     var localChannels = [
+      { id: 'skynz', name: 'Sky Sports Live 1', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/skynz/' },
+      { id: 'star_telugu', name: 'Star Sports 1 HD Telugu', type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/telugu' },
+      { id: 'star_tamil',  name: 'Star Sports 1 HD Tamil',  type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/tamil-1' },
+      { id: 'willow2',     name: 'Willow 2', type: 'hls', iframeSrc: 'https://tvsen5.aynaott.com/willowhd/tracks-v1a1/mono.ts.m3u8' },
       { id: 'starsp1tel',  name: 'Star Sports',  type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=starsp1tel' },
       { id: 'willowextra', name: 'Willow Extra', type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willowextra' },
       { id: 'willowhd',    name: 'Willow HD',    type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willowhd' },
-      { id: 'willow',      name: 'Willow',       type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willow' },
       { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
     ];
 
@@ -1319,10 +1359,29 @@ window._chFetch
       btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + m.name + '</span>';
       btn.setAttribute('aria-pressed', 'false');
       btn.addEventListener('click', function () { switchChannel(ch.id); }, { passive: true });
+      btn.addEventListener('mouseenter', function () {
+        var src = ch.iframeSrc || '';
+        if (!src) return;
+        if (window.IframePlayer && !/\.m3u8(\?|$)/i.test(src)) {
+          IframePlayer.preconnect(src);
+        } else if (window.PlayerPrefetch) {
+          PlayerPrefetch.scheduleWarm(src);
+          if (/\.m3u8(\?|$)/i.test(src) && PlayerPrefetch.warmHlsDeep) {
+            PlayerPrefetch.warmHlsDeep(src);
+          }
+        }
+      }, { passive: true });
       frag.appendChild(btn);
     });
     elGrid.innerHTML = '';
     elGrid.appendChild(frag);
+
+    if (window.IframePlayer && IframePlayer.warmChannels) {
+      IframePlayer.warmChannels(channels);
+    }
+    if (window.PlayerPrefetch && PlayerPrefetch.prefetchChannels) {
+      PlayerPrefetch.prefetchChannels(channels, ['eng', 'willow2', 'willowhd']);
+    }
 
     var defaultCh = channels.find(function (c) { return c.id === 'eng'; }) || channels[0];
     switchChannel(defaultCh.id);

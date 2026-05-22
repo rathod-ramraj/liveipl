@@ -1,5 +1,5 @@
 /**
- * Core HLS + native-Safari playback. UI callbacks only — no DOM assumptions beyond container + overlay.
+ * Core HLS + native-Safari + optimized iframe playback.
  */
 (function (global) {
   'use strict';
@@ -19,20 +19,39 @@
     return global.Hls;
   }
 
+  function detachIframe(container) {
+    if (global.IframePlayer && global.IframePlayer.detachFrom) {
+      global.IframePlayer.detachFrom(container);
+      return;
+    }
+    var old = container && container.querySelector('iframe.live-iframe');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+  }
+
+  function removeVideos(elRatio) {
+    if (!elRatio) return;
+    var videos = elRatio.querySelectorAll('video');
+    for (var i = 0; i < videos.length; i++) {
+      var v = videos[i];
+      if (v.parentNode === document.body) document.body.removeChild(v);
+      else if (v.parentNode) v.parentNode.removeChild(v);
+    }
+  }
+
   function destroy(elRatio) {
     if (bufferDebounce) {
       clearTimeout(bufferDebounce);
       bufferDebounce = null;
     }
     if (hlsInstance) {
-      try { hlsInstance.destroy(); } catch (_) {}
+      try {
+        hlsInstance.destroy();
+      } catch (_) {}
       hlsInstance = null;
     }
     if (elRatio) {
-      ['iframe', 'video'].forEach(function (tag) {
-        var old = elRatio.querySelector(tag);
-        if (old) elRatio.removeChild(old);
-      });
+      detachIframe(elRatio);
+      removeVideos(elRatio);
     }
     videoEl = null;
   }
@@ -53,29 +72,28 @@
     }
   }
 
-  function attachHls(src, ch, ctx) {
+  function wireHlsPlayback(hls, video, src, ch, ctx) {
     var HlsLib = getHls();
-    if (!HlsLib || !HlsLib.isSupported()) return false;
-
-    var net = (global.NetworkProfile && global.NetworkProfile.get()) || null;
-    var cfgBuilder = global.LiveStreamConfig && global.LiveStreamConfig.buildHlsConfig;
-    var baseCfg =
-      typeof cfgBuilder === 'function'
-        ? cfgBuilder(net, { lowLatency: ctx.lowLatency !== false })
-        : {};
-
-    var hls = new HlsLib(baseCfg);
     hlsInstance = hls;
+    videoEl = video;
 
-    var video = document.createElement('video');
+    if (global.PerfController && global.PerfController.setIframeActive) {
+      global.PerfController.setIframeActive(false);
+    }
+
     video.className = 'live-video';
+    video.removeAttribute('style');
+    video.muted = false;
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
     video.playsInline = true;
     video.autoplay = true;
     video.preload = 'auto';
-    video.controls = false;
-    videoEl = video;
+    video.controls = ctx.showControls !== false;
+    if (video.controls) {
+      video.setAttribute('controls', '');
+      video.setAttribute('controlsList', 'nodownload noremoteplayback');
+    }
 
     metrics.streamStart = performance.now();
     metrics.manifestMs = null;
@@ -114,9 +132,8 @@
 
       if (data.type === HlsLib.ErrorTypes.NETWORK_ERROR) {
         netFailStreak++;
-        // After repeated failures, cap quality lower to ride out congestion
         if (netFailStreak >= 3 && hls.levels && hls.levels.length) {
-          var cap = (hls.autoLevelCapping >= 0 ? hls.autoLevelCapping : hls.levels.length - 1);
+          var cap = hls.autoLevelCapping >= 0 ? hls.autoLevelCapping : hls.levels.length - 1;
           hls.autoLevelCapping = Math.max(0, cap - 1);
           netFailStreak = 0;
         }
@@ -157,32 +174,83 @@
       { passive: true }
     );
 
-    hls.loadSource(src);
-    hls.attachMedia(video);
-    ctx.container.insertBefore(video, ctx.bufOverlay);
+    if (!video.parentNode) {
+      ctx.container.insertBefore(video, ctx.bufOverlay);
+    } else if (video.parentNode !== ctx.container) {
+      video.parentNode.removeChild(video);
+      ctx.container.insertBefore(video, ctx.bufOverlay);
+    }
+
+    if (!hls.media) {
+      hls.loadSource(src);
+      hls.attachMedia(video);
+    } else if (hls.levels && hls.levels.length) {
+      try {
+        hls.startLoad();
+      } catch (_) {}
+      if (video.readyState >= 2) {
+        ctx.onFragBuffered && ctx.onFragBuffered();
+      }
+    }
 
     video.play().catch(function () {});
 
     return true;
   }
 
+  function attachHls(src, ch, ctx) {
+    var HlsLib = getHls();
+    if (!HlsLib || !HlsLib.isSupported()) return false;
+
+    var warm =
+      global.PlayerPrefetch && typeof global.PlayerPrefetch.acquireWarmHls === 'function'
+        ? global.PlayerPrefetch.acquireWarmHls(src)
+        : null;
+
+    if (warm && warm.hls && warm.video) {
+      return wireHlsPlayback(warm.hls, warm.video, src, ch, ctx);
+    }
+
+    var net = (global.NetworkProfile && global.NetworkProfile.get()) || null;
+    var cfgBuilder = global.LiveStreamConfig && global.LiveStreamConfig.buildHlsConfig;
+    var baseCfg =
+      typeof cfgBuilder === 'function'
+        ? cfgBuilder(net, { lowLatency: ctx.lowLatency !== false })
+        : {};
+
+    var hls = new HlsLib(baseCfg);
+    var video = document.createElement('video');
+
+    return wireHlsPlayback(hls, video, src, ch, ctx);
+  }
+
   function attachNativeMse(src, ch, ctx) {
+    detachIframe(ctx.container);
+
     var video = document.createElement('video');
     video.className = 'live-video';
     video.src = src;
     video.playsInline = true;
     video.autoplay = true;
     video.preload = 'auto';
-    video.controls = false;
+    video.controls = ctx.showControls !== false;
+    if (video.controls) {
+      video.setAttribute('controls', '');
+      video.setAttribute('controlsList', 'nodownload noremoteplayback');
+    }
     videoEl = video;
 
     video.addEventListener('waiting', ctx.showBuffer, { passive: true });
     video.addEventListener('playing', ctx.hideBuffer, { passive: true });
     video.addEventListener('canplay', ctx.hideBuffer, { passive: true });
-    video.addEventListener('loadeddata', function () {
-      ctx.hideBuffer();
-      ctx.onFragBuffered && ctx.onFragBuffered();
-    }, { passive: true });
+    video.addEventListener(
+      'loadeddata',
+      function () {
+        ctx.hideBuffer();
+        ctx.onFragBuffered && ctx.onFragBuffered();
+      },
+      { passive: true }
+    );
     video.addEventListener(
       'error',
       function () {
@@ -198,53 +266,60 @@
   }
 
   function attachIframe(src, ch, ctx) {
-    var iframe = document.createElement('iframe');
-    iframe.className = 'live-iframe';
-    iframe.loading = 'eager';
-    iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; accelerometer; gyroscope; picture-in-picture');
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.src = src;
-    iframe.addEventListener(
-      'load',
-      function () {
-        ctx.hideBuffer();
-        ctx.onFragBuffered && ctx.onFragBuffered();
-      },
-      { once: true }
-    );
-    iframe.addEventListener(
-      'error',
-      function () {
-        ctx.onFatal && ctx.onFatal(ch);
-      },
-      { once: true }
-    );
-    ctx.container.insertBefore(iframe, ctx.bufOverlay);
-    return true;
+    if (!global.IframePlayer) {
+      var iframe = document.createElement('iframe');
+      iframe.className = 'live-iframe';
+      iframe.src = src;
+      iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.addEventListener(
+        'load',
+        function () {
+          ctx.hideBuffer();
+          ctx.onFragBuffered && ctx.onFragBuffered();
+        },
+        { once: true }
+      );
+      ctx.container.insertBefore(iframe, ctx.bufOverlay);
+      return true;
+    }
+
+    ctx.channel = ch;
+    global.IframePlayer.mount(src, ctx, false);
+    return 'iframe';
   }
 
   /**
    * @param ch — channel object (iframeSrc, id, …)
-   * @param ctx {{ container, bufOverlay, lowLatency, showBuffer, hideBuffer, onFatal, onFragBuffered, onLevelSwitch }}
    */
   function load(ch, ctx) {
     destroy(ctx.container);
-    ctx.showBuffer();
 
     var src = ch.iframeSrc || '';
     var isM3u8 = /\.m3u8(\?|$)/i.test(src);
 
-    if (global.PlayerPrefetch && PlayerPrefetch.scheduleWarm) {
+    if (ctx.showControls == null) {
+      ctx.showControls = isM3u8 || ch.type === 'hls';
+    }
+
+    ctx.showBuffer();
+
+    if (!isM3u8 && global.IframePlayer) {
+      global.IframePlayer.preconnect(src);
+    } else if (global.PlayerPrefetch && PlayerPrefetch.scheduleWarm) {
       PlayerPrefetch.scheduleWarm(src);
     }
 
     if (isM3u8 && getHls() && getHls().isSupported()) {
+      ctx.showBuffer();
       return attachHls(src, ch, ctx) ? 'hls' : null;
     }
     if (isM3u8 && document.createElement('video').canPlayType('application/vnd.apple.mpegurl')) {
+      ctx.showBuffer();
       return attachNativeMse(src, ch, ctx) ? 'native' : null;
     }
-    return attachIframe(src, ch, ctx) ? 'iframe' : null;
+
+    return attachIframe(src, ch, ctx);
   }
 
   function getMetrics() {

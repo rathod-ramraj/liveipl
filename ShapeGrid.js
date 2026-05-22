@@ -38,7 +38,7 @@
 
     /* ── canvas setup ─────────────────────────────────── */
     var canvas = document.createElement('canvas');
-    canvas.style.cssText = 'width:100%;height:100%;display:block;position:absolute;inset:0;';
+    canvas.style.cssText = 'width:100%;height:100%;display:block;position:absolute;inset:0;pointer-events:none;';
     container.appendChild(canvas);
     var ctx = canvas.getContext('2d');
 
