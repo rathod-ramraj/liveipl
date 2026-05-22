@@ -46,13 +46,36 @@
     if (poster && poster.parentNode) poster.parentNode.removeChild(poster);
   }
 
+  function stopIframe(iframe) {
+    if (!iframe) return;
+    try {
+      iframe.src = 'about:blank';
+    } catch (_) {}
+    iframe.removeAttribute('src');
+    iframe.style.display = 'none';
+  }
+
+  /** Stop every pooled iframe so only one stream can play audio. */
+  function suspendAll() {
+    var key;
+    for (key in pool) {
+      if (!Object.prototype.hasOwnProperty.call(pool, key)) continue;
+      stopIframe(pool[key].iframe);
+      pool[key].loaded = false;
+      pool[key].mounted = false;
+    }
+  }
+
   function park(iframe) {
     if (!iframe) return;
     var src = iframe.getAttribute('data-stream-src') || iframe.src || '';
-    iframe.style.display = 'none';
+    stopIframe(iframe);
     if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
     ensurePark().appendChild(iframe);
-    if (src && pool[src]) pool[src].mounted = false;
+    if (src && pool[src]) {
+      pool[src].mounted = false;
+      pool[src].loaded = false;
+    }
   }
 
   function createIframe() {
@@ -69,6 +92,8 @@
 
   function mount(src, ctx, userActivated) {
     if (!src || !ctx || !ctx.container) return null;
+
+    suspendAll();
 
     if (ctx.onBeforeLoad) ctx.onBeforeLoad();
 
@@ -135,6 +160,7 @@
     removePoster(container);
     var iframe = container.querySelector('iframe.live-iframe');
     if (iframe) park(iframe);
+    else suspendAll();
     if (global.PerfController) {
       var hasOther = container.querySelector('video');
       if (!hasOther && global.PerfController.setIframeActive) {
@@ -160,6 +186,7 @@
     mount: mount,
     detachFrom: detachFrom,
     park: park,
+    suspendAll: suspendAll,
     warmChannels: warmChannels,
   };
 })(window);

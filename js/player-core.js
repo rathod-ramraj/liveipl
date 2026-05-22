@@ -28,11 +28,22 @@
     if (old && old.parentNode) old.parentNode.removeChild(old);
   }
 
+  function stopVideoElement(v) {
+    if (!v) return;
+    try {
+      v.pause();
+      v.muted = true;
+      v.removeAttribute('src');
+      v.load();
+    } catch (_) {}
+  }
+
   function removeVideos(elRatio) {
     if (!elRatio) return;
     var videos = elRatio.querySelectorAll('video');
     for (var i = 0; i < videos.length; i++) {
       var v = videos[i];
+      stopVideoElement(v);
       if (v.parentNode === document.body) document.body.removeChild(v);
       else if (v.parentNode) v.parentNode.removeChild(v);
     }
@@ -49,11 +60,20 @@
       } catch (_) {}
       hlsInstance = null;
     }
+    if (videoEl) {
+      stopVideoElement(videoEl);
+      videoEl = null;
+    }
+    if (global.PlayerPrefetch && global.PlayerPrefetch.stopAllWarmHls) {
+      global.PlayerPrefetch.stopAllWarmHls();
+    }
+    if (global.IframePlayer && global.IframePlayer.suspendAll) {
+      global.IframePlayer.suspendAll();
+    }
     if (elRatio) {
       detachIframe(elRatio);
       removeVideos(elRatio);
     }
-    videoEl = null;
   }
 
   function debouncedBuffer(showFn, hideFn, show) {
@@ -84,6 +104,7 @@
     video.className = 'live-video';
     video.removeAttribute('style');
     video.muted = false;
+    video.volume = 1;
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
     video.playsInline = true;

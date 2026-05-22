@@ -113,13 +113,52 @@
     });
   }
 
+  function stopAllWarmHls() {
+    var url;
+    for (url in warmHlsInstances) {
+      if (!Object.prototype.hasOwnProperty.call(warmHlsInstances, url)) continue;
+      var entry = warmHlsInstances[url];
+      if (entry.video) {
+        try {
+          entry.video.pause();
+          entry.video.muted = true;
+          entry.video.removeAttribute('src');
+          entry.video.load();
+        } catch (_) {}
+        if (entry.video.parentNode) entry.video.parentNode.removeChild(entry.video);
+      }
+      if (entry.hls) {
+        try {
+          entry.hls.destroy();
+        } catch (_) {}
+      }
+      delete warmHlsInstances[url];
+    }
+  }
+
   function acquireWarmHls(url) {
-    var entry = warmHlsInstances[url];
-    if (!entry) return null;
-    delete warmHlsInstances[url];
-    setTimeout(function () {
-      startBackgroundHls(url);
-    }, 1500);
+    var entry = warmHlsInstances[url] || null;
+    var key;
+    for (key in warmHlsInstances) {
+      if (!Object.prototype.hasOwnProperty.call(warmHlsInstances, key) || key === url) continue;
+      var other = warmHlsInstances[key];
+      if (other.video) {
+        try {
+          other.video.pause();
+          other.video.muted = true;
+          other.video.removeAttribute('src');
+          other.video.load();
+        } catch (_) {}
+        if (other.video.parentNode) other.video.parentNode.removeChild(other.video);
+      }
+      if (other.hls) {
+        try {
+          other.hls.destroy();
+        } catch (_) {}
+      }
+      delete warmHlsInstances[key];
+    }
+    if (entry) delete warmHlsInstances[url];
     return entry;
   }
 
@@ -135,7 +174,6 @@
       if (/\.m3u8(\?|$)/i.test(src)) {
         if (deep) {
           warmHlsDeep(src);
-          startBackgroundHls(src);
         } else {
           scheduleWarm(src);
         }
@@ -158,6 +196,7 @@
     scheduleWarm: scheduleWarm,
     prefetchChannels: prefetchChannels,
     acquireWarmHls: acquireWarmHls,
+    stopAllWarmHls: stopAllWarmHls,
     startBackgroundHls: startBackgroundHls,
   };
 })(window);
