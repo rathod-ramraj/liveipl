@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LiveStream — Watch Live Cricket</title>
-  <meta name="description" content="Watch live cricket in HD. Fast, free, always on.">
+  <title>LiveStream — Live TV, Movies &amp; Series</title>
+  <meta name="description" content="Watch live TV channels, movies, and series in HD. Free streaming with Watch by ID — paste any IMDb or TMDB title.">
   <link rel="icon" href="/favicon.png">
   <link rel="shortcut icon" href="/favicon.png">
 
@@ -30,6 +30,14 @@
   <link rel="dns-prefetch" href="https://tvsen5.aynaott.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preload" href="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" as="script">
+  <link rel="preconnect" href="https://111movies.net" crossorigin>
+  <link rel="preconnect" href="https://vidup.to" crossorigin>
+  <link rel="preconnect" href="https://vidlink.pro" crossorigin>
+  <link rel="preconnect" href="https://player.videasy.net" crossorigin>
+  <link rel="dns-prefetch" href="https://111movies.net">
+  <link rel="dns-prefetch" href="https://vidup.to">
+  <link rel="dns-prefetch" href="https://vidlink.pro">
+  <link rel="dns-prefetch" href="https://player.videasy.net">
 
   <!-- Kick off channel fetch IMMEDIATELY — runs before DOM is even parsed -->
   <script>window._chFetch = fetch('https://allrounderid2.pages.dev/id.json').then(function(r){return r.json();});</script>
@@ -44,6 +52,7 @@
   <script src="./js/player-analytics.js" defer></script>
   <script src="./js/player-keyboard.js" defer></script>
   <script src="./js/perf-controller.js" defer></script>
+  <script src="./js/watch-by-id.js" defer></script>
 
   <!-- Service Worker registration: fires after page load, zero impact on LCP -->
   <script>
@@ -101,7 +110,7 @@
       pointer-events: none;
     }
 
-    body > *:not(#dt-block):not(#sg-global-bg):not(#ks-toast) { position: relative; z-index: 2; }
+    body > *:not(#dt-block):not(#sg-global-bg):not(#ks-toast):not(#wbid-fab):not(#wbid-modal):not(#wbid-overlay):not(#site-nav) { position: relative; z-index: 2; }
 
     /* ─── ENTRANCE ANIMATIONS ────────────────────────── */
     @keyframes fadeUp   { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
@@ -182,28 +191,47 @@
     .anim-fade-up-3 { animation: fadeUp 0.6s .3s cubic-bezier(.22,.68,0,1.2) both; }
 
     /* ─── NAV ─────────────────────────────────────── */
-    nav {
+    #site-nav {
       position: fixed; top: 36px; left: 50%;
       transform: translateX(-50%);
-      z-index: 500;
+      z-index: 9000;
       pointer-events: auto;
-      isolation: isolate;
       width: auto;
-      max-width: min(820px, calc(100% - 40px));
-      min-width: min(360px, calc(100% - 40px));
+      max-width: min(720px, calc(100% - 32px));
+      min-width: min(280px, calc(100% - 32px));
       background: rgba(255,255,255,0.09);
       backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
       border: 1.5px solid rgba(255,255,255,0.14);
       border-radius: var(--r-pill);
-      padding: 0 14px 0 24px; height: 62px;
+      padding: 0 10px 0 18px; height: 56px;
       display: flex; align-items: center; justify-content: space-between;
-      gap: 16px;
+      gap: 10px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.06);
       animation: slideDown 0.6s .05s cubic-bezier(.22,.68,0,1.2) both;
-      will-change: transform;
     }
 
-    nav a, nav button { pointer-events: auto; position: relative; z-index: 1; }
+    #site-nav a,
+    #site-nav .nav-link-btn {
+      pointer-events: auto;
+      position: relative;
+      z-index: 1;
+      touch-action: manipulation;
+    }
+    .nav-link-btn {
+      border: none;
+      background: none;
+      font-family: var(--font);
+      cursor: pointer;
+      line-height: inherit;
+    }
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+      margin-left: auto;
+      pointer-events: auto;
+    }
     .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; cursor: pointer; }
     .nav-logo-mark {
       width: 30px; height: 30px;
@@ -217,22 +245,23 @@
       font-size: 16px; font-weight: 700; color: var(--text-1);
       letter-spacing: -.3px;
     }
-    .nav-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
     .nav-link {
       text-decoration: none; color: var(--text-2);
-      font-size: 14.5px; font-weight: 500;
-      padding: 8px 16px; border-radius: var(--r-pill);
+      font-size: 14px; font-weight: 500;
+      padding: 6px 10px; border-radius: var(--r-pill);
       transition: color .2s, background .2s;
       white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
     }
     .nav-link:hover { color: var(--text-1); background: rgba(255,255,255,0.08); }
     .nav-cta {
       background: var(--btn-primary-bg, #ffffff) !important;
       color: var(--btn-primary-fg, #0a0a0f) !important;
       border: 1px solid transparent !important;
-      padding: 9px 20px; border-radius: var(--r-pill);
-      font-size: 14.5px; font-weight: 600;
+      padding: 7px 14px; border-radius: var(--r-pill);
+      font-size: 14px; font-weight: 600;
       transition: background .2s, transform .15s, box-shadow .2s;
+      margin-left: 2px;
     }
     .nav-cta:hover {
       background: #f2f2f2 !important;
@@ -751,18 +780,21 @@
 
     /* ─── RESPONSIVE ──────────────────────────────── */
     @media (max-width: 768px) {
-      nav {
+      #site-nav {
         top: 28px;
         max-width: calc(100% - 20px);
         min-width: 0;
         width: calc(100% - 20px);
-        height: 54px;
-        padding: 0 8px 0 16px;
+        height: 50px;
+        padding: 0 8px 0 12px;
+        gap: 8px;
       }
       .nav-logo-text { font-size: 15px; }
-      .nav-logo .live-badge { font-size: 10px; padding: 4px 10px; }
-      .nav-cta { padding: 7px 16px !important; font-size: 13.5px !important; }
-      .nav-link { display: none; }
+      .nav-logo .live-badge { font-size: 10px; padding: 4px 8px; margin-left: 4px; }
+      .nav-link { padding: 6px 8px; font-size: 13px; }
+      .nav-cta { padding: 6px 12px !important; font-size: 13px !important; }
+      .nav-hide-mobile { display: none; }
+      #wbid-fab { right: 14px; bottom: 14px; font-size: 13px; padding: 10px 14px 10px 12px; }
       .ch-grid { gap: 8px; }
       .ch-btn {
         padding: 10px 16px;
@@ -788,6 +820,339 @@
       .feat-grid { grid-template-columns: repeat(2, 1fr); }
       .alt-row { gap: 44px; }
     }
+
+    /* ─── WATCH BY ID (FAB + modal + theater) ───────── */
+    #wbid-fab {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 8500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 16px 11px 13px;
+      border-radius: var(--r-pill);
+      border: 1px solid rgba(255, 120, 150, 0.42);
+      background: rgba(38, 10, 22, 0.94);
+      color: #ffb3c1;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.15px;
+      cursor: pointer;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: transform 0.2s ease, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    #wbid-fab:hover {
+      transform: translateY(-2px);
+      color: #ffe0e8;
+      border-color: rgba(255, 140, 170, 0.65);
+      background: rgba(52, 14, 30, 0.98);
+      box-shadow: 0 16px 44px rgba(0,0,0,0.6);
+    }
+    #wbid-fab svg { flex-shrink: 0; }
+    body.wbid-active #wbid-fab,
+    body.wbid-modal-open #wbid-fab { opacity: 0; pointer-events: none; }
+
+    #wbid-modal[hidden],
+    #wbid-overlay[hidden] { display: none !important; }
+
+    #wbid-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9100;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 22px;
+      padding-bottom: 88px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .wbid-card {
+      width: min(100%, 380px);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(8,8,12,0.96);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+      padding: 18px 18px 16px;
+      animation: fadeUp 0.35s ease both;
+    }
+    .wbid-card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .wbid-card-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(145deg, #ff4d6d, #c9184a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .wbid-card-title {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .wbid-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--text-2);
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .wbid-close:hover { color: var(--text-1); background: rgba(255,255,255,0.06); }
+    .wbid-hint {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .wbid-hint code {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text-1);
+    }
+    .wbid-input {
+      width: 100%;
+      padding: 14px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-1);
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+    .wbid-input:focus { border-color: rgba(255,77,109,0.45); }
+    .wbid-input::placeholder { color: var(--text-3); }
+    .wbid-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .wbid-check input { accent-color: #3b82f6; width: 16px; height: 16px; }
+    .wbid-tv-fields {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .wbid-tv-fields.is-visible { display: grid; }
+    .wbid-tv-fields label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .wbid-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .wbid-watch {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border: none;
+      border-radius: var(--r-pill);
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-fg);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .wbid-watch:hover { filter: brightness(0.95); }
+    .wbid-details {
+      padding: 12px 16px;
+      border-radius: var(--r-pill);
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: var(--text-1);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .wbid-details:hover { background: rgba(255,255,255,0.1); }
+    #wbid-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9200;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+    }
+    body.wbid-active { overflow: hidden; }
+    body.wbid-active #site-nav { opacity: 0; pointer-events: none; }
+
+    .wbid-topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 4;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+      pointer-events: none;
+    }
+    .wbid-topbar > * { pointer-events: auto; }
+    #wbid-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--r-pill);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.55);
+      color: var(--text-1);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    #wbid-back:hover { background: rgba(255,255,255,0.12); }
+
+    .wbid-server-panel {
+      margin: 0 auto;
+      max-width: min(92vw, 420px);
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(12,12,18,0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    }
+    .wbid-server-panel.is-collapsed .wbid-server-body { display: none; }
+    .wbid-server-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 10px;
+    }
+    #wbid-server-toggle {
+      border: none;
+      background: none;
+      color: var(--highlight);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    #wbid-server-select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: var(--r-pill);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.65);
+      color: var(--text-1);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23fff' fill-opacity='.65' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+    }
+    .wbid-server-foot {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-3);
+      text-align: center;
+    }
+    #wbid-player-title {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 3;
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
+      pointer-events: none;
+      max-width: 80%;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wbid-frame-wrap {
+      position: absolute;
+      inset: 0;
+      background: #000;
+    }
+    #wbid-iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+    .wbid-loading {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.55);
+      z-index: 2;
+      pointer-events: none;
+    }
+    .wbid-loading.is-visible { display: flex; }
+    .wbid-loading span {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255,255,255,0.15);
+      border-top-color: var(--highlight);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @media (max-width: 768px) {
+      #wbid-modal { padding: 12px; align-items: flex-end; }
+      .wbid-topbar { flex-direction: column; align-items: stretch; padding: 14px; }
+      .wbid-server-panel { max-width: 100%; margin: 0; }
+    }
   </style>
 </head>
 <body>
@@ -809,7 +1174,7 @@
 <div id="ks-toast"></div>
 
 <!-- ═══ NAVBAR ═══════════════════════════════════════ -->
-<nav>
+<nav id="site-nav">
   <a href="#" class="nav-logo" id="navLogoHome">
     <!-- <img src="favicon.png" alt="Logo" style="width:28px;height:28px;margin-right:8px"> -->
     <!-- <div class="nav-logo-mark"> -->
@@ -820,10 +1185,10 @@
       <div class="live-dot"></div>Live
     </div>
   </a>
-  <div class="nav-right">
-    <a href="#channels" class="nav-link">Channels</a>
-    <a href="#features" class="nav-link">Features</a>
-    <a href="https://liveipl.ramx.workers.dev/" class="nav-link" target="_blank">Change Version</a>
+  <div class="nav-menu">
+    <a href="#channels" class="nav-link nav-hide-mobile">Channels</a>
+    <a href="https://liveipl.ramx.workers.dev/" class="nav-link nav-hide-mobile" target="_blank" rel="noopener noreferrer">Change Version</a>
+    <button type="button" id="wbid-nav-btn" class="nav-link nav-link-btn">Watch by ID</button>
     <a href="#player" class="nav-link nav-cta">Watch Now</a>
   </div>
 </nav>
@@ -833,16 +1198,23 @@
 <div class="hero anim-fade-up">
   <div class="hero-badge" role="note">
     <span class="hero-badge-tag">New</span>
-    <span class="hero-badge-msg">HD · Free · Always on</span>
+    <span class="hero-badge-msg">Live TV · Movies · Free · Always on</span>
   </div>
-  <h1 class="anim-fade-up-1">Watch Live Cricket<br><span class="g">Anywhere, Anytime</span></h1>
-  <p class="anim-fade-up-2 hero-lead">Premium live streaming for cricket fans. HD quality, low latency, multiple channels.</p>
+  <h1 class="anim-fade-up-1">Live TV &amp; Movies<br><span class="g">Anywhere, Anytime</span></h1>
+  <p class="anim-fade-up-2 hero-lead">Stream live channels in HD, or paste any IMDb / TMDB ID to watch movies and series instantly.</p>
   <div class="hero-cta-row anim-fade-up-3">
     <a href="#player" class="btn btn-primary">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       Watch live now
     </a>
-    <a href="#features" class="btn btn-secondary-outline">Learn more</a>
+    <button type="button" class="btn btn-secondary-outline" id="wbid-hero-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <path d="M7 4v4M12 4v4M17 4v4"/>
+        <polygon points="10 11 10 15 15 13" fill="currentColor" stroke="none"/>
+      </svg>
+      Watch by ID
+    </button>
   </div>
 </div>
 </div><!-- end .hero-outer -->
@@ -901,8 +1273,8 @@
 <!-- ═══ FEATURES ══════════════════════════════════════ -->
 <div class="section" id="features">
   <div class="s-label">Why LiveStream</div>
-  <div class="s-title">Built for cricket fans</div>
-  <div class="s-desc">Everything you need to never miss a ball.</div>
+  <div class="s-title">Built for how you watch</div>
+  <div class="s-desc">Live channels, on-demand titles, and a player that just works.</div>
   <div class="feat-grid">
     <div class="feat-card">
       <div class="feat-icon">
@@ -911,7 +1283,7 @@
         </svg>
       </div>
       <div class="feat-title">Crystal HD Quality</div>
-      <div class="feat-desc">Watch every ball, every catch in stunning HD resolution with smooth playback.</div>
+      <div class="feat-desc">Live sports and on-demand titles in sharp HD with smooth, adaptive playback.</div>
     </div>
     <div class="feat-card">
       <div class="feat-icon">
@@ -947,7 +1319,16 @@
         </svg>
       </div>
       <div class="feat-title">Always Live</div>
-      <div class="feat-desc">24/7 streaming for international matches, tournaments, and exclusive coverage.</div>
+      <div class="feat-desc">24/7 live channels plus movies and series whenever you want them.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4d6d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v4M12 4v4M17 4v4"/><polygon points="10 11 10 15 15 13" fill="#ff4d6d" stroke="none"/>
+        </svg>
+      </div>
+      <div class="feat-title">Watch by ID</div>
+      <div class="feat-desc">Paste any IMDb <code style="font-size:11px;background:rgba(255,255,255,.08);padding:2px 5px;border-radius:4px">tt</code> or TMDB number — pick a server and play in fullscreen.</div>
     </div>
   </div>
 </div>
@@ -995,8 +1376,8 @@
 <div class="glass-wrap">
   <div class="glass-card">
     <div class="glass-text">
-      <h2>Never miss a<br><span class="g">match again.</span></h2>
-      <p>Instant HD streaming. No account. No subscription. Just press play.</p>
+      <h2>Live channels &amp;<br><span class="g">movies on demand.</span></h2>
+      <p>Switch channels instantly or open Watch by ID for any title. No account. No subscription.</p>
       <a href="#player" class="btn btn-dark">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="#0a0a0f"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         Watch Now — It's Free
@@ -1012,8 +1393,8 @@
           <svg width="38" height="38" viewBox="0 0 24 24" fill="rgba(255,255,255,.15)"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         </div>
         <div class="glass-mock-footer">
-          <span>Live Cricket</span>
-          <span>Low latency</span>
+          <span>Live TV</span>
+          <span>Movies · ID</span>
         </div>
       </div>
     </div>
@@ -1022,11 +1403,81 @@
 
 <div class="divider"></div>
 
+<!-- ═══ WATCH BY ID ═══════════════════════════════════ -->
+<button type="button" id="wbid-fab" aria-label="Watch by ID">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="2" y="4" width="20" height="16" rx="2.5"/>
+    <path d="M7 4v4M12 4v4M17 4v4"/>
+    <polygon points="10 11 10 15 15 13" fill="currentColor" stroke="none"/>
+  </svg>
+  Watch by ID
+</button>
+
+<div id="wbid-modal" hidden aria-hidden="true" role="dialog" aria-labelledby="wbid-modal-title">
+  <div class="wbid-card" role="document">
+    <div class="wbid-card-head">
+      <div class="wbid-card-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v4M12 4v4M17 4v4"/><polygon points="10 11 10 15 15 13" fill="#fff" stroke="none"/>
+        </svg>
+      </div>
+      <div class="wbid-card-title" id="wbid-modal-title">Watch by ID</div>
+      <button type="button" class="wbid-close" id="wbid-modal-close" aria-label="Close">&times;</button>
+    </div>
+    <p class="wbid-hint">Can't find it in search? Paste any <code>tt</code> ID from IMDb or a TMDB number.</p>
+    <input type="text" class="wbid-input" id="wbid-id-input" placeholder="tt0372784 or IMDb URL" autocomplete="off" spellcheck="false">
+    <label class="wbid-check">
+      <input type="checkbox" id="wbid-tv-check">
+      TV series (season &amp; episode)
+    </label>
+    <div class="wbid-tv-fields" id="wbid-tv-fields">
+      <label>Season
+        <input type="number" class="wbid-input" id="wbid-season" min="1" value="1" style="margin:0">
+      </label>
+      <label>Episode
+        <input type="number" class="wbid-input" id="wbid-episode" min="1" value="1" style="margin:0">
+      </label>
+    </div>
+    <div class="wbid-actions">
+      <button type="button" class="wbid-watch" id="wbid-watch-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Watch
+      </button>
+      <button type="button" class="wbid-details" id="wbid-details-btn">Details</button>
+    </div>
+  </div>
+</div>
+
+<div id="wbid-overlay" hidden aria-hidden="true">
+  <div class="wbid-topbar">
+    <button type="button" id="wbid-back" aria-label="Back to site">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+      Back
+    </button>
+    <div class="wbid-server-panel" id="wbid-server-panel">
+      <div class="wbid-server-head">
+        <span>Playback issues? Try another server.</span>
+        <button type="button" id="wbid-server-toggle">Hide</button>
+      </div>
+      <div class="wbid-server-body">
+        <select id="wbid-server-select" aria-label="Streaming server"></select>
+        <p class="wbid-server-foot">Server quality and progress can vary by provider.</p>
+      </div>
+    </div>
+    <div style="width:88px;flex-shrink:0" aria-hidden="true"></div>
+  </div>
+  <div class="wbid-frame-wrap">
+    <iframe id="wbid-iframe" title="Watch by ID player" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <div class="wbid-loading" id="wbid-loading" aria-live="polite"><span></span></div>
+  </div>
+  <div id="wbid-player-title"></div>
+</div>
+
 <!-- ═══ FOOTER ════════════════════════════════════════ -->
 <footer>
   <div>
     <div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:5px">LiveStream</div>
-    <div class="footer-copy">Free live cricket streaming. No signup required.</div>
+    <div class="footer-copy">Free live TV and on-demand streaming. No signup required.</div>
   </div>
   <div class="footer-copy" style="text-align:right">
     <div style="margin-top:4px"> Made with ❤️ by DIAMOND STAR</div>
@@ -1267,7 +1718,31 @@ elRatio.addEventListener('dblclick', function () {
 // ════════════════════════════════════════════════════
 //  KEYBOARD — js/player-keyboard.js
 // ════════════════════════════════════════════════════
+function initNavClicks() {
+  var nav = document.getElementById('site-nav');
+  if (!nav) return;
+  nav.addEventListener(
+    'click',
+    function (e) {
+      var link = e.target.closest && e.target.closest('a.nav-link[href^="#"]');
+      if (!link) return;
+      var hash = link.getAttribute('href');
+      if (!hash || hash.length < 2) return;
+      var target = document.querySelector(hash);
+      if (!target) return;
+      e.preventDefault();
+      e.stopPropagation();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (window.history && window.history.pushState) {
+        window.history.pushState(null, '', hash);
+      }
+    },
+    false
+  );
+}
+
 function bootPlayerUX() {
+  initNavClicks();
   var navLogo = document.getElementById('navLogoHome');
   if (navLogo) {
     navLogo.addEventListener('click', function (e) {
