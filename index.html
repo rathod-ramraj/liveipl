@@ -1104,23 +1104,83 @@
     #wbid-player-title {
       position: absolute;
       left: 50%;
-      bottom: 18px;
+      bottom: 72px;
       transform: translateX(-50%);
       z-index: 3;
       font-size: 12px;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255,255,255,0.5);
       pointer-events: none;
-      max-width: 80%;
+      max-width: min(88vw, 520px);
       text-align: center;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
+    #wbid-next-ep {
+      position: absolute;
+      right: 22px;
+      bottom: 76px;
+      z-index: 4;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: var(--r-pill);
+      background: rgba(255,255,255,0.95);
+      color: #0a0a0f;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+      transition: transform 0.15s ease, background 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    #wbid-next-ep.is-visible { display: inline-flex; }
+    #wbid-next-ep:hover {
+      transform: translateY(-1px);
+      background: #fff;
+    }
+    #wbid-next-ep svg { flex-shrink: 0; }
+
     .wbid-frame-wrap {
       position: absolute;
       inset: 0;
       background: #000;
+    }
+    .wbid-loading {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      inset: auto;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.72);
+      z-index: 2;
+      pointer-events: none !important;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .wbid-loading.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .wbid-loading span {
+      width: 26px;
+      height: 26px;
+      border: 2.5px solid rgba(255,255,255,0.15);
+      border-top-color: var(--highlight);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
     #wbid-iframe {
       position: absolute;
@@ -1129,31 +1189,15 @@
       height: 100%;
       border: 0;
       background: #000;
-    }
-    .wbid-loading {
-      position: absolute;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.55);
-      z-index: 2;
-      pointer-events: none;
-    }
-    .wbid-loading.is-visible { display: flex; }
-    .wbid-loading span {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255,255,255,0.15);
-      border-top-color: var(--highlight);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      z-index: 1;
     }
 
     @media (max-width: 768px) {
       #wbid-modal { padding: 12px; align-items: flex-end; }
       .wbid-topbar { flex-direction: column; align-items: stretch; padding: 14px; }
       .wbid-server-panel { max-width: 100%; margin: 0; }
+      #wbid-next-ep { right: 14px; bottom: 68px; padding: 9px 14px; font-size: 12px; }
+      #wbid-player-title { bottom: 64px; font-size: 11px; }
     }
   </style>
 </head>
@@ -1469,8 +1513,12 @@
     <div style="width:88px;flex-shrink:0" aria-hidden="true"></div>
   </div>
   <div class="wbid-frame-wrap">
-    <iframe id="wbid-iframe" title="Watch by ID player" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <iframe id="wbid-iframe" title="Watch by ID player" loading="eager" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
     <div class="wbid-loading" id="wbid-loading" aria-live="polite"><span></span></div>
+    <button type="button" id="wbid-next-ep" hidden aria-label="Play next episode">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span id="wbid-next-ep-label">Next episode</span>
+    </button>
   </div>
   <div id="wbid-player-title"></div>
 </div>
@@ -1516,6 +1564,7 @@ var ALLOWED = new Set([
 ]);
 
 var SITE_TITLE = 'LiveStream';
+window.SITE_TITLE = SITE_TITLE;
 
 var CH_LINK_ICON =
   '<svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +

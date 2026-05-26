@@ -4,6 +4,12 @@
 (function (global) {
   'use strict';
 
+  var SITE = global.SITE_TITLE || 'LiveStream';
+  var PREWARM_DELAY = 420;
+  var prewarmTimer = null;
+  var warmFrame = null;
+  var metaReq = 0;
+
   var SERVERS = [
     {
       id: '111movies',
@@ -42,7 +48,7 @@
           encodeURIComponent(season) +
           '/' +
           encodeURIComponent(episode) +
-          '?autoPlay=true&fullscreenButton=true&chromecast=true'
+          '?autoPlay=true&nextButton=true&autoNext=true&fullscreenButton=true'
         );
       },
     },
@@ -67,7 +73,7 @@
     {
       id: 'videasy',
       name: 'Videasy',
-      badge: 'TMDB · Overlay',
+      badge: 'Fast · Next ep',
       movie: function (id) {
         return (
           'https://player.videasy.net/movie/' +
@@ -83,7 +89,7 @@
           encodeURIComponent(season) +
           '/' +
           encodeURIComponent(episode) +
-          '?overlay=true&nextEpisode=true&color=ff4d6d'
+          '?overlay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&color=ff4d6d'
         );
       },
     },
@@ -96,11 +102,13 @@
     season: 1,
     episode: 1,
     serverId: '111movies',
-    title: '',
+    displayTitle: '',
+    savedPageTitle: '',
   };
   var savedLiveChannel = null;
-
   var els = {};
+  var loadToken = 0;
+  var loadHideTimer = null;
 
   function parseMediaId(raw) {
     var s = (raw || '').trim();
@@ -134,6 +142,175 @@
     return srv.movie(state.mediaId);
   }
 
+  function defaultLabel() {
+    if (state.isTv) {
+      return 'TV Show · S' + state.season + ' E' + state.episode;
+    }
+    return /^tt/i.test(state.mediaId) ? 'Movie · ' + state.mediaId : 'Movie';
+  }
+
+  function pageTitleText() {
+    var label = state.displayTitle || defaultLabel();
+    if (state.isTv) {
+      return label + ' · S' + state.season + 'E' + state.episode + ' — ' + SITE;
+    }
+    return label + ' — ' + SITE;
+  }
+
+  function overlayTitleText() {
+    var label = state.displayTitle || defaultLabel();
+    if (state.isTv) {
+      return label + ' · Season ' + state.season + ' · Episode ' + state.episode;
+    }
+    return label;
+  }
+
+  function applyPageTitle() {
+    document.title = pageTitleText();
+  }
+
+  function restorePageTitle() {
+    if (state.savedPageTitle) {
+      document.title = state.savedPageTitle;
+    } else if (global.cur && typeof global.updatePageTitle === 'function') {
+      global.updatePageTitle(global.cur.id);
+    } else {
+      document.title = SITE;
+    }
+    state.savedPageTitle = '';
+  }
+
+  function updateOverlayTitle() {
+    if (els.playerTitle) els.playerTitle.textContent = overlayTitleText();
+  }
+
+  function updateNextEpisodeUI() {
+    if (!els.nextEp) return;
+    if (!state.open || !state.isTv) {
+      els.nextEp.hidden = true;
+      els.nextEp.classList.remove('is-visible');
+      return;
+    }
+    var nextEp = state.episode + 1;
+    els.nextEp.hidden = false;
+    els.nextEp.classList.add('is-visible');
+    if (els.nextEpLabel) {
+      els.nextEpLabel.textContent = 'Next · S' + state.season + ' E' + nextEp;
+    }
+  }
+
+  function fetchMediaTitle() {
+    if (!state.mediaId) return;
+    var reqId = ++metaReq;
+    var id = state.mediaId;
+    var isTv = state.isTv;
+
+    function apply(name) {
+      if (reqId !== metaReq || !state.open) return;
+      if (!name) return;
+      state.displayTitle = name;
+      applyPageTitle();
+      updateOverlayTitle();
+      updateNextEpisodeUI();
+    }
+
+    if (/^tt/i.test(id)) {
+      fetch('https://v2.sg.media-imdb.com/suggestion/t/' + encodeURIComponent(id) + '.json')
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (data) {
+          var row = data && data.d && data.d[0];
+          if (row && row.l) apply(row.l);
+        })
+        .catch(function () {});
+
+      fetch('https://search.imdbot.workers.dev/?tt=' + encodeURIComponent(id))
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (data) {
+          var t =
+            (data && data.short && data.short.name) ||
+            (data && data.title) ||
+            (data && data['#TITLE']);
+          if (t) apply(String(t).trim());
+        })
+        .catch(function () {});
+      return;
+    }
+
+    var tmdbKey = global.TMDB_API_KEY || '';
+    if (!tmdbKey) return;
+
+    var path = (isTv ? 'tv' : 'movie') + '/' + encodeURIComponent(id) + '?language=en-US';
+    fetch('https://api.themoviedb.org/3/' + path + '&api_key=' + encodeURIComponent(tmdbKey))
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        var t = (data && (data.title || data.name)) || '';
+        if (t) apply(t);
+      })
+      .catch(function () {});
+  }
+
+  function preconnectHosts(url) {
+    if (global.IframePlayer && global.IframePlayer.preconnect) {
+      global.IframePlayer.preconnect(url);
+    }
+  }
+
+  function prewarmAllServers() {
+    if (!state.mediaId) return;
+    var prev = state.serverId;
+    for (var i = 0; i < SERVERS.length; i++) {
+      state.serverId = SERVERS[i].id;
+      preconnectHosts(buildEmbedUrl());
+    }
+    state.serverId = prev;
+  }
+
+  function prewarmEmbed(url) {
+    if (!url) return;
+    preconnectHosts(url);
+    try {
+      if (!warmFrame) {
+        warmFrame = document.createElement('iframe');
+        warmFrame.setAttribute('aria-hidden', 'true');
+        warmFrame.tabIndex = -1;
+        warmFrame.style.cssText =
+          'position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none;visibility:hidden';
+        warmFrame.setAttribute('importance', 'high');
+        document.body.appendChild(warmFrame);
+      }
+      if (warmFrame.getAttribute('data-warm-url') !== url) {
+        warmFrame.setAttribute('data-warm-url', url);
+        warmFrame.src = url;
+      }
+    } catch (_) {}
+  }
+
+  function schedulePrewarm() {
+    clearTimeout(prewarmTimer);
+    prewarmTimer = setTimeout(function () {
+      prewarmTimer = null;
+      if (!readFormSilent()) return;
+      prewarmEmbed(buildEmbedUrl());
+      prewarmAllServers();
+    }, PREWARM_DELAY);
+  }
+
+  function readFormSilent() {
+    var id = parseMediaId(els.idInput ? els.idInput.value : '');
+    if (!id) return false;
+    state.mediaId = id;
+    state.isTv = els.tvCheck ? els.tvCheck.checked : false;
+    state.season = els.seasonInput ? parseInt(els.seasonInput.value, 10) || 1 : 1;
+    state.episode = els.episodeInput ? parseInt(els.episodeInput.value, 10) || 1 : 1;
+    return true;
+  }
+
   function pauseLiveSitePlayers() {
     savedLiveChannel = global.cur || null;
     if (global.IframePlayer && global.IframePlayer.suspendAll) {
@@ -164,6 +341,12 @@
         els.iframe.src = 'about:blank';
       } catch (_) {}
     }
+    if (warmFrame) {
+      try {
+        warmFrame.src = 'about:blank';
+        warmFrame.removeAttribute('data-warm-url');
+      } catch (_) {}
+    }
     if (global.PerfController) {
       if (global.PerfController.setIframeActive) global.PerfController.setIframeActive(false);
       else global.PerfController.setStreaming(false);
@@ -177,7 +360,28 @@
   }
 
   function setLoading(on) {
-    if (els.loading) els.loading.classList.toggle('is-visible', !!on);
+    if (!els.loading) return;
+    els.loading.classList.toggle('is-visible', !!on);
+    els.loading.setAttribute('aria-hidden', on ? 'false' : 'true');
+  }
+
+  function clearLoadTimers() {
+    if (loadHideTimer) {
+      clearTimeout(loadHideTimer);
+      loadHideTimer = null;
+    }
+  }
+
+  function finishLoading() {
+    clearLoadTimers();
+    setLoading(false);
+  }
+
+  function scheduleLoadingHide(token, ms) {
+    clearLoadTimers();
+    loadHideTimer = setTimeout(function () {
+      if (token === loadToken) finishLoading();
+    }, ms);
   }
 
   function updateServerSelect() {
@@ -202,42 +406,64 @@
   function loadEmbed() {
     var url = buildEmbedUrl();
     if (!url || !els.iframe) return;
+
+    var token = ++loadToken;
+    clearLoadTimers();
+
+    var currentSrc = els.iframe.getAttribute('src') || els.iframe.src || '';
+    var sameUrl = currentSrc === url;
+
+    if (sameUrl) {
+      finishLoading();
+      return;
+    }
+
     setLoading(true);
-    els.iframe.onload = function () {
-      setLoading(false);
-    };
-    els.iframe.onerror = function () {
-      setLoading(false);
-    };
+    /* Cross-origin embeds often never fire load — always auto-hide */
+    scheduleLoadingHide(token, 2800);
+
+    function onFrameReady() {
+      if (token !== loadToken) return;
+      scheduleLoadingHide(token, 350);
+    }
+
+    els.iframe.onload = onFrameReady;
+    els.iframe.onerror = onFrameReady;
     els.iframe.src = url;
     preconnectHosts(url);
-  }
-
-  function preconnectHosts(url) {
-    if (global.IframePlayer && global.IframePlayer.preconnect) {
-      global.IframePlayer.preconnect(url);
-    }
+    prewarmEmbed(url);
   }
 
   function openPlayer() {
     pauseLiveSitePlayers();
     state.open = true;
+    state.savedPageTitle = document.title;
+    state.displayTitle = defaultLabel();
     document.body.classList.add('wbid-active');
     els.overlay.hidden = false;
     els.overlay.setAttribute('aria-hidden', 'false');
+    applyPageTitle();
+    updateOverlayTitle();
     updateServerSelect();
+    updateNextEpisodeUI();
     loadEmbed();
-    if (state.title && els.playerTitle) {
-      els.playerTitle.textContent = state.title;
-    }
+    fetchMediaTitle();
   }
 
   function closePlayer() {
     state.open = false;
+    metaReq++;
+    loadToken++;
+    finishLoading();
     document.body.classList.remove('wbid-active');
     els.overlay.hidden = true;
     els.overlay.setAttribute('aria-hidden', 'true');
+    if (els.nextEp) {
+      els.nextEp.hidden = true;
+      els.nextEp.classList.remove('is-visible');
+    }
     resumeLiveSitePlayers();
+    restorePageTitle();
   }
 
   function openModal() {
@@ -265,16 +491,29 @@
     state.isTv = els.tvCheck ? els.tvCheck.checked : false;
     state.season = els.seasonInput ? parseInt(els.seasonInput.value, 10) || 1 : 1;
     state.episode = els.episodeInput ? parseInt(els.episodeInput.value, 10) || 1 : 1;
-    state.title = state.isTv
-      ? 'TV · S' + state.season + 'E' + state.episode + ' · ' + id
-      : 'Movie · ' + id;
+    state.displayTitle = defaultLabel();
     return true;
   }
 
   function onWatch() {
     if (!readForm()) return;
+    prewarmEmbed(buildEmbedUrl());
+    prewarmAllServers();
     closeModal();
     openPlayer();
+  }
+
+  function goNextEpisode() {
+    if (!state.isTv || !state.open) return;
+    state.episode += 1;
+    if (els.episodeInput) els.episodeInput.value = String(state.episode);
+    applyPageTitle();
+    updateOverlayTitle();
+    updateNextEpisodeUI();
+    loadEmbed();
+    if (typeof global.showToast === 'function') {
+      global.showToast('Loading S' + state.season + ' E' + state.episode + '…', 1400);
+    }
   }
 
   function onDetails() {
@@ -315,12 +554,33 @@
     els.watchBtn.addEventListener('click', onWatch);
     els.detailsBtn.addEventListener('click', onDetails);
 
+    if (els.nextEp) {
+      els.nextEp.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        goNextEpisode();
+      });
+    }
+
     if (els.tvCheck) {
       els.tvCheck.addEventListener('change', function () {
         var on = els.tvCheck.checked;
         if (els.tvFields) els.tvFields.classList.toggle('is-visible', on);
+        schedulePrewarm();
       });
     }
+
+    if (els.idInput) {
+      els.idInput.addEventListener('input', schedulePrewarm);
+      els.idInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          onWatch();
+        }
+      });
+    }
+    if (els.seasonInput) els.seasonInput.addEventListener('input', schedulePrewarm);
+    if (els.episodeInput) els.episodeInput.addEventListener('input', schedulePrewarm);
 
     els.backBtn.addEventListener('click', closePlayer);
 
@@ -338,15 +598,6 @@
       });
     }
 
-    if (els.idInput) {
-      els.idInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          onWatch();
-        }
-      });
-    }
-
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         if (state.open) {
@@ -356,6 +607,10 @@
           e.preventDefault();
           closeModal();
         }
+      }
+      if (state.open && state.isTv && (e.key === 'n' || e.key === 'N')) {
+        e.preventDefault();
+        goNextEpisode();
       }
     });
   }
@@ -384,12 +639,19 @@
     els.iframe = document.getElementById('wbid-iframe');
     els.loading = document.getElementById('wbid-loading');
     els.playerTitle = document.getElementById('wbid-player-title');
+    els.nextEp = document.getElementById('wbid-next-ep');
+    els.nextEpLabel = document.getElementById('wbid-next-ep-label');
+
+    if (els.iframe) {
+      els.iframe.setAttribute('loading', 'eager');
+      els.iframe.setAttribute('importance', 'high');
+    }
 
     bindEvents();
 
     SERVERS.forEach(function (s) {
-      var sample = s.movie('299534');
-      preconnectHosts(sample);
+      preconnectHosts(s.movie('299534'));
+      preconnectHosts(s.tv('1399', 1, 1));
     });
   }
 
@@ -404,5 +666,6 @@
     open: openModal,
     close: closePlayer,
     closeModal: closeModal,
+    nextEpisode: goNextEpisode,
   };
 })(window);
