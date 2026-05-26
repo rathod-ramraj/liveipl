@@ -27,6 +27,8 @@
   <link rel="preconnect" href="https://tvsen5.aynaott.com" crossorigin>
   <link rel="preconnect" href="https://cinearena.fun" crossorigin>
   <link rel="dns-prefetch" href="https://cinearena.fun">
+  <link rel="preconnect" href="https://b-player3.pages.dev" crossorigin>
+  <link rel="dns-prefetch" href="https://b-player3.pages.dev">
   <link rel="dns-prefetch" href="https://tvsen5.aynaott.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preload" href="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" as="script">
@@ -1510,7 +1512,7 @@ var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.build
 
 var ALLOWED = new Set([
   'eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
-  'starsp1tel','star_telugu','star_tamil','willowextra','willowhd','willow','willow2','skynz'
+  'starsp1tel','star_telugu','star_tamil','willowextra','willowhd','willow','willow2','skynz','kayohin','fox501'
 ]);
 
 var SITE_TITLE = 'LiveStream';
@@ -1531,8 +1533,10 @@ var META = {
   willow:     { name: 'Willow',                   sub: 'Cricket Live' },
   willow2:    { name: 'Willow 2',                 sub: 'HLS Live' },
   willowhd:   { name: 'Willow HD',                sub: 'Cricket HD' },
+  fox501:     { name: 'Fox 501 HD Live',          sub: 'Fox Sports · HD' },
   willowextra:{ name: 'Willow Extra',             sub: 'Cricket HD' },
-  skynz:      { name: 'Sky Sports Live 1',        sub: 'Sky NZ · Live' },
+  skynz:      { name: 'Sky Sports Live 1',        sub: 'Sky Sports · Live' },
+  kayohin:    { name: 'Kayo Hindi',               sub: 'Hindi Commentary' },
   star:       { name: 'Star Sports 1',            sub: 'India Coverage' },
   zee:        { name: 'Zee Cinema',               sub: 'Premium Movie' },
   crichd:     { name: 'CricHD',                   sub: 'HD Cricket' },
@@ -1572,6 +1576,8 @@ function sortChannels(list) {
   take('willowhd');
   take('willow2');
   take('skynz');
+  take('kayohin');
+  take('fox501');
 
   var rest = [];
   for (var j = 0; j < list.length; j++) {
@@ -1793,16 +1799,19 @@ window._chFetch
 
     var localChannels = [
       { id: 'skynz', name: 'Sky Sports Live 1', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/skynz/' },
+      { id: 'kayohin', name: 'Kayo Hindi', type: 'iframe', iframeSrc: 'https://b-player3.pages.dev/p1?id=kayohin' },
       { id: 'star_telugu', name: 'Star Sports 1 HD Telugu', type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/telugu' },
       { id: 'star_tamil',  name: 'Star Sports 1 HD Tamil',  type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/tamil-1' },
       { id: 'willow2',     name: 'Willow 2', type: 'hls', iframeSrc: 'https://tvsen5.aynaott.com/willowhd/tracks-v1a1/mono.ts.m3u8' },
       { id: 'starsp1tel',  name: 'Star Sports',  type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=starsp1tel' },
       { id: 'willowextra', name: 'Willow Extra', type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willowextra' },
-      { id: 'willowhd',    name: 'Willow HD',    type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willowhd' },
+      { id: 'willowhd',    name: 'Willow HD',    type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/willow' },
+      { id: 'fox501',      name: 'Fox 501 HD Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/fox/' },
       { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
     ];
 
-    var allRaw = raw.concat(localChannels);
+    /* Local entries first so they override API iframes with the same id */
+    var allRaw = localChannels.concat(raw);
     var seen   = new Set();
     var normalized = [];
 
