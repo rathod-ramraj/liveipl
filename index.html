@@ -3,8 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LiveStream — Live TV, Movies &amp; Series</title>
-  <meta name="description" content="Watch live TV channels, movies, and series in HD. Free streaming with Watch by ID — paste any IMDb or TMDB title.">
+  <title>PlayUp — Live TV, Movies &amp; Series Streaming</title>
+  <meta name="description" content="PlayUp lets you watch live sports channels, movies, and TV series in HD. Use Watch by ID with IMDb or TMDB IDs and switch streaming servers instantly.">
+  <meta name="keywords" content="playup, watch movies online free, live cricket streaming, watch IPL live, HD movies online, free streaming platform">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+  <meta name="theme-color" content="#121019">
+  <link rel="canonical" href="https://playup.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PlayUp">
+  <meta property="og:title" content="PlayUp — Live TV, Movies &amp; Series Streaming">
+  <meta property="og:description" content="Watch live sports channels, movies, and TV series in HD on PlayUp.">
+  <meta property="og:url" content="https://playup.vercel.app/">
+  <meta property="og:image" content="https://playup.vercel.app/favicon.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PlayUp — Live TV, Movies &amp; Series Streaming">
+  <meta name="twitter:description" content="Watch live channels, movies, and TV series in HD on PlayUp.">
+  <meta name="twitter:image" content="https://playup.vercel.app/favicon.png">
   <link rel="icon" href="/favicon.png">
   <link rel="shortcut icon" href="/favicon.png">
 
@@ -55,6 +69,21 @@
   <script src="./js/player-keyboard.js" defer></script>
   <script src="./js/perf-controller.js" defer></script>
   <script src="./js/watch-by-id.js" defer></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PlayUp",
+    "url": "https://playup.vercel.app/",
+    "description": "Live TV, movies, and series streaming with Watch by ID support.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://playup.vercel.app/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
 
   <!-- Service Worker registration: fires after page load, zero impact on LCP -->
   <script>
@@ -1226,7 +1255,7 @@
     <!-- <div class="nav-logo-mark"> -->
       <!-- <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg> -->
     <!-- </div> -->
-    <span class="nav-logo-text">LiveStream</span>
+    <span class="nav-logo-text">PlayUp</span>
     <div class="live-badge">
       <div class="live-dot"></div>Live
     </div>
@@ -1318,7 +1347,7 @@
 
 <!-- ═══ FEATURES ══════════════════════════════════════ -->
 <div class="section" id="features">
-  <div class="s-label">Why LiveStream</div>
+  <div class="s-label">Why PlayUp</div>
   <div class="s-title">Built for how you watch</div>
   <div class="s-desc">Live channels, on-demand titles, and a player that just works.</div>
   <div class="feat-grid">
@@ -1526,7 +1555,7 @@
 <!-- ═══ FOOTER ════════════════════════════════════════ -->
 <footer>
   <div>
-    <div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:5px">LiveStream</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:5px">PlayUp</div>
     <div class="footer-copy">Free live TV and on-demand streaming. No signup required.</div>
   </div>
   <div class="footer-copy" style="text-align:right">
@@ -1563,7 +1592,7 @@ var ALLOWED = new Set([
   'starsp1tel','star_telugu','star_tamil','willowextra','willowhd','willow','willow2','skynz','kayohin','fox501'
 ]);
 
-var SITE_TITLE = 'LiveStream';
+var SITE_TITLE = 'PlayUp';
 window.SITE_TITLE = SITE_TITLE;
 
 var CH_LINK_ICON =

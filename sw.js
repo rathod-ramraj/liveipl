@@ -1,8 +1,8 @@
 'use strict';
 
-var CACHE = 'ls-v2';
-var HLS_CACHE = 'ls-hls-segments-v1';
-var PRECACHE = ['/', '/saved.html', '/favicon.png'];
+var CACHE = 'playup-v1';
+var HLS_CACHE = 'playup-hls-segments-v1';
+var PRECACHE = ['/', '/saved.html', '/favicon.png', '/robots.txt', '/sitemap.xml'];
 
 function isHlsMediaUrl(url) {
   try {
