@@ -29,9 +29,9 @@
       tier = 'mid';
     }
 
-    // Live buffer depth (seconds) — target ~3–6 s behind live for low delay
+    // Live buffer depth (seconds)
     var maxBufferLength =
-      tier === 'slow' ? 6 : tier === 'fast' ? 4 : 5;
+      tier === 'slow' ? 8 : tier === 'fast' ? 7 : 8;
 
     // Start at lowest rung on slow / save-data; one step up on fast for clarity
     var startLevel = tier === 'slow' || saveData ? 0 : tier === 'fast' ? 1 : 0;

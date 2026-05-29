@@ -82,7 +82,7 @@
     var iframe = document.createElement('iframe');
     iframe.className = 'live-iframe';
     iframe.title = 'Live stream player';
-    iframe.loading = 'lazy';
+    iframe.loading = 'eager';
     iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
     iframe.setAttribute('allowfullscreen', '');
     iframe.referrerPolicy = 'no-referrer-when-downgrade';

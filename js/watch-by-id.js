@@ -786,10 +786,13 @@
 
     bindEvents();
 
-    SERVERS.forEach(function (s) {
-      preconnectHosts(s.movie('299534'));
-      preconnectHosts(s.tv('1399', 1, 1));
-    });
+    var run = function () {
+      for (var i = 0; i < SERVERS.length && i < 3; i++) {
+        preconnectHosts(SERVERS[i].movie('299534'));
+      }
+    };
+    if (global.requestIdleCallback) global.requestIdleCallback(run, { timeout: 4000 });
+    else setTimeout(run, 800);
   }
 
   if (document.readyState === 'loading') {

@@ -1,6 +1,6 @@
 'use strict';
 
-var CACHE = 'playup-v1';
+var CACHE = 'playup-v2';
 var HLS_CACHE = 'playup-hls-segments-v1';
 var PRECACHE = ['/', '/saved.html', '/favicon.png', '/robots.txt', '/sitemap.xml'];
 
@@ -86,7 +86,7 @@ self.addEventListener('fetch', function (e) {
   var url = new URL(e.request.url);
   /* HLS across origins: warm connection + optional cache (CORS/CDN dependent). */
   if (isHlsMediaUrl(url)) {
-    e.respondWith(networkFirstHls(e.request));
+    e.respondWith(fetch(e.request));
     return;
   }
   if (url.origin !== self.location.origin) return;

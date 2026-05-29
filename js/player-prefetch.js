@@ -36,7 +36,7 @@
    * Fetches live playlist + first media segment into HTTP / SW cache.
    */
   function warmHlsDeep(url) {
-    if (!url || warmed.has(url)) return Promise.resolve();
+    if (!url || warmed.has(url) || isPlaybackActive()) return Promise.resolve();
     warmed.add(url);
 
     return warmManifest(url).then(function (res) {
@@ -52,19 +52,27 @@
   }
 
   function scheduleWarm(url) {
-    if (!url) return;
+    if (!url || isPlaybackActive()) return;
     if (/\.m3u8(\?|$)/i.test(url)) {
-      warmHlsDeep(url);
+      warmManifest(url);
     } else if (/^https?:/i.test(url)) {
       var run = function () {
+        if (isPlaybackActive()) return;
         fetch(url, { mode: 'no-cors', credentials: 'omit' }).catch(function () {});
       };
       if (global.requestIdleCallback) {
-        global.requestIdleCallback(run, { timeout: 2000 });
+        global.requestIdleCallback(run, { timeout: 3000 });
       } else {
-        setTimeout(run, 100);
+        setTimeout(run, 200);
       }
     }
+  }
+
+  function isPlaybackActive() {
+    if (global.PerfController && global.PerfController.isActive) {
+      return global.PerfController.isActive();
+    }
+    return document.documentElement.classList.contains('perf-streaming');
   }
 
   function whenHlsReady(cb) {
@@ -163,30 +171,22 @@
   }
 
   function prefetchChannels(channels, priorityIds) {
-    if (!channels || !channels.length) return;
-    var prio = priorityIds || ['eng', 'willow2', 'willowhd'];
-    var prioSet = {};
-    for (var p = 0; p < prio.length; p++) prioSet[prio[p]] = true;
-
-    function warmOne(ch, deep) {
-      var src = ch.iframeSrc || ch.src || '';
-      if (!src) return;
-      if (/\.m3u8(\?|$)/i.test(src)) {
-        if (deep) {
-          warmHlsDeep(src);
-        } else {
-          scheduleWarm(src);
-        }
-      } else {
-        scheduleWarm(src);
-      }
-    }
+    if (!channels || !channels.length || isPlaybackActive()) return;
+    var prio = priorityIds || ['eng'];
+    var warmedHls = false;
 
     for (var i = 0; i < channels.length; i++) {
-      if (prioSet[channels[i].id]) warmOne(channels[i], true);
-    }
-    for (var j = 0; j < channels.length; j++) {
-      if (!prioSet[channels[j].id]) warmOne(channels[j], false);
+      var ch = channels[i];
+      var src = ch.iframeSrc || ch.src || '';
+      if (!src) continue;
+      if (/\.m3u8(\?|$)/i.test(src)) {
+        if (prio.indexOf(ch.id) !== -1 && !warmedHls) {
+          warmManifest(src);
+          warmedHls = true;
+        }
+      } else if (global.IframePlayer && global.IframePlayer.preconnect) {
+        global.IframePlayer.preconnect(src);
+      }
     }
   }
 

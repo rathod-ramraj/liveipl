@@ -75,6 +75,7 @@
   <script src="./js/player-config.js" defer></script>
   <script src="./js/network-profile.js" defer></script>
   <script src="./js/player-prefetch.js" defer></script>
+  <script src="./js/volume-boost.js" defer></script>
   <script src="./js/iframe-player.js" defer></script>
   <script src="./js/player-core.js" defer></script>
   <script src="./js/player-analytics.js" defer></script>
@@ -189,34 +190,34 @@
     }
     html.perf-mobile .live-dot { animation-duration: 2.4s; }
 
-  /* Lighter glass while decoding video (similar opacity, less GPU blur) */
+    /* During playback: drop expensive blur, use solid surfaces */
     html.perf-streaming nav,
     html.perf-streaming .player-card,
     html.perf-streaming .ch-btn,
     html.perf-streaming .feat-card,
-    html.perf-streaming #buf-overlay.show {
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
+    html.perf-streaming #buf-overlay.show,
     html.perf-streaming .glass-card,
-    html.perf-streaming .glass-mock {
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-
-    /* Iframe playback — max GPU savings */
+    html.perf-streaming .glass-mock,
     html.perf-iframe-active nav,
     html.perf-iframe-active .player-card,
     html.perf-iframe-active .ch-btn,
     html.perf-iframe-active .feat-card {
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
     }
+    html.perf-streaming nav,
+    html.perf-iframe-active nav { background: rgba(18,16,25,0.94); }
+    html.perf-streaming .player-card,
+    html.perf-iframe-active .player-card { background: rgba(22,20,28,0.96); }
     html.perf-iframe-active .hero-badge,
     html.perf-iframe-active .glass-card::before,
     html.perf-iframe-active .glass-card::after {
       animation-play-state: paused !important;
+    }
+
+    .section, .alt-section, .glass-wrap {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 480px;
     }
 
     /* Mobile: slower entrance only; grid motion handled in JS */
@@ -1968,15 +1969,11 @@ window._chFetch
       btn.setAttribute('aria-pressed', 'false');
       btn.addEventListener('click', function () { switchChannel(ch.id); }, { passive: true });
       btn.addEventListener('mouseenter', function () {
+        if (document.documentElement.classList.contains('perf-streaming')) return;
         var src = ch.iframeSrc || '';
         if (!src) return;
-        if (window.IframePlayer && !/\.m3u8(\?|$)/i.test(src)) {
+        if (window.IframePlayer && IframePlayer.preconnect) {
           IframePlayer.preconnect(src);
-        } else if (window.PlayerPrefetch) {
-          PlayerPrefetch.scheduleWarm(src);
-          if (/\.m3u8(\?|$)/i.test(src) && PlayerPrefetch.warmHlsDeep) {
-            PlayerPrefetch.warmHlsDeep(src);
-          }
         }
       }, { passive: true });
       frag.appendChild(btn);
@@ -1988,7 +1985,7 @@ window._chFetch
       IframePlayer.warmChannels(channels);
     }
     if (window.PlayerPrefetch && PlayerPrefetch.prefetchChannels) {
-      PlayerPrefetch.prefetchChannels(channels, ['eng', 'willow2', 'willowhd']);
+      PlayerPrefetch.prefetchChannels(channels, ['eng']);
     }
 
     var defaultCh = channels.find(function (c) { return c.id === 'eng'; }) || channels[0];
@@ -2078,13 +2075,13 @@ window._chFetch
     try {
       var sgHandle = window.ShapeGridApp.init(el, {
         direction:        'diagonal',
-        speed:            0.45,
+        speed:            0.28,
         squareSize:       40,
         shape:            'square',
         backgroundColor:  '#121019',
         borderColor:      '#262335',
         hoverFillColor:   hoverFill,
-        hoverTrailAmount: window.PerfController && PerfController.isMobile() ? 0 : 7,
+        hoverTrailAmount: window.PerfController && PerfController.isMobile() ? 0 : 3,
         vignetteEdge:     'rgba(5, 3, 14, 0.44)',
       });
       window._sgHandle = sgHandle;

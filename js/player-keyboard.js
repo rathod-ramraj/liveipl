@@ -146,8 +146,13 @@
           e.preventDefault();
           var vid3 = elRatio.querySelector('video');
           if (vid3) {
-            vid3.volume = Math.min(1, +(vid3.volume + 0.1).toFixed(1));
-            showToast && showToast('Volume ' + Math.round(vid3.volume * 100) + '%');
+            if (vid3._gainNode) {
+              vid3._gainNode.gain.value = Math.min(2, +(vid3._gainNode.gain.value + 0.1).toFixed(2));
+              showToast && showToast('Volume ' + Math.round(vid3._gainNode.gain.value * 100) + '%');
+            } else {
+              vid3.volume = Math.min(1, +(vid3.volume + 0.1).toFixed(1));
+              showToast && showToast('Volume ' + Math.round(vid3.volume * 100) + '%');
+            }
           }
           return;
         }
@@ -156,8 +161,13 @@
           e.preventDefault();
           var vid4 = elRatio.querySelector('video');
           if (vid4) {
-            vid4.volume = Math.max(0, +(vid4.volume - 0.1).toFixed(1));
-            showToast && showToast('Volume ' + Math.round(vid4.volume * 100) + '%');
+            if (vid4._gainNode) {
+              vid4._gainNode.gain.value = Math.max(0.2, +(vid4._gainNode.gain.value - 0.1).toFixed(2));
+              showToast && showToast('Volume ' + Math.round(vid4._gainNode.gain.value * 100) + '%');
+            } else {
+              vid4.volume = Math.max(0, +(vid4.volume - 0.1).toFixed(1));
+              showToast && showToast('Volume ' + Math.round(vid4.volume * 100) + '%');
+            }
           }
           return;
         }

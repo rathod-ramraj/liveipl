@@ -19,6 +19,18 @@
     return global.Hls;
   }
 
+  function isPlaybackBusy() {
+    if (global.PerfController && global.PerfController.isActive && global.PerfController.isActive()) {
+      return true;
+    }
+    var root = document.documentElement;
+    return (
+      root.classList.contains('perf-streaming') ||
+      root.classList.contains('perf-iframe-active') ||
+      (document.body && document.body.classList.contains('wbid-active'))
+    );
+  }
+
   function detachIframe(container) {
     if (global.IframePlayer && global.IframePlayer.detachFrom) {
       global.IframePlayer.detachFrom(container);
@@ -104,6 +116,7 @@
     video.className = 'live-video';
     video.removeAttribute('style');
     video.muted = false;
+    video.defaultMuted = false;
     video.volume = 1;
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
@@ -114,6 +127,9 @@
     if (video.controls) {
       video.setAttribute('controls', '');
       video.setAttribute('controlsList', 'nodownload noremoteplayback');
+    }
+    if (global.VolumeBoost && global.VolumeBoost.attach) {
+      global.VolumeBoost.attach(video);
     }
 
     metrics.streamStart = performance.now();
@@ -250,7 +266,9 @@
 
     var video = document.createElement('video');
     video.className = 'live-video';
-    video.src = src;
+    video.muted = false;
+    video.defaultMuted = false;
+    video.volume = 1;
     video.playsInline = true;
     video.autoplay = true;
     video.preload = 'auto';
@@ -259,7 +277,12 @@
       video.setAttribute('controls', '');
       video.setAttribute('controlsList', 'nodownload noremoteplayback');
     }
+    if (global.VolumeBoost && global.VolumeBoost.attach) {
+      global.VolumeBoost.attach(video);
+    }
     videoEl = video;
+
+    video.src = src;
 
     video.addEventListener('waiting', ctx.showBuffer, { passive: true });
     video.addEventListener('playing', ctx.hideBuffer, { passive: true });
@@ -327,7 +350,7 @@
 
     if (!isM3u8 && global.IframePlayer) {
       global.IframePlayer.preconnect(src);
-    } else if (global.PlayerPrefetch && PlayerPrefetch.scheduleWarm) {
+    } else if (global.PlayerPrefetch && PlayerPrefetch.scheduleWarm && !isPlaybackBusy()) {
       PlayerPrefetch.scheduleWarm(src);
     }
 

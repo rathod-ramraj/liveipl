@@ -55,6 +55,10 @@
     }
     if ((streaming || iframeActive) && playerVisible) {
       sg.freeze && sg.freeze();
+    } else if (document.body.classList.contains('wbid-active')) {
+      sg.freeze && sg.freeze();
+    } else if (isLowPowerDevice() && sg.freeze) {
+      sg.freeze();
     } else if (sg.unfreeze) {
       sg.unfreeze();
     } else if (sg.resume) {
@@ -208,6 +212,10 @@
     }
   }
 
+  function isPlaybackActive() {
+    return streaming || iframeActive || document.body.classList.contains('wbid-active');
+  }
+
   global.PerfController = {
     init: init,
     setShapeGrid: setShapeGrid,
@@ -216,5 +224,6 @@
     onStreamStarted: onStreamStarted,
     onStreamStopped: onStreamStopped,
     isMobile: isMobile,
+    isActive: isPlaybackActive,
   };
 })(window);

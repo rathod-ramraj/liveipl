@@ -17,10 +17,10 @@
     liveSyncDurationCount: 2,
     liveMaxLatencyDurationCount: 8,
 
-    // cap buffer depth for live (seconds)
-    maxBufferLength: 5,
-    maxMaxBufferLength: 12,
-    backBufferLength: 8,
+    // cap buffer depth for live (seconds) — slightly deeper for fewer stalls
+    maxBufferLength: 8,
+    maxMaxBufferLength: 18,
+    backBufferLength: 12,
 
     // Stall / frag tuning
     highBufferWatchdogPeriod: 1,
@@ -55,8 +55,8 @@
     var o = opts || {};
     var low = o.lowLatency !== false;
 
-    var maxBuf = net && typeof net.maxBufferLength === 'number' ? net.maxBufferLength : 5;
-    var maxMax = Math.min(12, maxBuf + 4);
+    var maxBuf = net && typeof net.maxBufferLength === 'number' ? net.maxBufferLength : 8;
+    var maxMax = Math.min(20, maxBuf + 6);
 
     var startLevel =
       typeof o.startLevel === 'number'
