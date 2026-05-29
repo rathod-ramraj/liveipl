@@ -7,8 +7,8 @@
   var SITE = global.SITE_TITLE || 'LiveStream';
   var PREWARM_DELAY = 420;
   var prewarmTimer = null;
-  var warmFrame = null;
   var metaReq = 0;
+  var embedSwapTimer = null;
 
   var SERVERS = [
     {
@@ -26,6 +26,47 @@
           encodeURIComponent(season) +
           '/' +
           encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: 'peachify',
+      name: 'Peachify',
+      badge: 'IMDB · TMDB',
+      movie: function (id) {
+        return 'https://peachify.top/embed/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://peachify.top/embed/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: 'vidfast',
+      name: 'Vidfast',
+      badge: 'Auto-play · Next ep',
+      movie: function (id) {
+        return (
+          'https://vidfast.pro/movie/' +
+          encodeURIComponent(id) +
+          '?autoPlay=true&fullscreenButton=true&chromecast=true&theme=ff4d6d'
+        );
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://vidfast.pro/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode) +
+          '?autoPlay=true&nextButton=true&autoNext=true&fullscreenButton=true&theme=ff4d6d'
         );
       },
     },
@@ -53,9 +94,81 @@
       },
     },
     {
+      id: 'vidsrc-fyi',
+      name: 'VidSrc.fyi',
+      badge: 'IMDB · TMDB',
+      movie: function (id) {
+        return 'https://vidsrc.fyi/embed/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://vidsrc.fyi/embed/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: 'vidsrc-mov',
+      name: 'VidSrc.mov',
+      badge: 'Mirror',
+      movie: function (id) {
+        return 'https://vidsrc.mov/embed/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://vidsrc.mov/embed/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: 'vidking',
+      name: 'VidKing',
+      badge: 'Embed player',
+      movie: function (id) {
+        return 'https://www.vidking.net/embed/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://www.vidking.net/embed/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: 'vidnest',
+      name: 'VidNest',
+      badge: 'TMDB',
+      movie: function (id) {
+        return 'https://vidnest.fun/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://vidnest.fun/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
       id: 'vidlink',
       name: 'Vidlink Pro',
-      badge: 'TMDB ID',
+      badge: 'TMDB',
       movie: function (id) {
         return 'https://vidlink.pro/movie/' + encodeURIComponent(id);
       },
@@ -261,34 +374,26 @@
     }
   }
 
-  function prewarmAllServers() {
-    if (!state.mediaId) return;
-    var prev = state.serverId;
-    for (var i = 0; i < SERVERS.length; i++) {
-      state.serverId = SERVERS[i].id;
-      preconnectHosts(buildEmbedUrl());
-    }
-    state.serverId = prev;
+  function isActiveSrc(src) {
+    return src && src !== 'about:blank' && !/^about:/i.test(src);
   }
 
-  function prewarmEmbed(url) {
-    if (!url) return;
-    preconnectHosts(url);
-    try {
-      if (!warmFrame) {
-        warmFrame = document.createElement('iframe');
-        warmFrame.setAttribute('aria-hidden', 'true');
-        warmFrame.tabIndex = -1;
-        warmFrame.style.cssText =
-          'position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none;visibility:hidden';
-        warmFrame.setAttribute('importance', 'high');
-        document.body.appendChild(warmFrame);
-      }
-      if (warmFrame.getAttribute('data-warm-url') !== url) {
-        warmFrame.setAttribute('data-warm-url', url);
-        warmFrame.src = url;
-      }
-    } catch (_) {}
+  /** Stop every iframe except the movie player — prevents double audio / lip-sync issues. */
+  function silenceOtherEmbeds(keepEl) {
+    var list = document.querySelectorAll('iframe');
+    for (var i = 0; i < list.length; i++) {
+      var frame = list[i];
+      if (keepEl && frame === keepEl) continue;
+      try {
+        frame.src = 'about:blank';
+        frame.removeAttribute('src');
+      } catch (_) {}
+    }
+  }
+
+  function preconnectCurrentEmbed() {
+    var url = buildEmbedUrl();
+    if (url) preconnectHosts(url);
   }
 
   function schedulePrewarm() {
@@ -296,8 +401,7 @@
     prewarmTimer = setTimeout(function () {
       prewarmTimer = null;
       if (!readFormSilent()) return;
-      prewarmEmbed(buildEmbedUrl());
-      prewarmAllServers();
+      preconnectCurrentEmbed();
     }, PREWARM_DELAY);
   }
 
@@ -319,6 +423,7 @@
     if (global.PlayerPrefetch && global.PlayerPrefetch.stopAllWarmHls) {
       global.PlayerPrefetch.stopAllWarmHls();
     }
+    silenceOtherEmbeds(null);
     var ratio = global.elRatio;
     if (ratio) {
       var videos = ratio.querySelectorAll('video');
@@ -326,6 +431,8 @@
         try {
           videos[i].pause();
           videos[i].muted = true;
+          videos[i].removeAttribute('src');
+          videos[i].load();
         } catch (_) {}
       }
     }
@@ -336,15 +443,14 @@
   }
 
   function resumeLiveSitePlayers() {
+    if (embedSwapTimer) {
+      clearTimeout(embedSwapTimer);
+      embedSwapTimer = null;
+    }
     if (els.iframe) {
       try {
         els.iframe.src = 'about:blank';
-      } catch (_) {}
-    }
-    if (warmFrame) {
-      try {
-        warmFrame.src = 'about:blank';
-        warmFrame.removeAttribute('data-warm-url');
+        els.iframe.removeAttribute('src');
       } catch (_) {}
     }
     if (global.PerfController) {
@@ -409,6 +515,10 @@
 
     var token = ++loadToken;
     clearLoadTimers();
+    if (embedSwapTimer) {
+      clearTimeout(embedSwapTimer);
+      embedSwapTimer = null;
+    }
 
     var currentSrc = els.iframe.getAttribute('src') || els.iframe.src || '';
     var sameUrl = currentSrc === url;
@@ -419,7 +529,6 @@
     }
 
     setLoading(true);
-    /* Cross-origin embeds often never fire load — always auto-hide */
     scheduleLoadingHide(token, 2800);
 
     function onFrameReady() {
@@ -427,11 +536,27 @@
       scheduleLoadingHide(token, 350);
     }
 
-    els.iframe.onload = onFrameReady;
-    els.iframe.onerror = onFrameReady;
-    els.iframe.src = url;
-    preconnectHosts(url);
-    prewarmEmbed(url);
+    function mountUrl() {
+      if (token !== loadToken || !els.iframe) return;
+      silenceOtherEmbeds(els.iframe);
+      els.iframe.onload = onFrameReady;
+      els.iframe.onerror = onFrameReady;
+      els.iframe.src = url;
+      preconnectHosts(url);
+    }
+
+    /* Tear down previous embed before starting the next — avoids overlapping audio tracks */
+    if (isActiveSrc(currentSrc)) {
+      try {
+        els.iframe.src = 'about:blank';
+      } catch (_) {}
+      embedSwapTimer = setTimeout(function () {
+        embedSwapTimer = null;
+        mountUrl();
+      }, 120);
+    } else {
+      mountUrl();
+    }
   }
 
   function openPlayer() {
@@ -454,6 +579,10 @@
     state.open = false;
     metaReq++;
     loadToken++;
+    if (embedSwapTimer) {
+      clearTimeout(embedSwapTimer);
+      embedSwapTimer = null;
+    }
     finishLoading();
     document.body.classList.remove('wbid-active');
     els.overlay.hidden = true;
@@ -497,8 +626,7 @@
 
   function onWatch() {
     if (!readForm()) return;
-    prewarmEmbed(buildEmbedUrl());
-    prewarmAllServers();
+    preconnectCurrentEmbed();
     closeModal();
     openPlayer();
   }
@@ -600,6 +728,15 @@
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
+        if (document.fullscreenElement) {
+          e.preventDefault();
+          var exit =
+            document.exitFullscreen ||
+            document.webkitExitFullscreen ||
+            document.msExitFullscreen;
+          if (exit) exit.call(document);
+          return;
+        }
         if (state.open) {
           e.preventDefault();
           closePlayer();

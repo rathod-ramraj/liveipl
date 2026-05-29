@@ -4,6 +4,79 @@
 (function (global) {
   'use strict';
 
+  function isActiveSrc(src) {
+    return src && src !== 'about:blank' && !/^about:/i.test(src);
+  }
+
+  function resolveFullscreenTarget(elRatio) {
+    if (document.body.classList.contains('wbid-active')) {
+      var wbWrap = document.getElementById('wbid-frame-wrap');
+      var wbIframe = document.getElementById('wbid-iframe');
+      if (wbIframe && isActiveSrc(wbIframe.getAttribute('src') || wbIframe.src)) {
+        return wbIframe;
+      }
+      if (wbWrap) return wbWrap;
+      return document.getElementById('wbid-overlay');
+    }
+
+    if (!elRatio) return null;
+
+    var video = elRatio.querySelector('video');
+    if (video) {
+      var vsrc = video.currentSrc || video.getAttribute('src') || '';
+      if (!vsrc || video.readyState > 0) return video;
+    }
+
+    var iframe = elRatio.querySelector('iframe');
+    if (iframe && isActiveSrc(iframe.getAttribute('data-stream-src') || iframe.getAttribute('src') || iframe.src)) {
+      return iframe;
+    }
+
+    return elRatio;
+  }
+
+  function requestFs(el) {
+    if (!el) return Promise.reject(new Error('no target'));
+    var req =
+      el.requestFullscreen ||
+      el.webkitRequestFullscreen ||
+      el.webkitEnterFullscreen ||
+      el.msRequestFullscreen;
+    if (!req) return Promise.reject(new Error('unsupported'));
+    return Promise.resolve(req.call(el));
+  }
+
+  function exitFs() {
+    var exit =
+      document.exitFullscreen ||
+      document.webkitExitFullscreen ||
+      document.msExitFullscreen;
+    if (exit) return Promise.resolve(exit.call(document));
+    return Promise.resolve();
+  }
+
+  function toggleFullscreen(elRatio, showToast) {
+    if (!document.fullscreenElement) {
+      var target = resolveFullscreenTarget(elRatio);
+      return requestFs(target)
+        .then(function () {
+          showToast && showToast('Fullscreen (F)');
+          if (global.PerfController) global.PerfController.setStreaming(true);
+        })
+        .catch(function () {
+          if (target && target !== elRatio) {
+            return requestFs(elRatio).then(function () {
+              showToast && showToast('Fullscreen (F)');
+            });
+          }
+          showToast && showToast('Fullscreen not available');
+        });
+    }
+    return exitFs().then(function () {
+      showToast && showToast('Exit fullscreen');
+    });
+  }
+
   function install(opts) {
     var elRatio = opts.elRatio;
     var onReload = opts.onReload;
@@ -17,32 +90,17 @@
 
         if (key === 'f' || key === 'F') {
           e.preventDefault();
-          var fsTarget = elRatio;
-          if (!document.fullscreenElement) {
-            var req =
-              fsTarget.requestFullscreen ||
-              fsTarget.webkitRequestFullscreen ||
-              fsTarget.msRequestFullscreen;
-            if (req) {
-              Promise.resolve(req.call(fsTarget)).catch(function () {});
-            }
-            showToast && showToast('Fullscreen (F)');
-          } else {
-            var exit =
-              document.exitFullscreen ||
-              document.webkitExitFullscreen ||
-              document.msExitFullscreen;
-            if (exit) exit.call(document);
-            showToast && showToast('Exit fullscreen');
-          }
-          if (global.PerfController) global.PerfController.setStreaming(true);
+          toggleFullscreen(elRatio, showToast);
           return;
         }
 
         if (key === 'Escape' && document.fullscreenElement) {
-          document.exitFullscreen && document.exitFullscreen();
+          e.preventDefault();
+          exitFs();
           return;
         }
+
+        if (document.body.classList.contains('wbid-active')) return;
 
         if (key === 'r' || key === 'R') {
           e.preventDefault();
@@ -138,5 +196,9 @@
     );
   }
 
-  global.PlayerKeyboard = { install: install };
+  global.PlayerKeyboard = {
+    install: install,
+    resolveFullscreenTarget: resolveFullscreenTarget,
+    toggleFullscreen: toggleFullscreen,
+  };
 })(window);

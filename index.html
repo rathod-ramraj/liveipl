@@ -47,11 +47,23 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preload" href="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" as="script">
   <link rel="preconnect" href="https://111movies.net" crossorigin>
+  <link rel="preconnect" href="https://peachify.top" crossorigin>
+  <link rel="preconnect" href="https://vidfast.pro" crossorigin>
   <link rel="preconnect" href="https://vidup.to" crossorigin>
+  <link rel="preconnect" href="https://vidsrc.fyi" crossorigin>
+  <link rel="preconnect" href="https://vidsrc.mov" crossorigin>
+  <link rel="preconnect" href="https://www.vidking.net" crossorigin>
+  <link rel="preconnect" href="https://vidnest.fun" crossorigin>
   <link rel="preconnect" href="https://vidlink.pro" crossorigin>
   <link rel="preconnect" href="https://player.videasy.net" crossorigin>
   <link rel="dns-prefetch" href="https://111movies.net">
+  <link rel="dns-prefetch" href="https://peachify.top">
+  <link rel="dns-prefetch" href="https://vidfast.pro">
   <link rel="dns-prefetch" href="https://vidup.to">
+  <link rel="dns-prefetch" href="https://vidsrc.fyi">
+  <link rel="dns-prefetch" href="https://vidsrc.mov">
+  <link rel="dns-prefetch" href="https://www.vidking.net">
+  <link rel="dns-prefetch" href="https://vidnest.fun">
   <link rel="dns-prefetch" href="https://vidlink.pro">
   <link rel="dns-prefetch" href="https://player.videasy.net">
 
@@ -529,6 +541,36 @@
     }
     .player-ratio video.live-video::-webkit-media-controls-panel {
       background: linear-gradient(transparent, rgba(0,0,0,0.65));
+    }
+    .player-ratio:fullscreen,
+    .player-ratio:-webkit-full-screen {
+      padding-top: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw;
+      max-height: 100vh;
+      background: #000;
+    }
+    .player-ratio:fullscreen iframe,
+    .player-ratio:fullscreen video,
+    .player-ratio:-webkit-full-screen iframe,
+    .player-ratio:-webkit-full-screen video {
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .wbid-frame-wrap:fullscreen,
+    .wbid-frame-wrap:-webkit-full-screen,
+    #wbid-iframe:fullscreen,
+    #wbid-iframe:-webkit-full-screen {
+      width: 100% !important;
+      height: 100% !important;
+      background: #000;
+    }
+    #wbid-iframe:fullscreen,
+    #wbid-iframe:-webkit-full-screen {
+      border: 0;
     }
     .player-ph {
       display: flex; flex-direction: column;
@@ -1792,6 +1834,10 @@ function armStallTimer(id) {
 //  DOUBLE-CLICK → FULLSCREEN TOGGLE
 // ════════════════════════════════════════════════════
 elRatio.addEventListener('dblclick', function () {
+  if (window.PlayerKeyboard && PlayerKeyboard.toggleFullscreen) {
+    PlayerKeyboard.toggleFullscreen(elRatio, showToast);
+    return;
+  }
   if (!document.fullscreenElement) {
     elRatio.requestFullscreen && elRatio.requestFullscreen();
   } else {
