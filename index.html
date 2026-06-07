@@ -1014,28 +1014,15 @@
         height: 100% !important;
         background: #000;
       }
-      html.player-landscape-only .player-wrap.is-mobile-fs {
-        overflow: hidden;
-      }
       @media (orientation: portrait) {
-        html.player-landscape-only .player-wrap.is-mobile-fs {
+        .player-wrap.is-mobile-fs {
           width: 100vh !important;
           height: 100vw !important;
-          max-width: 100vh !important;
-          max-height: 100vw !important;
           top: 50% !important;
           left: 50% !important;
           right: auto !important;
           bottom: auto !important;
           transform: translate(-50%, -50%) rotate(90deg);
-        }
-      }
-      @media (orientation: landscape) {
-        html.player-landscape-only .player-wrap.is-mobile-fs {
-          inset: 0 !important;
-          width: 100% !important;
-          height: 100% !important;
-          transform: none !important;
         }
       }
       .player-wrap.is-mobile-fs .player-card {
@@ -1561,7 +1548,7 @@
       </div>
       <div class="player-actions">
         <div class="live-badge player-live-badge"><div class="live-dot"></div>Live</div>
-        <button type="button" class="btn btn-ghost btn-sm player-fs-btn" id="playerFsBtn" aria-label="Landscape full screen">
+        <button type="button" class="btn btn-ghost btn-sm player-fs-btn" id="playerFsBtn" aria-label="Rotate and full screen">
           <svg class="player-fs-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3 10V6a2 2 0 0 1 2-2h4"/>
             <path d="M21 14v4a2 2 0 0 1-2 2h-4"/>
@@ -2159,18 +2146,49 @@ function clearMobileFsShell() {
 function enterMobilePlayerFs() {
   if (mobilePlayerFs) return;
   mobilePlayerFs = true;
+  fsSyncing = true;
+
+  var video = elRatio.querySelector('video');
+  if (video && typeof video.webkitEnterFullscreen === 'function') {
+    var onEnd = function () {
+      video.removeEventListener('webkitendfullscreen', onEnd);
+      if (mobilePlayerFs) exitMobilePlayerFs();
+    };
+    video.addEventListener('webkitendfullscreen', onEnd);
+    try {
+      video.webkitEnterFullscreen();
+      lockPlayerLandscape();
+      if (window.PerfController) PerfController.setStreaming(true);
+      fsSyncing = false;
+      return;
+    } catch (_) {
+      video.removeEventListener('webkitendfullscreen', onEnd);
+    }
+  }
+
   applyMobileFsShell();
-  document.documentElement.classList.add('player-landscape-only');
-  lockPlayerLandscape();
-  if (window.PerfController) PerfController.setStreaming(true);
+  var target = resolveFsTarget();
+  requestNativeFullscreen(target)
+    .catch(function () {
+      return requestNativeFullscreen(elRatio);
+    })
+    .catch(function () {})
+    .then(function () {
+      lockPlayerLandscape();
+      if (window.PerfController) PerfController.setStreaming(true);
+      fsSyncing = false;
+    });
 }
 
 function exitMobilePlayerFs() {
   if (!mobilePlayerFs) return;
+  fsSyncing = true;
   mobilePlayerFs = false;
   clearMobileFsShell();
-  document.documentElement.classList.remove('player-landscape-only');
   unlockPlayerLandscape();
+  exitNativeFullscreen().finally(function () {
+    fsSyncing = false;
+  });
 }
 
 function togglePlayerFullscreen(evt) {
@@ -2193,8 +2211,10 @@ function togglePlayerFullscreen(evt) {
 }
 
 function onFullscreenChange() {
-  if (fsSyncing || mobilePlayerFs) return;
-  if (document.fullscreenElement && window.PerfController) PerfController.setStreaming(true);
+  if (fsSyncing) return;
+  var active = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if (!active && mobilePlayerFs) exitMobilePlayerFs();
+  if (active && window.PerfController) PerfController.setStreaming(true);
 }
 
 // ════════════════════════════════════════════════════
