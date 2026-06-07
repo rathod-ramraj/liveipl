@@ -217,6 +217,7 @@
     serverId: '111movies',
     displayTitle: '',
     savedPageTitle: '',
+    savedModalTitle: '',
   };
   var savedLiveChannel = null;
   var els = {};
@@ -279,18 +280,30 @@
   }
 
   function applyPageTitle() {
+    if (global.PageTitle && global.PageTitle.movie) {
+      global.PageTitle.movie(
+        state.displayTitle || defaultLabel(),
+        state.isTv,
+        state.season,
+        state.episode
+      );
+      return;
+    }
     document.title = pageTitleText();
   }
 
   function restorePageTitle() {
-    if (state.savedPageTitle) {
+    if (global.cur && typeof global.updatePageTitle === 'function') {
+      global.updatePageTitle(global.cur);
+    } else if (state.savedPageTitle) {
       document.title = state.savedPageTitle;
-    } else if (global.cur && typeof global.updatePageTitle === 'function') {
-      global.updatePageTitle(global.cur.id);
+    } else if (global.PageTitle && global.PageTitle.home) {
+      global.PageTitle.home();
     } else {
       document.title = SITE;
     }
     state.savedPageTitle = '';
+    state.savedModalTitle = '';
   }
 
   function updateOverlayTitle() {
@@ -563,6 +576,7 @@
     pauseLiveSitePlayers();
     state.open = true;
     state.savedPageTitle = document.title;
+    state.savedModalTitle = '';
     state.displayTitle = defaultLabel();
     document.body.classList.add('wbid-active');
     els.overlay.hidden = false;
@@ -596,6 +610,12 @@
   }
 
   function openModal() {
+    if (!state.open && !state.savedModalTitle) {
+      state.savedModalTitle = document.title;
+    }
+    if (global.PageTitle && global.PageTitle.wbid) {
+      global.PageTitle.wbid();
+    }
     els.modal.hidden = false;
     els.modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('wbid-modal-open');
@@ -606,6 +626,10 @@
     els.modal.hidden = true;
     els.modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('wbid-modal-open');
+    if (!state.open && state.savedModalTitle) {
+      document.title = state.savedModalTitle;
+      state.savedModalTitle = '';
+    }
   }
 
   function readForm() {

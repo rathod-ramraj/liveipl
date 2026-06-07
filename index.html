@@ -1014,15 +1014,28 @@
         height: 100% !important;
         background: #000;
       }
+      html.player-landscape-only .player-wrap.is-mobile-fs {
+        overflow: hidden;
+      }
       @media (orientation: portrait) {
-        .player-wrap.is-mobile-fs {
+        html.player-landscape-only .player-wrap.is-mobile-fs {
           width: 100vh !important;
           height: 100vw !important;
+          max-width: 100vh !important;
+          max-height: 100vw !important;
           top: 50% !important;
           left: 50% !important;
           right: auto !important;
           bottom: auto !important;
           transform: translate(-50%, -50%) rotate(90deg);
+        }
+      }
+      @media (orientation: landscape) {
+        html.player-landscape-only .player-wrap.is-mobile-fs {
+          inset: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+          transform: none !important;
         }
       }
       .player-wrap.is-mobile-fs .player-card {
@@ -1548,7 +1561,7 @@
       </div>
       <div class="player-actions">
         <div class="live-badge player-live-badge"><div class="live-dot"></div>Live</div>
-        <button type="button" class="btn btn-ghost btn-sm player-fs-btn" id="playerFsBtn" aria-label="Rotate and full screen">
+        <button type="button" class="btn btn-ghost btn-sm player-fs-btn" id="playerFsBtn" aria-label="Landscape full screen">
           <svg class="player-fs-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3 10V6a2 2 0 0 1 2-2h4"/>
             <path d="M21 14v4a2 2 0 0 1-2 2h-4"/>
@@ -1845,7 +1858,37 @@ var ALLOWED = new Set([
 ]);
 
 var SITE_TITLE = 'PlayUp';
+var DEFAULT_SITE_TITLE = 'PlayUp — Live TV, Movies & Series';
 window.SITE_TITLE = SITE_TITLE;
+
+function setLivePageTitle(channelName) {
+  if (document.body.classList.contains('wbid-active')) return;
+  document.title = (channelName || 'Live TV') + ' · Live — ' + SITE_TITLE;
+}
+
+function setMoviePageTitle(name, isTv, season, episode) {
+  var label = name || 'Movie';
+  if (isTv) {
+    document.title = label + ' · S' + (season || 1) + 'E' + (episode || 1) + ' — ' + SITE_TITLE;
+  } else {
+    document.title = label + ' — ' + SITE_TITLE;
+  }
+}
+
+function setWbidPageTitle() {
+  document.title = 'Watch by ID — ' + SITE_TITLE;
+}
+
+function setHomePageTitle() {
+  document.title = DEFAULT_SITE_TITLE;
+}
+
+window.PageTitle = {
+  live: setLivePageTitle,
+  movie: setMoviePageTitle,
+  wbid: setWbidPageTitle,
+  home: setHomePageTitle,
+};
 
 var CH_LINK_ICON =
   '<svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
@@ -1890,7 +1933,7 @@ function getMeta(id) {
 
 function updatePageTitle(id) {
   var m = getMeta(id);
-  document.title = m.name + ' — ' + SITE_TITLE;
+  setLivePageTitle(m.name);
 }
 
 function sortChannels(list) {
@@ -2116,49 +2159,18 @@ function clearMobileFsShell() {
 function enterMobilePlayerFs() {
   if (mobilePlayerFs) return;
   mobilePlayerFs = true;
-  fsSyncing = true;
-
-  var video = elRatio.querySelector('video');
-  if (video && typeof video.webkitEnterFullscreen === 'function') {
-    var onEnd = function () {
-      video.removeEventListener('webkitendfullscreen', onEnd);
-      if (mobilePlayerFs) exitMobilePlayerFs();
-    };
-    video.addEventListener('webkitendfullscreen', onEnd);
-    try {
-      video.webkitEnterFullscreen();
-      lockPlayerLandscape();
-      if (window.PerfController) PerfController.setStreaming(true);
-      fsSyncing = false;
-      return;
-    } catch (_) {
-      video.removeEventListener('webkitendfullscreen', onEnd);
-    }
-  }
-
   applyMobileFsShell();
-  var target = resolveFsTarget();
-  requestNativeFullscreen(target)
-    .catch(function () {
-      return requestNativeFullscreen(elRatio);
-    })
-    .catch(function () {})
-    .then(function () {
-      lockPlayerLandscape();
-      if (window.PerfController) PerfController.setStreaming(true);
-      fsSyncing = false;
-    });
+  document.documentElement.classList.add('player-landscape-only');
+  lockPlayerLandscape();
+  if (window.PerfController) PerfController.setStreaming(true);
 }
 
 function exitMobilePlayerFs() {
   if (!mobilePlayerFs) return;
-  fsSyncing = true;
   mobilePlayerFs = false;
   clearMobileFsShell();
+  document.documentElement.classList.remove('player-landscape-only');
   unlockPlayerLandscape();
-  exitNativeFullscreen().finally(function () {
-    fsSyncing = false;
-  });
 }
 
 function togglePlayerFullscreen(evt) {
@@ -2181,10 +2193,8 @@ function togglePlayerFullscreen(evt) {
 }
 
 function onFullscreenChange() {
-  if (fsSyncing) return;
-  var active = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  if (!active && mobilePlayerFs) exitMobilePlayerFs();
-  if (active && window.PerfController) PerfController.setStreaming(true);
+  if (fsSyncing || mobilePlayerFs) return;
+  if (document.fullscreenElement && window.PerfController) PerfController.setStreaming(true);
 }
 
 // ════════════════════════════════════════════════════
