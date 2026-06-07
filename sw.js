@@ -1,6 +1,6 @@
 'use strict';
 
-var CACHE = 'playup-v2';
+var CACHE = 'playup-v3';
 var HLS_CACHE = 'playup-hls-segments-v1';
 var PRECACHE = ['/', '/saved.html', '/favicon.png', '/robots.txt', '/sitemap.xml'];
 
