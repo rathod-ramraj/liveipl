@@ -6,7 +6,7 @@
   <title>PlayUp — Live TV, Movies &amp; Series Streaming</title>
   <meta name="description" content="PlayUp lets you watch live sports channels, movies, and TV series in HD. Use Watch by ID with IMDb or TMDB IDs and switch streaming servers instantly.">
   <meta name="keywords" content="playup, watch movies online free, live cricket streaming, watch IPL live, HD movies online, free streaming platform">
-  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+  <meta name="robots" content="index,follow,noai,noimageai,max-image-preview:none,max-snippet:0,max-video-preview:0">
   <meta name="theme-color" content="#121019">
   <link rel="canonical" href="https://playup.vercel.app/">
   <meta property="og:type" content="website">
@@ -82,6 +82,7 @@
   <script src="./js/player-keyboard.js" defer></script>
   <script src="./js/perf-controller.js" defer></script>
   <script src="./js/watch-by-id.js" defer></script>
+  <script src="./js/site-guard.js" defer></script>
 
   <script type="application/ld+json">
   {
@@ -143,7 +144,44 @@
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
       min-height: 100vh;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
     }
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+      -webkit-touch-callout: default;
+    }
+    @media print {
+      body * { visibility: hidden !important; }
+      body::after {
+        content: 'Printing is not allowed.';
+        visibility: visible !important;
+        display: block;
+        text-align: center;
+        padding: 48px;
+        font-size: 18px;
+      }
+    }
+    html.guard-blur body > *:not(#guard-shield):not(#dt-block):not(#ks-toast) {
+      filter: blur(22px) brightness(0.35);
+      transition: filter 0.35s ease;
+    }
+    #guard-shield {
+      position: fixed;
+      inset: 0;
+      z-index: 999998;
+      background: #0a0810;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #guard-shield.is-active {
+      opacity: 0.97;
+      pointer-events: auto;
+    }
+    html.guard-blocked body { overflow: hidden; }
 
     /* Edge shade — matches violet/charcoal grid scene */
     body::before {
@@ -154,7 +192,7 @@
       pointer-events: none;
     }
 
-    body > *:not(#dt-block):not(#sg-global-bg):not(#ks-toast):not(#wbid-fab):not(#wbid-modal):not(#wbid-overlay):not(#site-nav) { position: relative; z-index: 2; }
+    body > *:not(#dt-block):not(#sg-global-bg):not(#ks-toast):not(#wbid-fab):not(#wbid-modal):not(#wbid-overlay):not(#site-nav):not(#mobile-header):not(#bottom-nav):not(#guard-shield) { position: relative; z-index: 2; }
 
     /* ─── ENTRANCE ANIMATIONS ────────────────────────── */
     @keyframes fadeUp   { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
@@ -852,33 +890,189 @@
     #dt-block h2 { font-size: 20px; font-weight: 700; color: var(--text-1); letter-spacing: -.4px; margin: 0; }
     #dt-block p { font-size: 14px; color: var(--text-2); margin: 0; }
 
+    /* ─── TELEGRAM-LIKE MOBILE SHELL ───────────────── */
+    #mobile-header,
+    #bottom-nav { display: none; }
+
+    @media (max-width: 768px) {
+      #site-nav { display: none !important; }
+
+      #mobile-header {
+        display: block;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 9000;
+        padding: max(12px, env(safe-area-inset-top)) 16px 10px;
+        background: rgba(18, 16, 25, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+      }
+      .mh-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .mh-brand {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.4px;
+        color: var(--text-1);
+        text-decoration: none;
+      }
+      .mh-menu-btn {
+        width: 36px; height: 36px;
+        border: none; border-radius: 50%;
+        background: transparent;
+        color: var(--text-2);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+      }
+      .mh-search {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: var(--r-pill);
+        background: rgba(255,255,255,0.08);
+        color: var(--text-3);
+        font-size: 15px;
+      }
+      .mh-search svg { flex-shrink: 0; opacity: 0.55; }
+
+      #bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 8800;
+        width: calc(100% - 24px);
+        max-width: 420px;
+        height: 62px;
+        padding: 6px 8px;
+        border-radius: 22px;
+        background: rgba(22, 20, 30, 0.94);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.04);
+        align-items: stretch;
+        justify-content: space-around;
+        gap: 2px;
+      }
+      .bn-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        border: none;
+        background: none;
+        color: var(--text-3);
+        font-family: var(--font);
+        font-size: 10px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        border-radius: 14px;
+        padding: 4px 2px;
+        transition: color 0.2s, background 0.2s;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+      }
+      .bn-item svg { width: 22px; height: 22px; }
+      .bn-item.is-active {
+        color: #5eb3f6;
+      }
+      .bn-item.is-active .bn-icon-wrap {
+        background: rgba(94, 179, 246, 0.18);
+        border-radius: 12px;
+      }
+      .bn-icon-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 28px;
+        transition: background 0.2s;
+      }
+
+      body.has-bottom-nav {
+        padding-bottom: calc(78px + env(safe-area-inset-bottom));
+      }
+      body.has-bottom-nav .hero-outer {
+        padding-top: 108px;
+      }
+      html { scroll-padding-top: 88px; }
+
+      /* Channel list — Telegram chat rows on mobile */
+      .ch-grid {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        border-radius: var(--r-md);
+        overflow: hidden;
+        border: 1px solid var(--glass-border-2);
+        background: rgba(255,255,255,0.03);
+      }
+      .ch-btn {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 14px;
+        padding: 14px 16px;
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        text-align: left;
+        white-space: normal;
+        max-width: none;
+      }
+      .ch-btn:last-child { border-bottom: none; }
+      .ch-btn .ch-link-icon { display: none; }
+      .ch-btn::before {
+        content: attr(data-initials);
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(94,179,246,0.35), rgba(201,60,255,0.25));
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; font-weight: 700;
+        color: var(--text-1);
+        flex-shrink: 0;
+        letter-spacing: -0.3px;
+      }
+      .ch-btn .ch-btn-label { flex: 1; font-weight: 600; font-size: 15px; }
+      .ch-btn.active {
+        background: rgba(94, 179, 246, 0.08);
+        border-color: transparent;
+        box-shadow: none;
+      }
+      .ch-btn.active::after {
+        content: '';
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #5eb3f6;
+        flex-shrink: 0;
+        box-shadow: 0 0 8px rgba(94,179,246,0.5);
+      }
+      .ch-btn:hover { transform: none; background: rgba(255,255,255,0.04); }
+    }
+
     /* ─── RESPONSIVE ──────────────────────────────── */
     @media (max-width: 768px) {
-      #site-nav {
-        top: 28px;
-        max-width: calc(100% - 20px);
-        min-width: 0;
-        width: calc(100% - 20px);
-        height: 50px;
-        padding: 0 8px 0 12px;
-        gap: 8px;
+      #wbid-fab {
+        right: 16px;
+        bottom: calc(78px + env(safe-area-inset-bottom));
+        font-size: 13px;
       }
-      .nav-logo-text { font-size: 15px; }
-      .nav-logo .live-badge { font-size: 10px; padding: 4px 8px; margin-left: 4px; }
-      .nav-link { padding: 6px 8px; font-size: 13px; }
-      .nav-cta { padding: 6px 12px !important; font-size: 13px !important; }
-      .nav-hide-mobile { display: none; }
-      #wbid-fab { right: 14px; bottom: 14px; font-size: 13px; padding: 10px 14px 10px 12px; }
-      .ch-grid { gap: 8px; }
-      .ch-btn {
-        padding: 10px 16px;
-        font-size: 12.5px;
-        white-space: normal;
-        text-align: center;
-        max-width: 100%;
-      }
+      #ks-toast { bottom: calc(90px + env(safe-area-inset-bottom)); }
       .player-ratio { padding-top: clamp(50%, 52%, 56%); }
-      .hero-outer { min-height: min(100vh, 860px); padding: 88px 18px 48px; }
+      .hero-outer { min-height: min(100vh, 860px); padding-left: 18px; padding-right: 18px; padding-bottom: 48px; }
       .hero h1 { font-size: clamp(32px, 8vw, 48px); letter-spacing: -1.5px; }
       .player-wrap { padding: 0 12px 52px; }
       .section { padding: 52px 16px; }
@@ -897,16 +1091,21 @@
 
     /* ─── WATCH BY ID (FAB + modal + theater) ───────── */
     #wbid-fab {
+      --m: var(--wbid-morph, 0);
       position: fixed;
       right: 22px;
       bottom: 22px;
       z-index: 8500;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 11px 16px 11px 13px;
-      border-radius: var(--r-pill);
-      border: 1px solid rgba(255, 120, 150, 0.42);
+      justify-content: center;
+      height: 52px;
+      min-width: 52px;
+      width: calc(52px + (1 - var(--m)) * 128px);
+      padding: 0 calc(14px * (1 - var(--m))) 0 calc(12px * (1 - var(--m)));
+      gap: calc(8px * (1 - var(--m)));
+      border-radius: 26px;
+      border: 1px solid rgba(255, 120, 150, calc(0.42 + var(--m) * 0.18));
       background: rgba(38, 10, 22, 0.94);
       color: #ffb3c1;
       font-family: var(--font);
@@ -917,20 +1116,37 @@
       box-shadow: 0 12px 36px rgba(0,0,0,0.5);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      transition: transform 0.2s ease, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+      overflow: hidden;
+      white-space: nowrap;
+      will-change: width, padding, gap;
+    }
+    #wbid-fab .wbid-fab-label {
+      display: inline-block;
+      max-width: calc((1 - var(--m)) * 132px);
+      opacity: calc(1 - var(--m));
+      transform: translateX(calc(var(--m) * 10px)) scale(calc(1 - var(--m) * 0.12));
+      overflow: hidden;
+      pointer-events: none;
+    }
+    #wbid-fab svg {
+      flex-shrink: 0;
+      width: calc(17px + var(--m) * 3px);
+      height: calc(17px + var(--m) * 3px);
     }
     #wbid-fab:hover {
-      transform: translateY(-2px);
+      transform: translateY(calc(-2px * (1 - var(--m))));
       color: #ffe0e8;
       border-color: rgba(255, 140, 170, 0.65);
       background: rgba(52, 14, 30, 0.98);
       box-shadow: 0 16px 44px rgba(0,0,0,0.6);
     }
-    #wbid-fab svg { flex-shrink: 0; }
+    #wbid-fab.is-compact:hover { transform: scale(1.06); }
     body.wbid-active #wbid-fab,
-    body.wbid-modal-open #wbid-fab { opacity: 0; pointer-events: none; }
+    body.wbid-modal-open #wbid-fab,
+    body.wbid-modal-open #bottom-nav { opacity: 0; pointer-events: none; }
 
     #wbid-modal[hidden],
     #wbid-overlay[hidden] { display: none !important; }
@@ -1086,7 +1302,9 @@
       flex-direction: column;
     }
     body.wbid-active { overflow: hidden; }
-    body.wbid-active #site-nav { opacity: 0; pointer-events: none; }
+    body.wbid-active #site-nav,
+    body.wbid-active #mobile-header,
+    body.wbid-active #bottom-nav { opacity: 0; pointer-events: none; }
 
     .wbid-topbar {
       position: absolute;
@@ -1290,6 +1508,53 @@
 
 <!-- ═══ KEYBOARD TOAST ════════════════════════════════ -->
 <div id="ks-toast"></div>
+
+<!-- ═══ CAPTURE / SCREENSHOT SHIELD ═══════════════════ -->
+<div id="guard-shield" aria-hidden="true"></div>
+
+<!-- ═══ MOBILE HEADER (Telegram-style) ══════════════ -->
+<header id="mobile-header">
+  <div class="mh-top">
+    <a href="#" class="mh-brand" id="mhBrandHome">PlayUp</a>
+    <button type="button" class="mh-menu-btn" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+    </button>
+  </div>
+  <div class="mh-search" role="search" aria-label="Search channels">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <span>Search channels</span>
+  </div>
+</header>
+
+<!-- ═══ BOTTOM NAV (Telegram-style) ═════════════════ -->
+<nav id="bottom-nav" aria-label="Main navigation">
+  <a href="#player" class="bn-item is-active" data-bn="player">
+    <span class="bn-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 2L12 7 8 2"/></svg>
+    </span>
+    Live
+  </a>
+  <a href="#channels" class="bn-item" data-bn="channels">
+    <span class="bn-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </span>
+    Channels
+  </a>
+  <button type="button" class="bn-item" data-bn="wbid" id="bn-wbid-btn">
+    <span class="bn-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v4M12 4v4M17 4v4"/><polygon points="10 11 10 15 15 13" fill="currentColor" stroke="none"/>
+      </svg>
+    </span>
+    Movies
+  </button>
+  <a href="https://liveipl.ramx.workers.dev/" class="bn-item" data-bn="version" target="_blank" rel="noopener noreferrer">
+    <span class="bn-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </span>
+    Version
+  </a>
+</nav>
 
 <!-- ═══ NAVBAR ═══════════════════════════════════════ -->
 <nav id="site-nav">
@@ -1528,7 +1793,7 @@
     <path d="M7 4v4M12 4v4M17 4v4"/>
     <polygon points="10 11 10 15 15 13" fill="currentColor" stroke="none"/>
   </svg>
-  Watch by ID
+  <span class="wbid-fab-label">Watch by ID</span>
 </button>
 
 <div id="wbid-modal" hidden aria-hidden="true" role="dialog" aria-labelledby="wbid-modal-title">
@@ -1644,28 +1909,46 @@ var CH_LINK_ICON =
   '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 
 var META = {
-  eng:        { name: 'Star Sports HD 1 English', sub: 'Star Sports English' },
-  starhindi:  { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
-  star_hindi: { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
-  hindi:      { name: 'Star Sports HD 1 Hindi',   sub: 'Hindi Commentary' },
-  star_telugu:{ name: 'Star Sports 1 HD Telugu',  sub: 'Telugu HD' },
-  star_tamil: { name: 'Star Sports 1 HD Tamil',   sub: 'Tamil HD' },
-  starsp1tel: { name: 'Star Sports Telugu',       sub: 'Telugu Commentary' },
-  willow:     { name: 'Willow',                   sub: 'Cricket Live' },
-  willow2:    { name: 'Willow 2',                 sub: 'HLS Live' },
-  willowhd:   { name: 'Willow HD',                sub: 'Cricket HD' },
-  fox501:     { name: 'Fox 501 HD Live',          sub: 'Fox Sports · HD' },
-  willowextra:{ name: 'Willow Extra',             sub: 'Cricket HD' },
-  skynz:      { name: 'Sky Sports Live 1',        sub: 'Sky Sports · Live' },
-  kayohin:    { name: 'Kayo Hindi',               sub: 'Hindi Commentary' },
-  star:       { name: 'Star Sports 1',            sub: 'India Coverage' },
-  zee:        { name: 'Zee Cinema',               sub: 'Premium Movie' },
-  crichd:     { name: 'CricHD',                   sub: 'HD Cricket' },
-  sonyliv:    { name: 'Sony LIV',                 sub: 'Sony Sports' },
+  eng:        { name: 'Star Sports HD English', sub: 'Star Sports English' },
+  starhindi:  { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
+  star_hindi: { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
+  hindi:      { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
+  star_telugu:{ name: 'Star Sports HD Telugu',  sub: 'Telugu HD' },
+  star_tamil: { name: 'Star Sports HD Tamil',   sub: 'Tamil HD' },
+  starsp1tel: { name: 'Star Sports Telugu',     sub: 'Telugu Commentary' },
+  willow:     { name: 'Willow',                 sub: 'Cricket Live' },
+  willow2:    { name: 'Willow 2',               sub: 'HLS Live' },
+  willowhd:   { name: 'Willow HD',              sub: 'Cricket HD' },
+  fox501:     { name: 'Fox 501 HD Live',        sub: 'Fox Sports · HD' },
+  willowextra:{ name: 'Willow Extra',           sub: 'Cricket HD' },
+  skynz:      { name: 'Sky Sports Live',        sub: 'Sky Sports · Live' },
+  kayohin:    { name: 'Kayo Hindi',             sub: 'Hindi Commentary' },
+  star:       { name: 'Star Sports',            sub: 'India Coverage' },
+  zee:        { name: 'Zee Cinema',             sub: 'Premium Movie' },
+  crichd:     { name: 'CricHD',                 sub: 'HD Cricket' },
+  sonyliv:    { name: 'Sony LIV',               sub: 'Sony Sports' },
 };
 
+function cleanChannelName(name) {
+  if (!name) return name;
+  return name
+    .replace(/\bHD\s+1\b/gi, 'HD')
+    .replace(/\b1\s+HD\b/gi, 'HD')
+    .replace(/\bLive\s+1\b/gi, 'Live')
+    .replace(/\bSports\s+1\b/gi, 'Sports')
+    .replace(/\s+1\s+(English|Hindi|Telugu|Tamil)\b/gi, ' $1');
+}
+
+function channelInitials(name) {
+  var words = (name || '').split(/\s+/).filter(Boolean);
+  if (!words.length) return 'TV';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
 function getMeta(id) {
-  return META[id] || { name: id.toUpperCase(), sub: 'Live Channel' };
+  var m = META[id] || { name: id.toUpperCase(), sub: 'Live Channel' };
+  return { name: cleanChannelName(m.name), sub: m.sub };
 }
 
 function updatePageTitle(id) {
@@ -1849,31 +2132,150 @@ elRatio.addEventListener('dblclick', function () {
 // ════════════════════════════════════════════════════
 //  KEYBOARD — js/player-keyboard.js
 // ════════════════════════════════════════════════════
+function smoothScrollTo(sel) {
+  var target = typeof sel === 'string' ? document.querySelector(sel) : sel;
+  if (!target) return;
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (window.history && window.history.pushState && target.id) {
+    window.history.pushState(null, '', '#' + target.id);
+  }
+}
+
 function initNavClicks() {
   var nav = document.getElementById('site-nav');
-  if (!nav) return;
-  nav.addEventListener(
-    'click',
-    function (e) {
-      var link = e.target.closest && e.target.closest('a.nav-link[href^="#"]');
-      if (!link) return;
-      var hash = link.getAttribute('href');
-      if (!hash || hash.length < 2) return;
-      var target = document.querySelector(hash);
-      if (!target) return;
+  if (nav) {
+    nav.addEventListener(
+      'click',
+      function (e) {
+        var link = e.target.closest && e.target.closest('a.nav-link[href^="#"]');
+        if (!link) return;
+        var hash = link.getAttribute('href');
+        if (!hash || hash.length < 2) return;
+        e.preventDefault();
+        e.stopPropagation();
+        smoothScrollTo(hash);
+      },
+      false
+    );
+  }
+
+  var bottomNav = document.getElementById('bottom-nav');
+  if (bottomNav) {
+    bottomNav.addEventListener('click', function (e) {
+      var item = e.target.closest && e.target.closest('.bn-item[href^="#"]');
+      if (!item) return;
       e.preventDefault();
-      e.stopPropagation();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (window.history && window.history.pushState) {
-        window.history.pushState(null, '', hash);
-      }
-    },
-    false
-  );
+      smoothScrollTo(item.getAttribute('href'));
+      setBottomNavActive(item.getAttribute('data-bn'));
+    });
+    var bnWbid = document.getElementById('bn-wbid-btn');
+    if (bnWbid) {
+      bnWbid.addEventListener('click', function () {
+        var navWbid = document.getElementById('wbid-nav-btn');
+        if (navWbid) navWbid.click();
+        else if (document.getElementById('wbid-fab')) document.getElementById('wbid-fab').click();
+      });
+    }
+  }
+
+  var mhBrand = document.getElementById('mhBrandHome');
+  if (mhBrand) {
+    mhBrand.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setBottomNavActive('player');
+    });
+  }
+
+  var mhSearch = document.querySelector('.mh-search');
+  if (mhSearch) {
+    mhSearch.addEventListener('click', function () { smoothScrollTo('#channels'); setBottomNavActive('channels'); });
+  }
+}
+
+function setBottomNavActive(key) {
+  var items = document.querySelectorAll('#bottom-nav .bn-item[data-bn]');
+  for (var i = 0; i < items.length; i++) {
+    items[i].classList.toggle('is-active', items[i].getAttribute('data-bn') === key);
+  }
+}
+
+function initWbidFabScroll() {
+  var fab = document.getElementById('wbid-fab');
+  if (!fab) return;
+
+  var morph = 0;
+  var morphStart = 24;
+  var morphEnd = 220;
+  var animating = false;
+
+  function scrollTarget() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    return Math.min(1, Math.max(0, (y - morphStart) / (morphEnd - morphStart)));
+  }
+
+  function applyMorph(value) {
+    fab.style.setProperty('--wbid-morph', value);
+    fab.classList.toggle('is-compact', value > 0.94);
+  }
+
+  function tick() {
+    var target = scrollTarget();
+    morph += (target - morph) * 0.11;
+    if (Math.abs(target - morph) < 0.0015) morph = target;
+    applyMorph(morph);
+    if (Math.abs(target - morph) > 0.0015) {
+      requestAnimationFrame(tick);
+    } else {
+      animating = false;
+    }
+  }
+
+  function kick() {
+    if (!animating) {
+      animating = true;
+      requestAnimationFrame(tick);
+    }
+  }
+
+  window.addEventListener('scroll', kick, { passive: true });
+  applyMorph(scrollTarget());
+  kick();
+}
+
+function initBottomNavScrollSpy() {
+  if (!window.matchMedia('(max-width: 768px)').matches) return;
+  document.body.classList.add('has-bottom-nav');
+
+  var sections = [
+    { key: 'player', el: document.getElementById('player') },
+    { key: 'channels', el: document.getElementById('channels') },
+  ];
+  var ticking = false;
+
+  function update() {
+    ticking = false;
+    var y = (window.scrollY || document.documentElement.scrollTop) + 120;
+    var active = 'player';
+    for (var i = 0; i < sections.length; i++) {
+      if (sections[i].el && sections[i].el.offsetTop <= y) active = sections[i].key;
+    }
+    setBottomNavActive(active);
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }, { passive: true });
+  update();
 }
 
 function bootPlayerUX() {
   initNavClicks();
+  initWbidFabScroll();
+  initBottomNavScrollSpy();
   var navLogo = document.getElementById('navLogoHome');
   if (navLogo) {
     navLogo.addEventListener('click', function (e) {
@@ -1923,10 +2325,10 @@ window._chFetch
     var raw = data.iframes || [];
 
     var localChannels = [
-      { id: 'skynz', name: 'Sky Sports Live 1', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/skynz/' },
+      { id: 'skynz', name: 'Sky Sports Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/skynz/' },
       { id: 'kayohin', name: 'Kayo Hindi', type: 'iframe', iframeSrc: 'https://b-player3.pages.dev/p1?id=kayohin' },
-      { id: 'star_telugu', name: 'Star Sports 1 HD Telugu', type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/telugu' },
-      { id: 'star_tamil',  name: 'Star Sports 1 HD Tamil',  type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/tamil-1' },
+      { id: 'star_telugu', name: 'Star Sports HD Telugu', type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/telugu' },
+      { id: 'star_tamil',  name: 'Star Sports HD Tamil',  type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/tamil-1' },
       { id: 'willow2',     name: 'Willow 2', type: 'hls', iframeSrc: 'https://tvsen5.aynaott.com/willowhd/tracks-v1a1/mono.ts.m3u8' },
       { id: 'starsp1tel',  name: 'Star Sports',  type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=starsp1tel' },
       { id: 'willowextra', name: 'Willow Extra', type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willowextra' },
@@ -1965,6 +2367,7 @@ window._chFetch
       btn.type = 'button';
       btn.className = 'ch-btn';
       btn.dataset.id = ch.id;
+      btn.dataset.initials = channelInitials(m.name);
       btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + m.name + '</span>';
       btn.setAttribute('aria-pressed', 'false');
       btn.addEventListener('click', function () { switchChannel(ch.id); }, { passive: true });
@@ -2022,6 +2425,12 @@ window._chFetch
     if ((e.ctrlKey || e.metaKey) && key.toLowerCase() === 'u') { e.preventDefault(); showBlock(); return; }
     if (e.metaKey && e.altKey && ['i','j','c','u'].indexOf(key.toLowerCase()) !== -1) {
       e.preventDefault(); showBlock();
+    }
+    if ((e.ctrlKey || e.metaKey) && ['c','a','p','s'].indexOf(key.toLowerCase()) !== -1) {
+      var t = e.target;
+      if (!t || !t.closest || !t.closest('input, textarea, [contenteditable="true"]')) {
+        e.preventDefault();
+      }
     }
   }, true);
 
