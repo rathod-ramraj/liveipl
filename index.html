@@ -520,6 +520,32 @@
       flex-shrink: 0;
     }
     .player-fs-btn { display: none; }
+    .ch-name-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      min-width: 0;
+    }
+    .ch-live-dot { display: none; }
+    .player-fs-exit {
+      display: none;
+      position: absolute;
+      top: max(10px, env(safe-area-inset-top));
+      right: max(10px, env(safe-area-inset-right));
+      z-index: 12;
+      width: 36px;
+      height: 36px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      background: rgba(0,0,0,0.65);
+      color: #fff;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      -webkit-tap-highlight-color: transparent;
+    }
 
     .player-ratio {
       position: relative; width: 100%;
@@ -891,44 +917,125 @@
         max-width: 100%;
         transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
       }
+      .player-card {
+        background: rgba(10, 9, 14, 0.92);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 14px;
+        box-shadow: 0 6px 28px rgba(0,0,0,0.4);
+      }
       .player-bar {
-        padding: 8px 10px;
-        gap: 6px;
+        padding: 6px 8px 6px 10px;
+        gap: 8px;
+        background: rgba(0,0,0,0.32);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
       }
       .player-info { gap: 8px; min-width: 0; flex: 1; }
-      .player-info-text { overflow: hidden; }
-      .ch-icon { width: 28px; height: 28px; border-radius: 7px; }
+      .player-info-text { overflow: hidden; flex: 1; }
+      .ch-icon { width: 26px; height: 26px; border-radius: 7px; box-shadow: none; }
       .ch-icon img { border-radius: 7px; }
+      .ch-name-row { gap: 6px; }
+      .ch-live-dot {
+        display: block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ff4d6d;
+        flex-shrink: 0;
+        animation: livepulse 1.8s ease-in-out infinite;
+      }
       .ch-name {
-        font-size: 12px;
+        font-size: 11.5px;
         font-weight: 600;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        line-height: 1.2;
       }
       .ch-meta { display: none; }
-      .player-actions { gap: 5px; }
-      .player-live-badge {
-        font-size: 9px;
-        padding: 2px 7px;
-        letter-spacing: 0.5px;
+      .player-live-badge { display: none; }
+      .player-actions {
+        gap: 3px;
+        padding: 3px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
       }
-      .player-live-badge .live-dot { width: 5px; height: 5px; }
       .player-reload-btn,
       .player-fs-btn {
-        padding: 6px 8px !important;
-        font-size: 11px;
-        min-width: 32px;
-        min-height: 32px;
+        padding: 0 !important;
+        font-size: 0;
+        min-width: 30px;
+        min-height: 30px;
+        width: 30px;
+        height: 30px;
         justify-content: center;
+        border: none !important;
+        background: transparent !important;
+        border-radius: 8px;
+        color: rgba(255,255,255,0.75);
       }
+      .player-reload-btn:active,
+      .player-fs-btn:active { background: rgba(255,255,255,0.1) !important; }
       .player-reload-btn .reload-label { display: none; }
       .player-fs-btn { display: inline-flex !important; }
-      .player-ratio { padding-top: 56.25%; }
+      .player-ratio {
+        padding-top: 56.25%;
+        background: #000;
+      }
+      html.player-mobile-fs,
+      html.player-mobile-fs body {
+        overflow: hidden;
+        height: 100%;
+      }
+      html.player-mobile-fs #site-nav,
+      html.player-mobile-fs #wbid-fab,
+      html.player-mobile-fs .player-bar {
+        visibility: hidden;
+        pointer-events: none;
+      }
+      html.player-mobile-fs .player-fs-exit {
+        display: inline-flex;
+      }
+      html.player-mobile-fs .player-fs-active {
+        position: fixed;
+        z-index: 99990;
+        background: #000;
+        padding-top: 0 !important;
+        border-radius: 0;
+        margin: 0;
+      }
+      @media (orientation: portrait) {
+        html.player-mobile-fs .player-fs-active {
+          width: 100vh;
+          height: 100vw;
+          max-width: 100vh;
+          max-height: 100vw;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(90deg);
+        }
+      }
+      @media (orientation: landscape) {
+        html.player-mobile-fs .player-fs-active {
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          transform: none;
+        }
+      }
+      html.player-mobile-fs .player-fs-active iframe,
+      html.player-mobile-fs .player-fs-active video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain;
+      }
       .hero-outer { min-height: min(100vh, 860px); padding: 88px 18px 48px; }
       .hero h1 { font-size: clamp(32px, 8vw, 48px); letter-spacing: -1.5px; }
-      .player-wrap { padding: 0 10px 40px; }
-      .player-card { border-radius: var(--r-md); }
+      .player-wrap { padding: 0 8px 36px; }
       .section { padding: 52px 16px; }
       .alt-section { padding: 52px 16px; }
       .glass-wrap { padding: 52px 16px; }
@@ -1417,15 +1524,21 @@
           <img src="favicon.png" alt="Logo">
         </div>
         <div class="player-info-text">
-          <div class="ch-name" id="curName">Loading Channel…</div>
+          <div class="ch-name-row">
+            <span class="ch-live-dot" aria-hidden="true"></span>
+            <div class="ch-name" id="curName">Loading Channel…</div>
+          </div>
           <div class="ch-meta" id="curMeta">Connecting to stream</div>
         </div>
       </div>
       <div class="player-actions">
         <div class="live-badge player-live-badge"><div class="live-dot"></div>Live</div>
-        <button type="button" class="btn btn-ghost btn-sm player-fs-btn" id="playerFsBtn" aria-label="Full screen">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+        <button type="button" class="btn btn-ghost btn-sm player-fs-btn" id="playerFsBtn" aria-label="Rotate and full screen">
+          <svg class="player-fs-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 10V6a2 2 0 0 1 2-2h4"/>
+            <path d="M21 14v4a2 2 0 0 1-2 2h-4"/>
+            <path d="M7 15l-4-4"/>
+            <path d="M17 9l4 4"/>
           </svg>
         </button>
         <button type="button" class="btn btn-ghost btn-sm player-reload-btn" onclick="reload()">
@@ -1445,6 +1558,11 @@
         <div class="spinner"></div>
         <span>Buffering…</span>
       </div>
+      <button type="button" id="playerFsExit" class="player-fs-exit" hidden aria-label="Exit full screen">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+          <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
   </div>
 </div>
@@ -1897,7 +2015,55 @@ function reload() {
   setTimeout(function () { switchChannel(cur); }, 350);
 }
 
+var mobilePlayerFs = false;
+
+function isMobilePlayer() {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
+
+function lockPlayerLandscape() {
+  try {
+    var ori = screen.orientation;
+    if (ori && ori.lock) {
+      return ori.lock('landscape').catch(function () {
+        return ori.lock('landscape-primary').catch(function () {});
+      });
+    }
+  } catch (_) {}
+  return Promise.resolve();
+}
+
+function unlockPlayerLandscape() {
+  try {
+    if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+  } catch (_) {}
+}
+
+function enterMobilePlayerFs() {
+  mobilePlayerFs = true;
+  document.documentElement.classList.add('player-mobile-fs');
+  elRatio.classList.add('player-fs-active');
+  var exitBtn = document.getElementById('playerFsExit');
+  if (exitBtn) exitBtn.hidden = false;
+  lockPlayerLandscape();
+  if (window.PerfController) PerfController.setStreaming(true);
+}
+
+function exitMobilePlayerFs() {
+  mobilePlayerFs = false;
+  document.documentElement.classList.remove('player-mobile-fs');
+  elRatio.classList.remove('player-fs-active');
+  var exitBtn = document.getElementById('playerFsExit');
+  if (exitBtn) exitBtn.hidden = true;
+  unlockPlayerLandscape();
+}
+
 function togglePlayerFullscreen() {
+  if (isMobilePlayer()) {
+    if (mobilePlayerFs) exitMobilePlayerFs();
+    else enterMobilePlayerFs();
+    return;
+  }
   if (window.PlayerKeyboard && PlayerKeyboard.toggleFullscreen) {
     PlayerKeyboard.toggleFullscreen(elRatio, showToast);
     return;
@@ -1934,15 +2100,7 @@ function armStallTimer(id) {
 //  DOUBLE-CLICK → FULLSCREEN TOGGLE
 // ════════════════════════════════════════════════════
 elRatio.addEventListener('dblclick', function () {
-  if (window.PlayerKeyboard && PlayerKeyboard.toggleFullscreen) {
-    PlayerKeyboard.toggleFullscreen(elRatio, showToast);
-    return;
-  }
-  if (!document.fullscreenElement) {
-    elRatio.requestFullscreen && elRatio.requestFullscreen();
-  } else {
-    document.exitFullscreen && document.exitFullscreen();
-  }
+  togglePlayerFullscreen();
 }, { passive: true });
 
 // ════════════════════════════════════════════════════
@@ -2027,6 +2185,14 @@ function bootPlayerUX() {
   if (fsBtn) {
     fsBtn.addEventListener('click', function () { togglePlayerFullscreen(); }, { passive: true });
   }
+  var fsExit = document.getElementById('playerFsExit');
+  if (fsExit) {
+    fsExit.addEventListener('click', function () { exitMobilePlayerFs(); }, { passive: true });
+  }
+  window.addEventListener('orientationchange', function () {
+    if (!mobilePlayerFs) return;
+    elRatio.classList.add('player-fs-active');
+  }, { passive: true });
   var navLogo = document.getElementById('navLogoHome');
   if (navLogo) {
     navLogo.addEventListener('click', function (e) {
