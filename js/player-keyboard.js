@@ -90,7 +90,11 @@
 
         if (key === 'f' || key === 'F') {
           e.preventDefault();
-          toggleFullscreen(elRatio, showToast);
+          if (opts.onToggleFullscreen) {
+            opts.onToggleFullscreen();
+          } else {
+            toggleFullscreen(elRatio, showToast);
+          }
           return;
         }
 
