@@ -14,7 +14,9 @@
     {
       id: '111movies',
       name: '111movies',
-      badge: 'Default · Ads free',
+      badge: 'Default · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
       movie: function (id) {
         return 'https://111movies.net/movie/' + encodeURIComponent(id);
       },
@@ -32,7 +34,9 @@
     {
       id: 'peachify',
       name: 'Peachify',
-      badge: 'IMDB · TMDB',
+      badge: 'IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
       movie: function (id) {
         return 'https://peachify.top/embed/movie/' + encodeURIComponent(id);
       },
@@ -50,7 +54,9 @@
     {
       id: 'vidfast',
       name: 'Vidfast',
-      badge: 'Auto-play · Next ep',
+      badge: 'TMDB · Auto-play',
+      imdb: false,
+      tmdb: true,
       movie: function (id) {
         return (
           'https://vidfast.pro/movie/' +
@@ -73,7 +79,9 @@
     {
       id: 'vidup',
       name: 'Vidup',
-      badge: 'Auto-play',
+      badge: 'TMDB · Auto-play',
+      imdb: false,
+      tmdb: true,
       movie: function (id) {
         return (
           'https://vidup.to/movie/' +
@@ -96,7 +104,9 @@
     {
       id: 'vidsrc-fyi',
       name: 'VidSrc.fyi',
-      badge: 'IMDB · TMDB',
+      badge: 'IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
       movie: function (id) {
         return 'https://vidsrc.fyi/embed/movie/' + encodeURIComponent(id);
       },
@@ -114,7 +124,9 @@
     {
       id: 'vidsrc-mov',
       name: 'VidSrc.mov',
-      badge: 'Mirror',
+      badge: 'IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
       movie: function (id) {
         return 'https://vidsrc.mov/embed/movie/' + encodeURIComponent(id);
       },
@@ -132,7 +144,9 @@
     {
       id: 'vidking',
       name: 'VidKing',
-      badge: 'Embed player',
+      badge: 'IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
       movie: function (id) {
         return 'https://www.vidking.net/embed/movie/' + encodeURIComponent(id);
       },
@@ -149,8 +163,10 @@
     },
     {
       id: 'vidnest',
-      name: 'VidNest',
-      badge: 'TMDB',
+      name: 'Vidnest',
+      badge: 'TMDB only',
+      imdb: false,
+      tmdb: true,
       movie: function (id) {
         return 'https://vidnest.fun/movie/' + encodeURIComponent(id);
       },
@@ -168,7 +184,9 @@
     {
       id: 'vidlink',
       name: 'Vidlink Pro',
-      badge: 'TMDB',
+      badge: 'TMDB only',
+      imdb: false,
+      tmdb: true,
       movie: function (id) {
         return 'https://vidlink.pro/movie/' + encodeURIComponent(id);
       },
@@ -186,7 +204,9 @@
     {
       id: 'videasy',
       name: 'Videasy',
-      badge: 'Fast · Next ep',
+      badge: 'TMDB · Next ep',
+      imdb: false,
+      tmdb: true,
       movie: function (id) {
         return (
           'https://player.videasy.net/movie/' +
@@ -238,6 +258,41 @@
     if (/^tt\d{7,10}$/i.test(s)) return s.toLowerCase();
     if (/^\d{4,10}$/.test(s)) return s;
     return null;
+  }
+
+  function getIdKind(id) {
+    if (!id) return null;
+    if (/^tt\d{7,10}$/i.test(id)) return 'imdb';
+    if (/^\d{4,10}$/.test(id)) return 'tmdb';
+    return null;
+  }
+
+  function serverSupports(server, kind) {
+    if (!kind) return true;
+    if (kind === 'imdb') return server.imdb !== false;
+    if (kind === 'tmdb') return server.tmdb !== false;
+    return false;
+  }
+
+  function getServersForId(mediaId) {
+    var kind = getIdKind(mediaId);
+    if (!kind) return SERVERS.slice();
+    var out = [];
+    for (var i = 0; i < SERVERS.length; i++) {
+      if (serverSupports(SERVERS[i], kind)) out.push(SERVERS[i]);
+    }
+    return out;
+  }
+
+  function ensureServerForId(mediaId) {
+    var list = getServersForId(mediaId);
+    if (!list.length) return false;
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i].id === state.serverId) return true;
+    }
+    state.serverId = list[0].id;
+    return true;
   }
 
   function getServer(id) {
@@ -505,9 +560,13 @@
 
   function updateServerSelect() {
     if (!els.serverSelect) return;
+    var id = state.mediaId || parseMediaId(els.idInput ? els.idInput.value : '');
+    ensureServerForId(id);
+    var list = getServersForId(id);
+    if (!list.length) list = SERVERS.slice();
     var html = '';
-    for (var i = 0; i < SERVERS.length; i++) {
-      var s = SERVERS[i];
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
       var sel = s.id === state.serverId;
       var label = s.name + (s.badge ? ' — ' + s.badge : '');
       html +=
@@ -640,8 +699,25 @@
       }
       return false;
     }
+    var isTv = els.tvCheck ? els.tvCheck.checked : false;
+    if (!ensureServerForId(id)) {
+      if (typeof global.showToast === 'function') {
+        global.showToast('No server available for this ID type');
+      }
+      return false;
+    }
+    if (isTv) {
+      var s = els.seasonInput ? parseInt(els.seasonInput.value, 10) : 0;
+      var e = els.episodeInput ? parseInt(els.episodeInput.value, 10) : 0;
+      if (!s || !e) {
+        if (typeof global.showToast === 'function') {
+          global.showToast('Season and episode are required for TV shows');
+        }
+        return false;
+      }
+    }
     state.mediaId = id;
-    state.isTv = els.tvCheck ? els.tvCheck.checked : false;
+    state.isTv = isTv;
     state.season = els.seasonInput ? parseInt(els.seasonInput.value, 10) || 1 : 1;
     state.episode = els.episodeInput ? parseInt(els.episodeInput.value, 10) || 1 : 1;
     state.displayTitle = defaultLabel();
@@ -723,7 +799,10 @@
     }
 
     if (els.idInput) {
-      els.idInput.addEventListener('input', schedulePrewarm);
+      els.idInput.addEventListener('input', function () {
+        schedulePrewarm();
+        if (state.open) updateServerSelect();
+      });
       els.idInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -738,6 +817,11 @@
 
     els.serverSelect.addEventListener('change', function () {
       state.serverId = els.serverSelect.value;
+      if (state.mediaId && !ensureServerForId(state.mediaId)) {
+        ensureServerForId(state.mediaId);
+        updateServerSelect();
+        return;
+      }
       loadEmbed();
     });
 

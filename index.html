@@ -39,6 +39,8 @@
   <link rel="preconnect" href="https://allrounder-live4.pages.dev" crossorigin>
   <link rel="preconnect" href="https://playerado.top" crossorigin>
   <link rel="preconnect" href="https://tvsen5.aynaott.com" crossorigin>
+  <link rel="preconnect" href="https://tvsen7.aynaott.com" crossorigin>
+  <link rel="dns-prefetch" href="https://tvsen7.aynaott.com">
   <link rel="preconnect" href="https://cinearena.fun" crossorigin>
   <link rel="dns-prefetch" href="https://cinearena.fun">
   <link rel="preconnect" href="https://b-player3.pages.dev" crossorigin>
@@ -1541,9 +1543,9 @@
         <div class="player-info-text">
           <div class="ch-name-row">
             <span class="ch-live-dot" aria-hidden="true"></span>
-            <div class="ch-name" id="curName">Loading Channel…</div>
+            <div class="ch-name" id="curName">Select a channel</div>
           </div>
-          <div class="ch-meta" id="curMeta">Connecting to stream</div>
+          <div class="ch-meta" id="curMeta">Pick a live channel below to start watching</div>
         </div>
       </div>
       <div class="player-actions">
@@ -1566,8 +1568,8 @@
     </div>
     <div class="player-ratio" id="playerRatio">
       <div class="player-ph" id="playerPh">
-        <div class="spinner"></div>
-        <span style="font-size:13px;color:var(--text-3)">Loading stream…</span>
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="rgba(255,255,255,.15)" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span style="font-size:13px;color:var(--text-2);max-width:280px;text-align:center;line-height:1.5">Select a channel below to start watching</span>
       </div>
       <div id="buf-overlay">
         <div class="spinner"></div>
@@ -1586,7 +1588,7 @@
 <div class="section" id="channels">
   <div class="s-label">Live Channels</div>
   <div class="s-title">Switch instantly</div>
-  <div class="s-desc">Click any channel to switch. Streams update in real time.</div>
+  <div class="s-desc">Tap any channel to start watching. If one stream fails, try another channel.</div>
   <div class="ch-grid" id="chGrid">
     <div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">
       <div class="spinner" style="margin:0 auto 12px;border-top-color:rgba(255,255,255,.3)"></div>
@@ -1840,7 +1842,7 @@ var stallTimer = null;
 var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.buildHlsConfig
 
 var ALLOWED = new Set([
-  'eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
+  'ss1eng','ss2hd','eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
   'starsp1tel','star_telugu','star_tamil','willowextra','willowhd','willow','willow2','skynz','kayohin','fox501'
 ]);
 
@@ -1883,6 +1885,8 @@ var CH_LINK_ICON =
   '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 
 var META = {
+  ss1eng:     { name: 'Star Sports HD 1 English', sub: 'Star Sports 1 · English HD' },
+  ss2hd:      { name: 'Star Sports 2 HD English', sub: 'Star Sports 2 · English HD' },
   eng:        { name: 'Star Sports HD English', sub: 'Star Sports English' },
   starhindi:  { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
   star_hindi: { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
@@ -1909,8 +1913,10 @@ function cleanChannelName(name) {
     .replace(/\bHD\s+1\b/gi, 'HD')
     .replace(/\b1\s+HD\b/gi, 'HD')
     .replace(/\bLive\s+1\b/gi, 'Live')
-    .replace(/\bSports\s+1\b/gi, 'Sports')
-    .replace(/\s+1\s+(English|Hindi|Telugu|Tamil)\b/gi, ' $1');
+    .replace(/\bSports\s+1\b(?!\s+HD)/gi, 'Sports')
+    .replace(/\s+1\s+(English|Hindi|Telugu|Tamil)\b/gi, function (m, lang) {
+      return /HD\s+1\s+/i.test(name) ? m : ' ' + lang;
+    });
 }
 
 function getMeta(id) {
@@ -1936,6 +1942,8 @@ function sortChannels(list) {
     }
   }
 
+  take('ss1eng');
+  take('ss2hd');
   take('eng');
   if (!used.starhindi) take('starhindi');
   if (!used.starhindi) take('star_hindi');
@@ -1980,6 +1988,38 @@ function showToast(msg, dur) {
 function showBuffer() { if (elBufOv) elBufOv.classList.add('show'); }
 function hideBuffer() { if (elBufOv) elBufOv.classList.remove('show'); }
 
+function setPlayerPhMessage(msg, showSpinner) {
+  if (!elPh) return;
+  elPh.style.display = '';
+  var span = elPh.querySelector('span');
+  if (span) span.textContent = msg;
+  var icon = elPh.querySelector('svg');
+  if (icon) icon.style.display = showSpinner ? 'none' : '';
+  var spinner = elPh.querySelector('.spinner');
+  if (spinner) spinner.style.display = showSpinner ? '' : 'none';
+}
+
+function showIdlePlayer() {
+  hideBuffer();
+  if (window.LivePlayerCore && elRatio) LivePlayerCore.destroy(elRatio);
+  if (elRatio) elRatio.classList.remove('is-iframe-active');
+  cur = null;
+  setPlayerPhMessage('Select a channel below to start watching', false);
+  elName.textContent = 'Select a channel';
+  elMeta.textContent = 'Pick a live channel below to start watching';
+  setHomePageTitle();
+}
+
+function showStreamFailure() {
+  hideBuffer();
+  clearTimeout(stallTimer);
+  if (window.LivePlayerCore && elRatio) LivePlayerCore.destroy(elRatio);
+  if (elRatio) elRatio.classList.remove('is-iframe-active');
+  setPlayerPhMessage('This channel is not working. Please try another channel.', false);
+  elMeta.textContent = 'Stream unavailable — try another channel';
+  showToast('This channel is not working — try another channel', 5500);
+}
+
 // ════════════════════════════════════════════════════
 //  STREAM LOADER — HLS.js / Safari native / iframe (see js/player-core.js)
 // ════════════════════════════════════════════════════
@@ -2010,7 +2050,11 @@ function playerCtx(ch) {
 }
 
 function setStream(ch) {
-  if (elPh) elPh.style.display = 'none';
+  if (elPh) {
+    elPh.style.display = 'none';
+    var spinner = elPh.querySelector('.spinner');
+    if (spinner) spinner.style.display = '';
+  }
   if (elRatio) elRatio.classList.remove('is-iframe-active');
 
   showBuffer();
@@ -2222,10 +2266,13 @@ function onFullscreenChange() {
 // ════════════════════════════════════════════════════
 function retryChannel(id) {
   if (!retryMap[id]) retryMap[id] = 0;
-  if (retryMap[id] >= 3) return;
+  if (retryMap[id] >= 3) {
+    if (cur === id) showStreamFailure();
+    return;
+  }
   retryMap[id]++;
   var delay = retryMap[id] * 3000;
-  showToast('⚠ Stream error — retrying in ' + (delay / 1000) + 's…', delay);
+  showToast('Stream error — retrying in ' + (delay / 1000) + 's…', delay);
   setTimeout(function () { if (cur === id) switchChannel(id); }, delay);
 }
 
@@ -2382,6 +2429,8 @@ window._chFetch
     var raw = data.iframes || [];
 
     var localChannels = [
+      { id: 'ss1eng', name: 'Star Sports HD 1 English', type: 'hls', iframeSrc: 'https://tvsen7.aynaott.com/sspts1/tracks-v1a1/mono.ts.m3u8' },
+      { id: 'ss2hd',  name: 'Star Sports 2 HD English', type: 'hls', iframeSrc: 'https://tvsen7.aynaott.com/ssport2hd/tracks-v1a1/mono.ts.m3u8' },
       { id: 'skynz', name: 'Sky Sports Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/skynz/' },
       { id: 'kayohin', name: 'Kayo Hindi', type: 'iframe', iframeSrc: 'https://b-player3.pages.dev/p1?id=kayohin' },
       { id: 'star_telugu', name: 'Star Sports HD Telugu', type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/telugu' },
@@ -2444,11 +2493,10 @@ window._chFetch
       IframePlayer.warmChannels(channels);
     }
     if (window.PlayerPrefetch && PlayerPrefetch.prefetchChannels) {
-      PlayerPrefetch.prefetchChannels(channels, ['eng']);
+      PlayerPrefetch.prefetchChannels(channels, ['ss1eng', 'ss2hd']);
     }
 
-    var defaultCh = channels.find(function (c) { return c.id === 'eng'; }) || channels[0];
-    switchChannel(defaultCh.id);
+    showIdlePlayer();
   })
   .catch(function () {
     elGrid.innerHTML = '<div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">Failed to load channels</div>';

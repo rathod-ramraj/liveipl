@@ -1,178 +1,839 @@
 {
+  "$schema": "playup-design-system/v2",
   "design_system": {
-    "name": "Glassmorphism Streaming UI",
-    "version": "1.0",
+    "name": "PlayUp Glassmorphism Streaming UI",
+    "version": "2.0",
+    "description": "Portable design specification for dark glass streaming apps. Load this file at runtime to apply CSS variables and ShapeGrid background. All values mirror index.html.",
+    "source_project": "liveStream / playup.vercel.app",
+
     "style": {
       "theme": "dark_glass",
+      "theme_color": "#121019",
       "design_principles": [
-        "glassmorphism",
-        "soft gradients",
-        "depth through blur and transparency",
-        "minimal borders",
-        "focus on content layering"
+        "Glassmorphism with frosted surfaces over animated grid background",
+        "Depth through blur, transparency, and soft shadows — not heavy borders",
+        "Pink-to-purple accent gradient as brand signature",
+        "Content-first layering: background → vignette → UI (z-index 2+)",
+        "Pill-shaped interactive elements for a modern streaming feel",
+        "Staggered entrance animations on page load",
+        "Motion pauses during playback to protect performance",
+        "Adaptive page titles reflect user context (live / movie / modal)"
       ],
+
+      "css_custom_properties": {
+        "_comment": "Map 1:1 to :root in index.html. Override at runtime via applyDesignPalette().",
+        "--bg": "#121019",
+        "--surface": "rgba(255,255,255,0.08)",
+        "--surface-2": "rgba(255,255,255,0.04)",
+        "--glass-border": "rgba(38, 35, 53, 0.55)",
+        "--glass-border-2": "rgba(38, 35, 53, 0.35)",
+        "--highlight": "#ff4d6d",
+        "--text-1": "#ffffff",
+        "--text-2": "rgba(255,255,255,0.65)",
+        "--text-3": "rgba(255,255,255,0.35)",
+        "--shadow-soft": "0 8px 32px rgba(0,0,0,0.5)",
+        "--shadow-glass": "inset 0 0 0 1px rgba(255,255,255,0.08)",
+        "--blur": "blur(20px)",
+        "--btn-primary-bg": "#ffffff",
+        "--btn-primary-fg": "#000000",
+        "--r-sm": "8px",
+        "--r-md": "16px",
+        "--r-lg": "24px",
+        "--r-pill": "999px",
+        "--font": "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif"
+      },
+
       "color_palette": {
         "primary_bg": "#121019",
-        "secondary_bg": "rgba(255, 255, 255, 0.05)",
-        "glass_surface": "rgba(255, 255, 255, 0.08)",
+        "secondary_bg": "rgba(255,255,255,0.04)",
+        "glass_surface": "rgba(255,255,255,0.08)",
         "glass_border": "rgba(38, 35, 53, 0.55)",
+        "glass_border_light": "rgba(38, 35, 53, 0.35)",
         "highlight": "#ff4d6d",
+        "highlight_soft": "#ff6b81",
+        "accent_purple": "#c93cff",
+        "accent_blue": "#3b82f6",
+        "accent_green": "#10b981",
         "text_primary": "#ffffff",
-        "text_secondary": "rgba(255,255,255,0.7)"
+        "text_secondary": "rgba(255,255,255,0.65)",
+        "text_tertiary": "rgba(255,255,255,0.35)",
+        "player_bg": "#050507",
+        "live_dot": "#ff4d6d",
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "cyan": "#06b6d4"
       },
-      "typography": {
-        "font_family": "Inter, SF Pro Display, sans-serif",
-        "heading_weight": 600,
-        "body_weight": 400,
-        "scale": {
-          "hero": "48px",
-          "title": "28px",
-          "subtitle": "18px",
-          "body": "14px"
+
+      "gradients": {
+        "brand_primary": {
+          "css": "linear-gradient(135deg, #ff4d6d, #c93cff)",
+          "usage": ["nav-logo-mark", "ch-icon", "btn-grad", "chk checkmarks", "wbid-card-icon"]
+        },
+        "brand_hero_text": {
+          "css": "linear-gradient(135deg, #ff4d6d 0%, #c93cff 50%, #3b82f6 100%)",
+          "background_size": "200% auto",
+          "usage": [".g shimmer text class on hero headings"]
+        },
+        "body_vignette": {
+          "css": "radial-gradient(ellipse 85% 75% at 50% 42%, transparent 0%, rgba(8, 6, 14, 0.5) 100%)",
+          "usage": ["body::before fixed overlay"]
+        },
+        "section_divider": {
+          "css": "linear-gradient(to right, transparent, var(--glass-border-2), transparent)",
+          "usage": [".divider"]
+        },
+        "glass_card_orb_purple": {
+          "css": "radial-gradient(circle, rgba(201,60,255,.12) 0%, transparent 70%)",
+          "usage": [".glass-card::before floating orb"]
+        },
+        "glass_card_orb_blue": {
+          "css": "radial-gradient(circle, rgba(59,130,246,.10) 0%, transparent 70%)",
+          "usage": [".glass-card::after floating orb"]
+        },
+        "alt_screen_overlay": {
+          "css": "linear-gradient(135deg, rgba(255,77,109,.08), rgba(201,60,255,.06))",
+          "usage": [".alt-screen::after"]
+        },
+        "video_controls_panel": {
+          "css": "linear-gradient(transparent, rgba(0,0,0,0.65))",
+          "usage": ["webkit media controls panel"]
         }
       },
+
+      "typography": {
+        "font_family": "Inter, SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif",
+        "google_fonts_url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap",
+        "weights": {
+          "light": 300,
+          "regular": 400,
+          "medium": 500,
+          "semibold": 600,
+          "bold": 700,
+          "extrabold": 800,
+          "black": 900
+        },
+        "antialiasing": "-webkit-font-smoothing: antialiased",
+        "line_height_body": 1.6,
+        "scale": {
+          "hero_h1": "clamp(40px, 6.5vw, 72px)",
+          "hero_h1_mobile": "clamp(32px, 8vw, 48px)",
+          "section_title": "clamp(28px, 4vw, 42px)",
+          "alt_heading": "clamp(24px, 3vw, 34px)",
+          "glass_h2": "36px",
+          "hero_lead": "17px",
+          "section_desc": "16px",
+          "body": "14px",
+          "small": "13px",
+          "caption": "12px",
+          "micro": "11px",
+          "section_label": "11px"
+        },
+        "letter_spacing": {
+          "hero": "-2.5px",
+          "hero_mobile": "-1.5px",
+          "section_title": "-1.2px",
+          "nav_logo": "-0.3px",
+          "live_badge": "0.75px to 0.8px uppercase",
+          "hero_badge_tag": "0.06em uppercase"
+        },
+        "text_styles": {
+          "section_label": {
+            "class": ".s-label",
+            "font_size": "11px",
+            "font_weight": 700,
+            "letter_spacing": "1.4px",
+            "text_transform": "uppercase",
+            "color": "var(--highlight)",
+            "opacity": 0.8
+          },
+          "gradient_text": {
+            "class": ".g",
+            "technique": "background-clip text with shimmer animation"
+          }
+        }
+      },
+
       "spacing": {
         "unit": 8,
-        "scale": [4, 8, 16, 24, 32, 48, 64]
+        "scale_px": [4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 28, 32, 40, 48, 52, 56, 64, 72],
+        "section_padding_desktop": "72px 32px",
+        "section_padding_mobile": "52px 16px",
+        "hero_outer_padding": "118px 28px 56px",
+        "hero_outer_padding_mobile": "88px 18px 48px",
+        "max_content_width": "1100px",
+        "max_nav_width": "min(720px, calc(100% - 32px))",
+        "scroll_padding_top": "112px"
       },
+
       "radius": {
         "small": "8px",
         "medium": "16px",
         "large": "24px",
-        "pill": "999px"
+        "pill": "999px",
+        "css_vars": {
+          "--r-sm": "8px",
+          "--r-md": "16px",
+          "--r-lg": "24px",
+          "--r-pill": "999px"
+        }
       },
+
       "shadows": {
-        "soft": "0 8px 32px rgba(0,0,0,0.4)",
-        "glass": "inset 0 0 0 1px rgba(255,255,255,0.1)"
+        "soft": "0 8px 32px rgba(0,0,0,0.5)",
+        "glass_inset": "inset 0 0 0 1px rgba(255,255,255,0.08)",
+        "nav": "0 10px 40px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.06)",
+        "nav_logo_glow": "0 0 18px rgba(255,77,109,0.35)",
+        "ch_icon_glow": "0 0 14px rgba(255,77,109,0.3)",
+        "btn_primary_hover": "0 8px 28px rgba(0,0,0,0.18)",
+        "btn_grad": "0 4px 20px rgba(255,77,109,0.3)",
+        "btn_grad_hover": "0 8px 30px rgba(255,77,109,0.45)",
+        "ch_btn_active": "0 0 0 1px rgba(255,77,109,0.28), var(--shadow-soft)",
+        "wbid_fab": "0 8px 22px rgba(0,0,0,0.45)",
+        "wbid_modal_card": "0 24px 80px rgba(0,0,0,0.7)",
+        "ks_toast": "0 8px 24px rgba(0,0,0,0.4)"
       },
+
       "blur": {
-        "glass_blur": "backdrop-filter: blur(20px)",
-        "intensity": "high"
+        "glass": "blur(20px)",
+        "buffer_overlay": "blur(14px)",
+        "wbid_fab": "blur(12px)",
+        "wbid_modal_backdrop": "blur(8px)",
+        "wbid_topbar": "blur(12px)",
+        "wbid_server_panel": "blur(16px)",
+        "player_fs_exit": "blur(10px)",
+        "css_var": "--blur: blur(20px)"
+      },
+
+      "z_index_layers": {
+        "shapegrid_background": 0,
+        "body_vignette": 1,
+        "main_content": 2,
+        "wbid_fab": 8500,
+        "site_nav": 9000,
+        "wbid_modal": 9100,
+        "wbid_overlay_theater": 9200,
+        "buffer_overlay": 5,
+        "player_mobile_fs": 99999,
+        "ks_toast": 99999,
+        "devtools_block": 999999
       }
     },
 
     "layout": {
-      "type": "layered",
-      "sections": [
-        "hero_banner",
-        "floating_navbar",
-        "content_carousel"
+      "type": "single_page_layered",
+      "scroll_behavior": "smooth",
+      "section_order": [
+        "sg-global-bg (fixed canvas)",
+        "site-nav (fixed floating pill)",
+        "hero-outer (100vh centered)",
+        "player-wrap",
+        "channels section",
+        "divider",
+        "features section",
+        "divider",
+        "alt-section (alternating rows)",
+        "glass-wrap (CTA card)",
+        "footer",
+        "wbid-fab (fixed)",
+        "wbid-modal",
+        "wbid-overlay (theater mode)"
       ],
       "grid": {
-        "columns": 12,
-        "gutter": "16px",
-        "margin": "32px"
+        "feat_grid_desktop": "repeat(3, 1fr) gap 16px",
+        "feat_grid_tablet": "repeat(2, 1fr)",
+        "feat_grid_mobile": "1fr",
+        "alt_row": "1fr 1fr gap 72px",
+        "alt_row_mobile": "1fr gap 32px (visual card hidden)",
+        "ch_grid": "flex wrap center gap 10px (pill buttons)"
+      },
+      "breakpoints": {
+        "mobile": "max-width: 768px",
+        "tablet": "769px – 1024px",
+        "desktop": "min-width: 1025px"
+      },
+      "safe_areas": {
+        "usage": "env(safe-area-inset-*) on mobile nav, wbid-fab, player-fs-exit",
+        "examples": [
+          "top: max(28px, env(safe-area-inset-top))",
+          "bottom: max(12px, env(safe-area-inset-bottom))"
+        ]
+      }
+    },
+
+    "background": {
+      "shapegrid": {
+        "container_id": "sg-global-bg",
+        "script": "ShapeGrid.js",
+        "api": "window.ShapeGridApp.init(container, options)",
+        "defaults_from_design_json": {
+          "direction": "diagonal",
+          "speed": 0.28,
+          "squareSize": 40,
+          "shape": "square",
+          "backgroundColor": "#121019",
+          "borderColor": "#262335",
+          "hoverFillColor": "derived from color_palette.highlight at 0.2 alpha",
+          "hoverTrailAmount": 3,
+          "vignetteEdge": "rgba(5, 3, 14, 0.44)"
+        },
+        "shapegrid_js_defaults": {
+          "direction": "diagonal",
+          "speed": 0.5,
+          "borderColor": "rgba(255,255,255,0.08)",
+          "squareSize": 40,
+          "hoverFillColor": "rgba(255,77,109,0.35)",
+          "shape": "square",
+          "hoverTrailAmount": 5,
+          "backgroundColor": "",
+          "vignetteEdge": "rgba(8, 6, 14, 0.35)"
+        },
+        "supported_shapes": ["square", "hexagon", "triangle", "circle"],
+        "performance": {
+          "mobile": "freeze grid, speed multiplier 0",
+          "streaming": "freeze via PerfController",
+          "wbid_active": "freeze",
+          "low_power": "freeze on <=4 cores or <=4GB RAM or saveData"
+        }
+      },
+      "body_edge_shade": {
+        "selector": "body::before",
+        "position": "fixed inset 0",
+        "gradient": "radial-gradient(ellipse 85% 75% at 50% 42%, transparent 0%, rgba(8, 6, 14, 0.5) 100%)",
+        "pointer_events": "none"
       }
     },
 
     "components": {
       "navbar": {
-        "type": "floating_glass",
-        "position": "top_center",
+        "id": "site-nav",
+        "type": "floating_glass_pill",
+        "position": {
+          "desktop": "fixed top 36px, left 50%, translateX(-50%)",
+          "mobile": "top max(28px, safe-area), width calc(100% - 20px), height 50px"
+        },
+        "dimensions": {
+          "height_desktop": "56px",
+          "height_mobile": "50px",
+          "max_width": "min(720px, calc(100% - 32px))",
+          "padding": "0 10px 0 18px"
+        },
         "style": {
-          "background": "glass_surface",
-          "border_radius": "pill",
-          "blur": "glass_blur",
-          "border": "glass_border"
+          "background": "rgba(255,255,255,0.09)",
+          "backdrop_filter": "var(--blur)",
+          "border": "1.5px solid rgba(255,255,255,0.14)",
+          "border_radius": "var(--r-pill)",
+          "box_shadow": "nav shadow token"
         },
-        "items": {
-          "layout": "horizontal",
-          "spacing": "24px",
-          "icon_size": "20px"
-        },
-        "interaction": {
-          "hover": {
-            "background": "rgba(255,255,255,0.1)",
-            "transition": "0.3s ease"
+        "entrance_animation": "slideDown 0.6s 0.05s cubic-bezier(.22,.68,0,1.2)",
+        "children": {
+          "nav_logo": {
+            "classes": "nav-logo",
+            "logo_mark": "30×30px gradient square, 8px radius, play icon optional",
+            "logo_text": "16px weight 700",
+            "live_badge_inline": true
           },
-          "active": {
-            "background": "rgba(255,255,255,0.2)"
+          "nav_menu": {
+            "layout": "horizontal flex gap 2px",
+            "nav_link": {
+              "font": "14px weight 500",
+              "padding": "6px 10px",
+              "color": "var(--text-2)",
+              "hover": "color text-1, background rgba(255,255,255,0.08)",
+              "transition": "color .2s, background .2s"
+            },
+            "nav_cta": {
+              "variant": "primary pill button",
+              "padding": "7px 14px",
+              "hover": "translateY(-1px), shadow 0 6px 20px rgba(0,0,0,0.2)"
+            },
+            "nav_hide_mobile": "hidden below 768px for Channels / Change Version"
+          }
+        },
+        "state_classes": {
+          "body.wbid-active": "opacity 0, pointer-events none, transition opacity 0.3s",
+          "html.perf-streaming": "backdrop-filter none, solid background rgba(18,16,25,0.94)"
+        }
+      },
+
+      "live_badge": {
+        "classes": ["live-badge", "nav-logo .live-badge", "player-live-badge"],
+        "style": {
+          "display": "inline-flex align center gap 5-6px",
+          "font_size": "10.5px – 11px",
+          "font_weight": 700,
+          "text_transform": "uppercase",
+          "letter_spacing": "0.75px – 0.8px",
+          "color": "#ff6b81",
+          "background": "rgba(255,77,109,0.12–0.14)",
+          "border": "1px solid rgba(255,77,109,0.3–0.35)",
+          "padding": "3px 10px – 5px 12px",
+          "border_radius": "var(--r-pill)"
+        },
+        "live_dot": {
+          "size": "6px – 7px circle",
+          "color": "#ff4d6d",
+          "animation": "livepulse 1.8s ease-in-out infinite"
+        }
+      },
+
+      "hero": {
+        "wrapper": "hero-outer min-height 100vh flex center",
+        "classes": "hero anim-fade-up",
+        "elements": {
+          "hero_badge": {
+            "structure": "hero-badge-tag (white pill NEW) + hero-badge-msg",
+            "background": "rgba(255,255,255,0.04) glass border",
+            "backdrop_filter": "var(--blur)"
+          },
+          "h1": {
+            "stagger_class": "anim-fade-up-1",
+            "gradient_span_class": "g"
+          },
+          "lead": {
+            "class": "hero-lead anim-fade-up-2",
+            "max_width": "520px"
+          },
+          "cta_row": {
+            "class": "hero-cta-row anim-fade-up-3",
+            "buttons": ["btn-primary Watch live", "btn-secondary-outline Watch by ID"]
           }
         }
       },
 
-      "hero_section": {
-        "type": "full_width_banner",
-        "overlay": {
-          "gradient": "linear-gradient(to right, rgba(0,0,0,0.7), transparent)"
-        },
-        "content_alignment": "left",
-        "elements": [
-          "title",
-          "primary_button",
-          "secondary_button"
-        ]
-      },
-
       "buttons": {
+        "base": {
+          "class": ".btn",
+          "display": "inline-flex gap 8px",
+          "padding": "12px 24px",
+          "border_radius": "var(--r-lg)",
+          "font": "14px weight 600",
+          "hover": "translateY(-2px)",
+          "active": "translateY(0) scale(0.97)",
+          "transition": "transform .2s, box-shadow .2s, background .2s"
+        },
         "primary": {
+          "classes": ["btn-primary", "nav-cta", "wbid-watch"],
           "background": "#ffffff",
           "color": "#000000",
-          "radius": "pill",
-          "padding": "12px 24px"
+          "border_radius": "var(--r-pill)",
+          "padding": "12px 26px",
+          "hover_background": "#f2f2f2"
         },
-        "secondary": {
-          "background": "glass_surface",
-          "blur": "glass_blur",
-          "border": "glass_border",
-          "color": "#ffffff"
+        "secondary_outline": {
+          "class": "btn-secondary-outline",
+          "background": "rgba(255,255,255,0.04)",
+          "border": "1px solid var(--glass-border)",
+          "color": "var(--text-2)",
+          "hover": "text-1, background rgba(255,255,255,0.08)"
+        },
+        "dark": {
+          "class": "btn-dark",
+          "background": "rgba(255,255,255,0.9)",
+          "color": "#0a0a0f"
+        },
+        "gradient": {
+          "class": "btn-grad",
+          "background": "brand_primary gradient",
+          "color": "#fff"
+        },
+        "ghost": {
+          "class": "btn-ghost",
+          "background": "var(--surface)",
+          "border": "1px solid var(--glass-border-2)",
+          "backdrop_filter": "var(--blur)",
+          "usage": ["player reload", "player fullscreen"]
+        },
+        "small": {
+          "class": "btn-sm",
+          "padding": "6px 14px",
+          "font_size": "12.5px",
+          "border_radius": "var(--r-sm)"
         }
       },
 
-      "carousel": {
-        "type": "horizontal_scroll",
-        "card_style": {
-          "background": "rgba(255,255,255,0.05)",
-          "radius": "medium",
-          "hover_scale": 1.05
+      "player": {
+        "wrapper": "player-wrap max-width 1100px",
+        "card": {
+          "class": "player-card",
+          "background": "var(--surface)",
+          "backdrop_filter": "var(--blur)",
+          "border_radius": "var(--r-lg)",
+          "border": "1px solid var(--glass-border)",
+          "box_shadow": "soft + glass inset"
         },
-        "scroll_behavior": "snap",
-        "controls": "overlay_buttons"
+        "bar": {
+          "class": "player-bar",
+          "padding_desktop": "14px 20px",
+          "padding_mobile": "6px 8px 6px 10px",
+          "border_bottom": "1px solid var(--glass-border-2)",
+          "mobile_compact": {
+            "ch_icon": "26×26px",
+            "ch_name": "11.5px ellipsis",
+            "ch_meta": "hidden",
+            "inline_live_dot": "visible in ch-name-row",
+            "player_live_badge": "hidden",
+            "actions": "icon-only 30×30px in grouped pill tray"
+          }
+        },
+        "ratio": {
+          "class": "player-ratio",
+          "aspect": "padding-top clamp(52%, 56.25%, 58%)",
+          "background": "#050507",
+          "fullscreen": "100vw × 100vh black"
+        },
+        "buffer_overlay": {
+          "id": "buf-overlay",
+          "show_class": "show",
+          "background": "rgba(6,5,10,0.55) blur(14px)",
+          "transition": "opacity .28s ease"
+        },
+        "spinner": {
+          "size": "34px",
+          "border": "3px rgba(255,255,255,.08)",
+          "border_top": "#ff4d6d",
+          "animation": "spin .75s linear infinite"
+        },
+        "mobile_fullscreen": {
+          "html_class": "player-mobile-fs",
+          "wrap_class": "player-wrap.is-mobile-fs",
+          "z_index": 99999,
+          "portrait_rotate": "100vh × 100vw centered rotate(90deg)",
+          "bar_hidden": true,
+          "fs_exit_button": "36px circle top-right safe-area"
+        }
+      },
+
+      "channel_pills": {
+        "grid_class": "ch-grid",
+        "button_class": "ch-btn",
+        "layout": "flex wrap center gap 10px",
+        "style": {
+          "padding": "12px 24px",
+          "font": "14px weight 500",
+          "color": "var(--text-2)",
+          "background": "rgba(255,255,255,0.04)",
+          "border": "1px solid var(--glass-border)",
+          "border_radius": "var(--r-pill)",
+          "backdrop_filter": "var(--blur)"
+        },
+        "hover": {
+          "color": "var(--text-1)",
+          "background": "rgba(255,255,255,0.08)",
+          "transform": "translateY(-2px)"
+        },
+        "active": {
+          "border": "rgba(255,77,109,0.55)",
+          "background": "rgba(255,77,109,0.08)",
+          "box_shadow": "ch_btn_active token"
+        },
+        "transition": "color .25s, background .25s, border-color .25s, transform .25s, box-shadow .25s"
+      },
+
+      "feature_cards": {
+        "grid": "feat-grid",
+        "card": "feat-card",
+        "padding": "28px 24px",
+        "icon_box": "40×40px rgba surface border radius 10px",
+        "hover": "translateY(-4px), shadow soft, border lighten"
+      },
+
+      "glass_cta_card": {
+        "wrapper": "glass-wrap",
+        "card": "glass-card",
+        "padding": "56px 52px desktop / 32px 24px mobile",
+        "floating_orbs": "glass-card::before and ::after with orbFloat animation",
+        "mock_ui": "glass-mock with 16:9 glass-mock-screen"
+      },
+
+      "alt_feature_rows": {
+        "section": "alt-section",
+        "row": "alt-row grid 2 columns",
+        "check_list": "alt-check-list with gradient chk circles",
+        "visual_card": "alt-visual-card with alt-screen 16:9"
+      },
+
+      "footer": {
+        "padding": "28px 40px",
+        "border_top": "var(--glass-border-2)",
+        "background": "rgba(255,255,255,0.02)",
+        "mobile": "column center text"
+      },
+
+      "watch_by_id_fab": {
+        "id": "wbid-fab",
+        "position": "fixed right 18px bottom 18px",
+        "z_index": 8500,
+        "dimensions": {
+          "desktop_height": "40px",
+          "desktop_expand": "100px label width",
+          "mobile_height": "36px",
+          "mobile_expand": "88px"
+        },
+        "style": {
+          "background": "rgba(38, 10, 22, 0.94)",
+          "color": "#ffb3c1",
+          "border": "1px solid rgba(255, 120, 150, 0.42+)",
+          "font": "12px weight 600",
+          "backdrop_filter": "blur(12px)"
+        },
+        "scroll_morph": {
+          "css_var": "--wbid-morph (0 = expanded label, 1 = icon-only circle)",
+          "morph_start_scroll_y": 24,
+          "morph_end_scroll_y": 220,
+          "lerp_factor": 0.085,
+          "compact_threshold": 0.94,
+          "compact_class": "is-compact",
+          "animated_properties": ["width", "padding", "gap", "label opacity", "label translateX", "svg size", "border-color alpha"],
+          "transition": "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)"
+        },
+        "hidden_states": ["body.wbid-active", "body.wbid-modal-open"],
+        "hidden_transition": "opacity 0.3s ease"
+      },
+
+      "watch_by_id_modal": {
+        "id": "wbid-modal",
+        "position": "fixed inset 0 flex align end justify end",
+        "padding": "22px, bottom 88px above FAB",
+        "backdrop": "rgba(0,0,0,0.55) blur(8px)",
+        "card": {
+          "class": "wbid-card",
+          "width": "min(100%, 380px)",
+          "border_radius": "20px",
+          "background": "rgba(8,8,12,0.96)",
+          "entrance": "fadeUp 0.35s ease"
+        },
+        "input": {
+          "class": "wbid-input",
+          "focus_border": "rgba(255,77,109,0.45)",
+          "border_radius": "12px"
+        },
+        "tv_fields": "grid 2 cols, toggled by .is-visible"
+      },
+
+      "watch_by_id_theater": {
+        "id": "wbid-overlay",
+        "background": "#000 fullscreen",
+        "body_class": "wbid-active",
+        "topbar": "wbid-topbar absolute overlay pointer-events none on container",
+        "back_button": "wbid-back glass pill",
+        "server_panel": "wbid-server-panel collapsible blur panel",
+        "next_episode": "wbid-next-ep white pill bottom-right",
+        "loading": "wbid-loading spinner overlay"
+      },
+
+      "keyboard_toast": {
+        "id": "ks-toast",
+        "position": "fixed bottom 28px center",
+        "show_class": "show",
+        "hidden_transform": "translateY(8px) opacity 0",
+        "shown_transform": "translateY(0) opacity 1",
+        "transition": "opacity .2s, transform .2s"
+      },
+
+      "devtools_block": {
+        "id": "dt-block",
+        "z_index": 999999,
+        "background": "rgba(10,10,15,.97)",
+        "show_class": "show"
       }
     },
 
     "animations": {
-      "global": {
-        "duration": "300ms",
-        "easing": "ease-in-out"
-      },
-      "hover": {
-        "scale": 1.05,
-        "shadow": "soft"
-      },
-      "glass_effect": {
-        "blur_transition": "smooth",
-        "opacity_shift": "0.05 → 0.1"
-      },
-      "carousel": {
-        "scroll_smooth": true,
-        "snap_alignment": "center"
-      },
-      "fade_in": {
-        "type": "opacity + translateY",
-        "values": {
-          "start": "opacity 0, translateY(20px)",
-          "end": "opacity 1, translateY(0)"
+      "keyframes": {
+        "fadeUp": {
+          "from": { "opacity": 0, "transform": "translateY(24px)" },
+          "to": { "opacity": 1, "transform": "translateY(0)" }
+        },
+        "fadeIn": {
+          "from": { "opacity": 0 },
+          "to": { "opacity": 1 }
+        },
+        "slideDown": {
+          "from": { "opacity": 0, "transform": "translateX(-50%) translateY(-20px)" },
+          "to": { "opacity": 1, "transform": "translateX(-50%) translateY(0)" },
+          "note": "Used on fixed centered nav"
+        },
+        "livepulse": {
+          "0%, 100%": { "opacity": 1, "box_shadow": "0 0 0 0 rgba(239,68,68,0.5)" },
+          "50%": { "opacity": 0.6, "box_shadow": "0 0 0 5px rgba(239,68,68,0)" }
+        },
+        "orbFloat": {
+          "0%, 100%": { "transform": "translateY(0px)" },
+          "50%": { "transform": "translateY(-12px)" }
+        },
+        "shimmer": {
+          "0%": { "background_position": "200% center" },
+          "100%": { "background_position": "-200% center" }
+        },
+        "spin": {
+          "to": { "transform": "rotate(360deg)" }
+        },
+        "glowPulse": {
+          "0%, 100%": { "opacity": 0.7 },
+          "50%": { "opacity": 1 }
         }
+      },
+
+      "entrance_classes": {
+        "anim-fade-up": { "animation": "fadeUp 0.6s cubic-bezier(.22,.68,0,1.2) both" },
+        "anim-fade-up-1": { "delay": "0.1s", "same_curve": true },
+        "anim-fade-up-2": { "delay": "0.2s" },
+        "anim-fade-up-3": { "delay": "0.3s" },
+        "mobile_duration_override": "0.45s for all entrance classes"
+      },
+
+      "infinite_loops": {
+        "live_dot": "livepulse 1.8s ease-in-out infinite",
+        "hero_gradient_text": "shimmer 4s linear infinite on .g",
+        "glass_card_orbs": "orbFloat 6s / 8s ease-in-out infinite (reverse on ::after)",
+        "spinners": "spin 0.75s – 0.8s linear infinite"
+      },
+
+      "transitions": {
+        "nav_links": "color .2s, background .2s",
+        "nav_cta": "background .2s, transform .15s, box-shadow .2s",
+        "buttons_global": "transform .2s, box-shadow .2s, background .2s",
+        "ch_btn": "all interactive .25s ease",
+        "feat_card": "box-shadow .25s, transform .25s, border-color .25s",
+        "buf_overlay": "opacity .28s ease",
+        "ks_toast": "opacity .2s, transform .2s",
+        "wbid_fab_hide": "opacity 0.3s ease",
+        "site_nav_wbid_hide": "opacity 0.3s ease",
+        "wbid_fab_morph": "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), border/background/box-shadow 0.35s",
+        "wbid_loading": "opacity 0.2s, visibility 0.2s",
+        "wbid_next_ep": "transform 0.15s, background 0.15s"
+      },
+
+      "easing_curves": {
+        "spring_entrance": "cubic-bezier(.22,.68,0,1.2)",
+        "smooth_out": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "standard": "ease",
+        "live_pulse": "ease-in-out"
+      },
+
+      "scroll_driven_motion": {
+        "wbid_fab_morph": {
+          "implementation": "requestAnimationFrame lerp on scroll",
+          "passive_scroll_listener": true,
+          "formula": "morph += (target - morph) * 0.085 until delta < 0.0015"
+        },
+        "smooth_scroll_to_hash": {
+          "scroll_padding_top": "112px accounts for fixed nav"
+        }
+      },
+
+      "hover_micro_interactions": {
+        "buttons": "translateY(-2px) on hover, scale(0.97) on active",
+        "nav_cta": "translateY(-1px)",
+        "ch_btn": "translateY(-2px), mobile reduced to -1px",
+        "feat_card": "translateY(-4px)",
+        "wbid_fab": "translateY(-1px) when expanded, scale(1.05) when compact",
+        "wbid_next_ep": "translateY(-1px)"
+      }
+    },
+
+    "performance_modes": {
+      "html_classes_applied_by_PerfController": {
+        "perf-mobile": "mobile breakpoint active",
+        "perf-low-power": "reduced cores/memory/saveData",
+        "perf-streaming": "live video playing",
+        "perf-iframe-active": "iframe player active",
+        "perf-player-visible": "player in viewport",
+        "perf-pause-animations": "pauses infinite CSS animations"
+      },
+      "behaviors": {
+        "pause_animations_when": ["streaming", "iframe active", "mobile", "prefers-reduced-motion", "player off-screen"],
+        "disable_backdrop_blur_when": ["perf-streaming", "perf-iframe-active on nav/player/cards"],
+        "replace_glass_with_solids": {
+          "nav": "rgba(18,16,25,0.94)",
+          "player_card": "rgba(22,20,28,0.96)"
+        },
+        "gpu_layers": "translateZ(0) + backface-visibility hidden on nav, ch-btn, feat-card, player-card, glass-card",
+        "will_change": "transform on nav.anim-running, ch-btn; opacity/transform on live-dot, spinners, glass orbs",
+        "content_visibility": "auto on .section, .alt-section, .glass-wrap with contain-intrinsic-size auto 480px",
+        "shapegrid_freeze": "on mobile, streaming, wbid-active, low-power"
       }
     },
 
     "interaction_patterns": {
-      "focus": "soft_glow",
-      "hover": "scale + brightness increase",
-      "click": "slight shrink (0.97)",
+      "touch": {
+        "tap_highlight": "transparent (-webkit-tap-highlight-color)",
+        "touch_action": "manipulation on interactive controls"
+      },
+      "focus": "wbid-input focus border highlight color",
       "keyboard_shortcuts": {
         "space": "play_pause",
         "f": "fullscreen",
-        "esc": "exit_fullscreen"
+        "esc": "exit_fullscreen",
+        "toast_element": "#ks-toast"
+      },
+      "page_titles_adaptive": {
+        "api": "window.PageTitle",
+        "site_title": "PlayUp",
+        "default": "PlayUp — Live TV, Movies & Series",
+        "live": "{channelName} · Live — PlayUp",
+        "movie": "{title} — PlayUp",
+        "tv": "{title} · S{season}E{episode} — PlayUp",
+        "wbid_modal": "Watch by ID — PlayUp",
+        "restore_on_exit": "prefer live channel title via updatePageTitle(cur)"
+      },
+      "state_body_classes": {
+        "wbid-active": "theater overlay open, overflow hidden, nav hidden",
+        "wbid-modal-open": "modal open, FAB hidden",
+        "player-mobile-fs": "mobile native/CSS fullscreen"
       }
     },
 
-    "performance_guidelines": {
-      "use_gpu_acceleration": true,
-      "limit_blur_layers": 3,
-      "lazy_load_images": true,
-      "optimize_assets": true
+    "responsive_rules": {
+      "mobile_max_768": {
+        "nav": "full width pill, shorter height, hide some links",
+        "hero": "shorter min-height, smaller h1",
+        "player": "compact bar, icon actions, 56.25% ratio",
+        "sections": "reduced padding 52px 16px",
+        "feat_grid": "single column",
+        "alt_row": "single column, hide alt-visual-card",
+        "glass_card": "column stack",
+        "wbid_fab": "smaller 36px, less expand width",
+        "entrance_animations": "0.45s duration"
+      },
+      "tablet_769_1024": {
+        "feat_grid": "2 columns",
+        "alt_row_gap": "44px"
+      }
+    },
+
+    "reuse_guide": {
+      "quick_start": [
+        "1. Copy Design.json, ShapeGrid.js, and js/perf-controller.js into new project",
+        "2. Add Google Fonts Inter link and define :root CSS vars from design_system.style.css_custom_properties",
+        "3. Fetch Design.json at runtime and call applyDesignPalette() to set --bg, --highlight, --btn-primary-* etc.",
+        "4. Init ShapeGrid on a fixed #sg-global-bg div using design_system.background.shapegrid defaults",
+        "5. Apply component class names and structure from design_system.components",
+        "6. Include all @keyframes and animation utility classes from design_system.animations",
+        "7. Wire PerfController for playback-aware motion reduction"
+      ],
+      "runtime_palette_mapping": {
+        "primary_bg": "--bg",
+        "glass_surface": "--surface, --surface-2",
+        "glass_border": "--glass-border",
+        "highlight": "--highlight",
+        "text_primary": "--text-1",
+        "text_secondary": "--text-2",
+        "components.buttons.primary.background": "--btn-primary-bg",
+        "components.buttons.primary.color": "--btn-primary-fg"
+      },
+      "icon_sizes": {
+        "nav_inline": "15–16px",
+        "btn_inline": "15px",
+        "feat_card": "20px",
+        "player_actions": "12–15px",
+        "wbid_fab": "14px (+ morph scale)"
+      },
+      "required_font": "Inter weights 300–900",
+      "meta_tags": {
+        "theme_color": "#121019",
+        "description_pattern": "{Brand} — Live TV, Movies & Series Streaming"
+      }
     }
   }
 }
