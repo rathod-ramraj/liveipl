@@ -9,6 +9,34 @@
   var prewarmTimer = null;
   var metaReq = 0;
   var embedSwapTimer = null;
+  var VIDSRC_WTF_COLOR = 'ff4d6d';
+  var VIDSRC_WTF_PROGRESS_KEY = 'vidsrcwtf-Progress';
+
+  function vidsrcWtfMovie(api, id) {
+    return (
+      'https://vidsrc.wtf/' +
+      api +
+      '/movie/' +
+      encodeURIComponent(id) +
+      '?color=' +
+      VIDSRC_WTF_COLOR
+    );
+  }
+
+  function vidsrcWtfTv(api, id, season, episode) {
+    return (
+      'https://vidsrc.wtf/' +
+      api +
+      '/tv/' +
+      encodeURIComponent(id) +
+      '/' +
+      encodeURIComponent(season) +
+      '/' +
+      encodeURIComponent(episode) +
+      '?color=' +
+      VIDSRC_WTF_COLOR
+    );
+  }
 
   var SERVERS = [
     {
@@ -79,14 +107,15 @@
     {
       id: 'vidup',
       name: 'Vidup',
-      badge: 'TMDB · Auto-play',
-      imdb: false,
+      badge: 'IMDb · TMDB · Auto-play',
+      imdb: true,
       tmdb: true,
       movie: function (id) {
         return (
           'https://vidup.to/movie/' +
           encodeURIComponent(id) +
-          '?autoPlay=true&fullscreenButton=true&chromecast=true'
+          '?autoPlay=true&fullscreenButton=true&chromecast=true&theme=' +
+          VIDSRC_WTF_COLOR
         );
       },
       tv: function (id, season, episode) {
@@ -97,7 +126,8 @@
           encodeURIComponent(season) +
           '/' +
           encodeURIComponent(episode) +
-          '?autoPlay=true&nextButton=true&autoNext=true&fullscreenButton=true'
+          '?autoPlay=true&nextButton=true&autoNext=true&fullscreenButton=true&chromecast=true&theme=' +
+          VIDSRC_WTF_COLOR
         );
       },
     },
@@ -139,6 +169,58 @@
           '/' +
           encodeURIComponent(episode)
         );
+      },
+    },
+    {
+      id: 'vidsrc-wtf-1',
+      name: 'VidSrc.wtf',
+      badge: 'IMDb · TMDB · Multi Server',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return vidsrcWtfMovie(1, id);
+      },
+      tv: function (id, season, episode) {
+        return vidsrcWtfTv(1, id, season, episode);
+      },
+    },
+    {
+      id: 'vidsrc-wtf-2',
+      name: 'VidSrc.wtf',
+      badge: 'IMDb · TMDB · Multi Language',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return vidsrcWtfMovie(2, id);
+      },
+      tv: function (id, season, episode) {
+        return vidsrcWtfTv(2, id, season, episode);
+      },
+    },
+    {
+      id: 'vidsrc-wtf-3',
+      name: 'VidSrc.wtf',
+      badge: 'IMDb · TMDB · Multi Embeds',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return vidsrcWtfMovie(3, id);
+      },
+      tv: function (id, season, episode) {
+        return vidsrcWtfTv(3, id, season, episode);
+      },
+    },
+    {
+      id: 'vidsrc-wtf-4',
+      name: 'VidSrc.wtf',
+      badge: 'IMDb · TMDB · Premium',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return vidsrcWtfMovie(4, id);
+      },
+      tv: function (id, season, episode) {
+        return vidsrcWtfTv(4, id, season, episode);
       },
     },
     {
@@ -243,6 +325,65 @@
   var els = {};
   var loadToken = 0;
   var loadHideTimer = null;
+  var embedFailTimer = null;
+  var failoverTried = null;
+
+  function resetFailover() {
+    failoverTried = new Set();
+    if (embedFailTimer) {
+      clearTimeout(embedFailTimer);
+      embedFailTimer = null;
+    }
+  }
+
+  function clearEmbedFailTimer() {
+    if (embedFailTimer) {
+      clearTimeout(embedFailTimer);
+      embedFailTimer = null;
+    }
+  }
+
+  function isHttpFailure(status) {
+    return status === 404 || status === 403 || status === 410 || status >= 500;
+  }
+
+  function probeEmbedUrl(url) {
+    return fetch(url, { method: 'GET', mode: 'cors', redirect: 'follow' })
+      .then(function (res) {
+        return { ok: res.ok, status: res.status };
+      })
+      .catch(function () {
+        return { ok: null, status: 0 };
+      });
+  }
+
+  function tryFailover(token) {
+    if (token !== loadToken || !state.open || !state.mediaId) return false;
+    if (!failoverTried) resetFailover();
+    failoverTried.add(state.serverId);
+    var list = getServersForId(state.mediaId);
+    var next = null;
+    for (var i = 0; i < list.length; i++) {
+      if (!failoverTried.has(list[i].id)) {
+        next = list[i];
+        break;
+      }
+    }
+    if (!next) {
+      finishLoading();
+      if (typeof global.showToast === 'function') {
+        global.showToast('No working server found — try another ID');
+      }
+      return false;
+    }
+    state.serverId = next.id;
+    updateServerSelect();
+    if (typeof global.showToast === 'function') {
+      global.showToast('Switching to ' + next.name + '…', 2200);
+    }
+    loadEmbed();
+    return true;
+  }
 
   function parseMediaId(raw) {
     var s = (raw || '').trim();
@@ -581,12 +722,44 @@
     els.serverSelect.innerHTML = html;
   }
 
+  function mountEmbedUrl(url, token) {
+    if (token !== loadToken || !els.iframe) return;
+
+    setLoading(true);
+    scheduleLoadingHide(token, 2800);
+
+    function onFrameReady() {
+      if (token !== loadToken) return;
+      scheduleLoadingHide(token, 350);
+      clearEmbedFailTimer();
+      embedFailTimer = setTimeout(function () {
+        if (token !== loadToken || !state.open) return;
+        probeEmbedUrl(url).then(function (res) {
+          if (token !== loadToken) return;
+          if (res.ok === false && isHttpFailure(res.status)) tryFailover(token);
+        });
+      }, 1200);
+    }
+
+    function onFrameError() {
+      if (token !== loadToken) return;
+      tryFailover(token);
+    }
+
+    silenceOtherEmbeds(els.iframe);
+    els.iframe.onload = onFrameReady;
+    els.iframe.onerror = onFrameError;
+    els.iframe.src = url;
+    preconnectHosts(url);
+  }
+
   function loadEmbed() {
     var url = buildEmbedUrl();
     if (!url || !els.iframe) return;
 
     var token = ++loadToken;
     clearLoadTimers();
+    clearEmbedFailTimer();
     if (embedSwapTimer) {
       clearTimeout(embedSwapTimer);
       embedSwapTimer = null;
@@ -600,39 +773,32 @@
       return;
     }
 
-    setLoading(true);
-    scheduleLoadingHide(token, 2800);
+    function startMount() {
+      if (isActiveSrc(currentSrc)) {
+        try {
+          els.iframe.src = 'about:blank';
+        } catch (_) {}
+        embedSwapTimer = setTimeout(function () {
+          embedSwapTimer = null;
+          mountEmbedUrl(url, token);
+        }, 120);
+      } else {
+        mountEmbedUrl(url, token);
+      }
+    }
 
-    function onFrameReady() {
+    probeEmbedUrl(url).then(function (res) {
       if (token !== loadToken) return;
-      scheduleLoadingHide(token, 350);
-    }
-
-    function mountUrl() {
-      if (token !== loadToken || !els.iframe) return;
-      silenceOtherEmbeds(els.iframe);
-      els.iframe.onload = onFrameReady;
-      els.iframe.onerror = onFrameReady;
-      els.iframe.src = url;
-      preconnectHosts(url);
-    }
-
-    /* Tear down previous embed before starting the next — avoids overlapping audio tracks */
-    if (isActiveSrc(currentSrc)) {
-      try {
-        els.iframe.src = 'about:blank';
-      } catch (_) {}
-      embedSwapTimer = setTimeout(function () {
-        embedSwapTimer = null;
-        mountUrl();
-      }, 120);
-    } else {
-      mountUrl();
-    }
+      if (res.ok === false && isHttpFailure(res.status)) {
+        if (tryFailover(token)) return;
+      }
+      startMount();
+    });
   }
 
   function openPlayer() {
     pauseLiveSitePlayers();
+    resetFailover();
     state.open = true;
     state.savedPageTitle = document.title;
     state.savedModalTitle = '';
@@ -652,6 +818,7 @@
     state.open = false;
     metaReq++;
     loadToken++;
+    resetFailover();
     if (embedSwapTimer) {
       clearTimeout(embedSwapTimer);
       embedSwapTimer = null;
@@ -733,6 +900,7 @@
 
   function goNextEpisode() {
     if (!state.isTv || !state.open) return;
+    resetFailover();
     state.episode += 1;
     if (els.episodeInput) els.episodeInput.value = String(state.episode);
     applyPageTitle();
@@ -817,6 +985,7 @@
 
     els.serverSelect.addEventListener('change', function () {
       state.serverId = els.serverSelect.value;
+      resetFailover();
       if (state.mediaId && !ensureServerForId(state.mediaId)) {
         ensureServerForId(state.mediaId);
         updateServerSelect();
@@ -860,7 +1029,22 @@
     });
   }
 
+  function installVidsrcWtfProgress() {
+    window.addEventListener('message', function (event) {
+      var origin = event.origin;
+      if (origin !== 'https://www.vidsrc.wtf' && origin !== 'https://vidsrc.wtf') return;
+      var payload = event.data;
+      if (payload && payload.type === 'MEDIA_DATA' && payload.data) {
+        clearEmbedFailTimer();
+        try {
+          localStorage.setItem(VIDSRC_WTF_PROGRESS_KEY, JSON.stringify(payload.data));
+        } catch (_) {}
+      }
+    });
+  }
+
   function init() {
+    installVidsrcWtfProgress();
     els.modal = document.getElementById('wbid-modal');
     els.overlay = document.getElementById('wbid-overlay');
     if (!els.modal || !els.overlay) return;
