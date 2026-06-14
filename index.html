@@ -41,7 +41,8 @@
   <link rel="preconnect" href="https://tvsen5.aynaott.com" crossorigin>
   <link rel="preconnect" href="https://tvsen7.aynaott.com" crossorigin>
   <link rel="dns-prefetch" href="https://tvsen7.aynaott.com">
-  <link rel="preconnect" href="https://cinearena.fun" crossorigin>
+  <link rel="preconnect" href="https://cinearena-plyr.pages.dev" crossorigin>
+  <link rel="dns-prefetch" href="https://cinearena-plyr.pages.dev">
   <link rel="dns-prefetch" href="https://cinearena.fun">
   <link rel="preconnect" href="https://b-player3.pages.dev" crossorigin>
   <link rel="dns-prefetch" href="https://b-player3.pages.dev">
@@ -743,6 +744,14 @@
     }
     .ch-btn:hover .ch-link-icon,
     .ch-btn.active .ch-link-icon { opacity: 1; }
+    .ch-cats { display: flex; flex-direction: column; gap: 28px; width: 100%; }
+    .ch-cat { width: 100%; }
+    .ch-cat-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--highlight);
+      margin-bottom: 12px; opacity: .85;
+    }
+    .ch-cat-title.is-muted { color: var(--text-3); }
 
     /* ─── FEATURES GRID ───────────────────────────── */
     .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
@@ -1847,7 +1856,8 @@ var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.build
 
 var ALLOWED = new Set([
   'ss1eng','ss2hd','eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
-  'starsp1tel','star_telugu','star_tamil','willowextra','willowhd','willow','willow2','skynz','kayohin','fox501'
+  'starsp1tel','star_telugu','star_tamil','willowextra','willowhd','willow','willow2','skynz','kayohin','fox501',
+  'foxsports','willow_amagi','fc1','fancode','tnt4','tnt2','star2eng','star2hindi'
 ]);
 
 var SITE_TITLE = 'PlayUp';
@@ -1891,6 +1901,8 @@ var CH_LINK_ICON =
 var META = {
   ss1eng:     { name: 'Star Sports HD 1 English', sub: 'Star Sports 1 · English HD' },
   ss2hd:      { name: 'Star Sports 2 HD English', sub: 'Star Sports 2 · English HD' },
+  star2eng:   { name: 'Star Sports 2 English',    sub: 'Star Sports 2 · English' },
+  star2hindi: { name: 'Star Sports 2 Hindi',      sub: 'Star Sports 2 · Hindi' },
   eng:        { name: 'Star Sports HD English', sub: 'Star Sports English' },
   starhindi:  { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
   star_hindi: { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
@@ -1902,6 +1914,12 @@ var META = {
   willow2:    { name: 'Willow 2',               sub: 'HLS Live' },
   willowhd:   { name: 'Willow HD',              sub: 'Cricket HD' },
   fox501:     { name: 'Fox 501 HD Live',        sub: 'Fox Sports · HD' },
+  foxsports:  { name: 'Fox Sports',             sub: 'Fox Sports Live' },
+  willow_amagi:{ name: 'Willow TV Plus',        sub: 'Willow · Amagi' },
+  fc1:        { name: 'FanCode FC1',            sub: 'FanCode Live' },
+  fancode:    { name: 'FanCode English',        sub: 'FanCode · English' },
+  tnt4:       { name: 'TNT Sports 4',           sub: 'TNT Sports' },
+  tnt2:       { name: 'TNT Sports 2',           sub: 'TNT Sports' },
   willowextra:{ name: 'Willow Extra',           sub: 'Cricket HD' },
   skynz:      { name: 'Sky Sports Live',        sub: 'Sky Sports · Live' },
   kayohin:    { name: 'Kayo Hindi',             sub: 'Hindi Commentary' },
@@ -1948,6 +1966,8 @@ function sortChannels(list) {
 
   take('ss1eng');
   take('ss2hd');
+  take('star2eng');
+  take('star2hindi');
   take('eng');
   if (!used.starhindi) take('starhindi');
   if (!used.starhindi) take('star_hindi');
@@ -1961,6 +1981,12 @@ function sortChannels(list) {
   take('skynz');
   take('kayohin');
   take('fox501');
+  take('foxsports');
+  take('willow_amagi');
+  take('fc1');
+  take('fancode');
+  take('tnt4');
+  take('tnt2');
 
   var rest = [];
   for (var j = 0; j < list.length; j++) {
@@ -1973,6 +1999,193 @@ function sortChannels(list) {
     rest[r] = tmp;
   }
   return out.concat(rest);
+}
+
+function extractStreamUrl(src) {
+  var m = src.match(/[?&]url=([^&]+)/i);
+  if (m) {
+    try { return decodeURIComponent(m[1]); } catch (_) {}
+  }
+  if (/\.m3u8(\?|$)/i.test(src)) return src;
+  return null;
+}
+
+function analyzeHlsBody(text) {
+  if (!text || text.length < 12) return false;
+  if (!/#EXTM3U/i.test(text)) return false;
+  if (/#EXT-X-ERROR|#EXT-X-ENDLIST\s*$/im.test(text) && !/#EXTINF:/i.test(text)) return false;
+  if (/#EXTINF:/i.test(text)) return true;
+  if (/\.m3u8|\.ts\b/i.test(text)) return true;
+  if (/#EXT-X-STREAM-INF/i.test(text)) return true;
+  return false;
+}
+
+function analyzeEmbedBody(text) {
+  if (!text || text.length < 40) return false;
+  var low = text.toLowerCase();
+  var bad = [
+    '404 not found', 'page not found', 'not found</', 'stream unavailable',
+    'channel offline', 'no stream', 'access denied', 'geo blocked', 'geo-blocked',
+    'temporarily unavailable', 'error loading', 'stream error', 'offline</'
+  ];
+  var i;
+  for (i = 0; i < bad.length; i++) {
+    if (low.indexOf(bad[i]) !== -1) return false;
+  }
+  var good = [
+    '<video', 'hls.js', 'm3u8', 'application/vnd.apple.mpegurl', 'jwplayer',
+    'clappr', 'shaka', 'player-container', 'live-iframe', 'iframe', 'embed', 'stream'
+  ];
+  for (i = 0; i < good.length; i++) {
+    if (low.indexOf(good[i]) !== -1) return true;
+  }
+  return low.indexOf('<html') !== -1 && text.length > 400;
+}
+
+function fetchAnalyze(url, ms, kind) {
+  var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  var t = setTimeout(function () { if (ctrl) ctrl.abort(); }, ms);
+  var opts = { method: 'GET', mode: 'cors', redirect: 'follow', cache: 'no-store' };
+  if (ctrl) opts.signal = ctrl.signal;
+  return fetch(url, opts)
+    .then(function (res) {
+      clearTimeout(t);
+      if (res.status >= 400 && res.status < 500) return false;
+      if (!res.ok) return false;
+      return res.text().then(function (body) {
+        var slice = body.slice(0, 12000);
+        return kind === 'hls' ? analyzeHlsBody(slice) : analyzeEmbedBody(slice);
+      });
+    })
+    .catch(function () { clearTimeout(t); return null; });
+}
+
+function fetchOpaque(url, ms) {
+  var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  var t = setTimeout(function () { if (ctrl) ctrl.abort(); }, ms);
+  var opts = { method: 'GET', mode: 'no-cors', cache: 'no-store' };
+  if (ctrl) opts.signal = ctrl.signal;
+  return fetch(url, opts)
+    .then(function () { clearTimeout(t); return true; })
+    .catch(function () { clearTimeout(t); return false; });
+}
+
+function probeIframeReachable(url, ms) {
+  return new Promise(function (resolve) {
+    var frame = document.createElement('iframe');
+    frame.style.cssText = 'position:fixed;left:-9999px;width:2px;height:2px;opacity:0;pointer-events:none;border:0';
+    var settled = false;
+    function finish(ok) {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      frame.onload = frame.onerror = null;
+      if (frame.parentNode) frame.parentNode.removeChild(frame);
+      resolve(!!ok);
+    }
+    var timer = setTimeout(function () { finish(false); }, ms);
+    frame.onload = function () { finish(true); };
+    frame.onerror = function () { finish(false); };
+    document.body.appendChild(frame);
+    frame.src = url;
+  });
+}
+
+function analyzeChannel(ch, ms) {
+  var src = ch.iframeSrc || '';
+  if (!src) return Promise.resolve(false);
+  var stream = extractStreamUrl(src);
+  var isHls = ch.type === 'hls' || !!(stream && /\.m3u8/i.test(stream));
+  var budget = ms || 700;
+
+  function checkStream(url) {
+    return fetchAnalyze(url, budget, 'hls').then(function (r) {
+      if (r === true) return true;
+      if (r === false) return false;
+      return fetchOpaque(url, Math.min(400, budget));
+    });
+  }
+
+  if (isHls && stream) {
+    return checkStream(stream);
+  }
+
+  return fetchAnalyze(src, budget, 'embed').then(function (r) {
+    if (r === true) return true;
+    if (r === false) return false;
+    if (stream && /\.m3u8/i.test(stream)) {
+      return checkStream(stream);
+    }
+    return probeIframeReachable(src, Math.min(500, budget));
+  });
+}
+
+function paintChannelGrid(list, rows) {
+  var ordered = [];
+  for (var i = 0; i < list.length; i++) {
+    if (rows[i] === true) ordered.push(list[i]);
+  }
+  for (var k = 0; k < list.length; k++) {
+    if (rows[k] !== true) ordered.push(list[k]);
+  }
+  if (!ordered.length) {
+    elGrid.innerHTML = '<div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">No channels available</div>';
+    return;
+  }
+  var frag = document.createDocumentFragment();
+  for (var j = 0; j < ordered.length; j++) {
+    frag.appendChild(createChBtn(ordered[j]));
+  }
+  elGrid.className = 'ch-grid';
+  elGrid.innerHTML = '';
+  elGrid.appendChild(frag);
+}
+
+function createChBtn(ch) {
+  var m = getMeta(ch.id);
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'ch-btn';
+  btn.dataset.id = ch.id;
+  btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + m.name + '</span>';
+  btn.setAttribute('aria-pressed', 'false');
+  btn.addEventListener('click', function () { switchChannel(ch.id); }, { passive: true });
+  btn.addEventListener('mouseenter', function () {
+    if (document.documentElement.classList.contains('perf-streaming')) return;
+    var src = ch.iframeSrc || '';
+    if (!src) return;
+    if (window.IframePlayer && IframePlayer.preconnect) IframePlayer.preconnect(src);
+  }, { passive: true });
+  return btn;
+}
+
+function renderChannelGrid(list) {
+  if (!elGrid) return;
+  elGrid.className = 'ch-grid';
+  elGrid.innerHTML = '<div style="width:100%;text-align:center;padding:32px;color:var(--text-3);font-size:14px"><div class="spinner" style="margin:0 auto 12px;border-top-color:rgba(255,255,255,.3)"></div>Checking channels…</div>';
+
+  var n = list.length;
+  var rows = new Array(n);
+  var done = 0;
+  var painted = false;
+  var probeMs = Math.min(700, Math.max(400, Math.floor(900 / Math.max(1, Math.ceil(n / 4)))));
+
+  function paint() {
+    if (painted) return;
+    painted = true;
+    paintChannelGrid(list, rows);
+  }
+
+  for (var i = 0; i < n; i++) {
+    (function (idx) {
+      analyzeChannel(list[idx], probeMs).then(function (ok) {
+        rows[idx] = !!ok;
+        done++;
+        if (done === n) paint();
+      });
+    })(i);
+  }
+  setTimeout(paint, 900);
 }
 
 // ════════════════════════════════════════════════════
@@ -2435,6 +2648,8 @@ window._chFetch
     var localChannels = [
       { id: 'ss1eng', name: 'Star Sports HD 1 English', type: 'hls', iframeSrc: 'https://tvsen7.aynaott.com/sspts1/tracks-v1a1/mono.ts.m3u8' },
       { id: 'ss2hd',  name: 'Star Sports 2 HD English', type: 'hls', iframeSrc: 'https://tvsen7.aynaott.com/ssport2hd/tracks-v1a1/mono.ts.m3u8' },
+      { id: 'star2eng', name: 'Star Sports 2 English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/2eng' },
+      { id: 'star2hindi', name: 'Star Sports 2 Hindi', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/2hindi' },
       { id: 'skynz', name: 'Sky Sports Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/skynz/' },
       { id: 'kayohin', name: 'Kayo Hindi', type: 'iframe', iframeSrc: 'https://b-player3.pages.dev/p1?id=kayohin' },
       { id: 'star_telugu', name: 'Star Sports HD Telugu', type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/telugu' },
@@ -2444,6 +2659,12 @@ window._chFetch
       { id: 'willowextra', name: 'Willow Extra', type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willowextra' },
       { id: 'willowhd',    name: 'Willow HD',    type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/willow' },
       { id: 'fox501',      name: 'Fox 501 HD Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/fox/' },
+      { id: 'foxsports',   name: 'Fox Sports', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/fox-sports/' },
+      { id: 'willow_amagi',name: 'Willow TV Plus', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
+      { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/fc1' },
+      { id: 'fancode',     name: 'FanCode English', type: 'iframe', iframeSrc: 'https://cinearena.fun/ios/?url=https://dai-partner.fancode.com/primary/143396_english_hls_308563297d37105_1ta-di_h264/index.m3u8' },
+      { id: 'tnt4',        name: 'TNT Sports 4', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt4' },
+      { id: 'tnt2',        name: 'TNT Sports 2', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt2' },
       { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
     ];
 
@@ -2469,29 +2690,7 @@ window._chFetch
       return;
     }
 
-    // Single DOM write via DocumentFragment — no repeated reflow
-    var frag = document.createDocumentFragment();
-    channels.forEach(function (ch) {
-      var m   = getMeta(ch.id);
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'ch-btn';
-      btn.dataset.id = ch.id;
-      btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + m.name + '</span>';
-      btn.setAttribute('aria-pressed', 'false');
-      btn.addEventListener('click', function () { switchChannel(ch.id); }, { passive: true });
-      btn.addEventListener('mouseenter', function () {
-        if (document.documentElement.classList.contains('perf-streaming')) return;
-        var src = ch.iframeSrc || '';
-        if (!src) return;
-        if (window.IframePlayer && IframePlayer.preconnect) {
-          IframePlayer.preconnect(src);
-        }
-      }, { passive: true });
-      frag.appendChild(btn);
-    });
-    elGrid.innerHTML = '';
-    elGrid.appendChild(frag);
+    renderChannelGrid(channels);
 
     if (window.IframePlayer && IframePlayer.warmChannels) {
       IframePlayer.warmChannels(channels);

@@ -1,0 +1,222 @@
+{
+  "$schema": "playup-embed-servers/v1",
+  "version": "1.0",
+  "source": "PlayUp liveStream — js/watch-by-id.js",
+  "default_server": "111movies",
+  "theme_color_hex": "ff4d6d",
+
+  "id_parsing": {
+    "description": "Normalize user input to a canonical id before building embed URLs.",
+    "accepted_inputs": [
+      "tt12345678",
+      "https://www.imdb.com/title/tt12345678/",
+      "533535",
+      "https://www.themoviedb.org/movie/533535",
+      "https://www.themoviedb.org/tv/94997"
+    ],
+    "imdb_pattern": "^tt\\d{7,10}$",
+    "tmdb_pattern": "^\\d{4,10}$",
+    "parse_rules": [
+      "Extract tt######## from string or IMDb URL → lowercase",
+      "Extract numeric id from TMDB movie/tv URL",
+      "Raw tt######## or numeric id also accepted"
+    ],
+    "tv_requires": ["season (number)", "episode (number)"]
+  },
+
+  "filtering": {
+    "description": "Show only servers that support the parsed id type.",
+    "imdb_servers": "server.imdb === true",
+    "tmdb_servers": "server.tmdb === true",
+    "both_servers": "imdb && tmdb — shown for either id type"
+  },
+
+  "embed_usage": {
+    "html_movie": "<iframe src=\"{movie_url}\" frameborder=\"0\" scrolling=\"no\" allowfullscreen allow=\"autoplay; encrypted-media; fullscreen; picture-in-picture\"></iframe>",
+    "html_tv": "<iframe src=\"{tv_url}\" frameborder=\"0\" scrolling=\"no\" allowfullscreen allow=\"autoplay; encrypted-media; fullscreen; picture-in-picture\"></iframe>",
+    "url_placeholders": {
+      "{id}": "Parsed IMDb (tt…) or TMDB numeric id",
+      "{season}": "TV season number",
+      "{episode}": "TV episode number",
+      "{hex}": "Theme color without # (default ff4d6d)"
+    },
+    "examples": {
+      "imdb_movie": { "id": "tt30413898", "iframe": "https://111movies.net/movie/tt30413898" },
+      "tmdb_movie": { "id": "666243", "iframe": "https://vidnest.fun/movie/666243" },
+      "imdb_tv": { "id": "tt4052886", "season": 1, "episode": 5, "iframe": "https://vidup.to/tv/tt4052886/1/5?autoPlay=true" },
+      "tmdb_tv": { "id": "94997", "season": 1, "episode": 1, "iframe": "https://vidnest.fun/tv/94997/1/1" }
+    }
+  },
+
+  "failover": {
+    "description": "Optional: probe embed URL before iframe load; on 404/403/410/5xx switch to next server for same id type.",
+    "http_failure_codes": [404, 403, 410, 500, 502, 503],
+    "track_tried_server_ids": true
+  },
+
+  "watch_progress": {
+    "provider": "vidsrc.wtf",
+    "listener": "window.addEventListener('message', …) — origin https://www.vidsrc.wtf or https://vidsrc.wtf",
+    "event_type": "MEDIA_DATA",
+    "storage_key": "vidsrcwtf-Progress"
+  },
+
+  "servers": [
+    {
+      "id": "111movies",
+      "name": "111movies",
+      "default": true,
+      "imdb": true,
+      "tmdb": true,
+      "movie_url": "https://111movies.net/movie/{id}",
+      "tv_url": "https://111movies.net/tv/{id}/{season}/{episode}",
+      "example_movie_imdb": "https://111movies.net/movie/tt30413898",
+      "example_movie_tmdb": "https://111movies.net/movie/533535"
+    },
+    {
+      "id": "peachify",
+      "name": "Peachify",
+      "imdb": true,
+      "tmdb": true,
+      "movie_url": "https://peachify.top/embed/movie/{id}",
+      "tv_url": "https://peachify.top/embed/tv/{id}/{season}/{episode}"
+    },
+    {
+      "id": "vidfast",
+      "name": "Vidfast",
+      "imdb": false,
+      "tmdb": true,
+      "movie_url": "https://vidfast.pro/movie/{id}?autoPlay=true&fullscreenButton=true&chromecast=true&theme={hex}",
+      "tv_url": "https://vidfast.pro/tv/{id}/{season}/{episode}?autoPlay=true&nextButton=true&autoNext=true&fullscreenButton=true&theme={hex}",
+      "notes": "TMDB numeric id only"
+    },
+    {
+      "id": "vidup",
+      "name": "Vidup",
+      "imdb": true,
+      "tmdb": true,
+      "movie_url": "https://vidup.to/movie/{id}?autoPlay=true&fullscreenButton=true&chromecast=true&theme={hex}",
+      "tv_url": "https://vidup.to/tv/{id}/{season}/{episode}?autoPlay=true&nextButton=true&autoNext=true&fullscreenButton=true&chromecast=true&theme={hex}",
+      "optional_params": {
+        "title": "show/hide title",
+        "poster": "show/hide poster",
+        "autoPlay": "true|false",
+        "startAt": "seconds",
+        "theme": "hex color",
+        "server": "default server index",
+        "hideServer": "hide server picker",
+        "fullscreenButton": "true|false",
+        "chromecast": "true|false",
+        "sub": "subtitle code e.g. en"
+      },
+      "example_movie_imdb": "https://vidup.to/movie/tt6263850?theme=FF0000",
+      "example_tv_tmdb": "https://vidup.to/tv/63174/1/5?nextButton=true&autoNext=true"
+    },
+    {
+      "id": "vidsrc-fyi",
+      "name": "VidSrc.fyi",
+      "imdb": true,
+      "tmdb": true,
+      "movie_url": "https://vidsrc.fyi/embed/movie/{id}",
+      "tv_url": "https://vidsrc.fyi/embed/tv/{id}/{season}/{episode}"
+    },
+    {
+      "id": "vidsrc-mov",
+      "name": "VidSrc.mov",
+      "imdb": true,
+      "tmdb": true,
+      "movie_url": "https://vidsrc.mov/embed/movie/{id}",
+      "tv_url": "https://vidsrc.mov/embed/tv/{id}/{season}/{episode}"
+    },
+    {
+      "id": "vidsrc-wtf-1",
+      "name": "VidSrc.wtf — Multi Server",
+      "imdb": true,
+      "tmdb": true,
+      "movie_url": "https://vidsrc.wtf/1/movie/{id}?color={hex}",
+      "tv_url": "https://vidsrc.wtf/1/tv/{id}/{season}/{episode}?color={hex}",
+      "api_tier": 1,
+      "api_label": "Multi Server"
+    },
+    {
+      "id": "vidsrc-wtf-2",
+      "name": "VidSrc.wtf — Multi Language",
+      "imdb": true,
+      "tmdb": true,
+      "movie_url": "https://vidsrc.wtf/2/movie/{id}?color={hex}",
+      "tv_url": "https://vidsrc.wtf/2/tv/{id}/{season}/{episode}?color={hex}",
+      "api_tier": 2,
+      "api_label": "Multi Language"
+    },
+    {
+      "id": "vidsrc-wtf-3",
+      "name": "VidSrc.wtf — Multi Embeds",
+      "imdb": true,
+      "tmdb": true,
+      "movie_url": "https://vidsrc.wtf/3/movie/{id}?color={hex}",
+      "tv_url": "https://vidsrc.wtf/3/tv/{id}/{season}/{episode}?color={hex}",
+      "api_tier": 3,
+      "api_label": "Multi Embeds"
+    },
+    {
+      "id": "vidsrc-wtf-4",
+      "name": "VidSrc.wtf — Premium",
+      "imdb": true,
+      "tmdb": true,
+      "movie_url": "https://vidsrc.wtf/4/movie/{id}?color={hex}",
+      "tv_url": "https://vidsrc.wtf/4/tv/{id}/{season}/{episode}?color={hex}",
+      "api_tier": 4,
+      "api_label": "Premium"
+    },
+    {
+      "id": "vidking",
+      "name": "VidKing",
+      "imdb": true,
+      "tmdb": true,
+      "movie_url": "https://www.vidking.net/embed/movie/{id}",
+      "tv_url": "https://www.vidking.net/embed/tv/{id}/{season}/{episode}"
+    },
+    {
+      "id": "vidnest",
+      "name": "Vidnest",
+      "imdb": false,
+      "tmdb": true,
+      "movie_url": "https://vidnest.fun/movie/{id}",
+      "tv_url": "https://vidnest.fun/tv/{id}/{season}/{episode}",
+      "example_movie_tmdb": "https://vidnest.fun/movie/666243",
+      "example_tv_tmdb": "https://vidnest.fun/tv/94997/1/1",
+      "notes": "TMDB numeric id only"
+    },
+    {
+      "id": "vidlink",
+      "name": "Vidlink Pro",
+      "imdb": false,
+      "tmdb": true,
+      "movie_url": "https://vidlink.pro/movie/{id}",
+      "tv_url": "https://vidlink.pro/tv/{id}/{season}/{episode}",
+      "notes": "TMDB numeric id only"
+    },
+    {
+      "id": "videasy",
+      "name": "Videasy",
+      "imdb": false,
+      "tmdb": true,
+      "movie_url": "https://player.videasy.net/movie/{id}?overlay=true&color={hex}",
+      "tv_url": "https://player.videasy.net/tv/{id}/{season}/{episode}?overlay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&color={hex}",
+      "notes": "TMDB numeric id only; has next-episode UI"
+    }
+  ],
+
+  "quick_reference": {
+    "imdb_only_servers": [],
+    "tmdb_only_servers": ["vidfast", "vidnest", "vidlink", "videasy"],
+    "both_imdb_tmdb": ["111movies", "peachify", "vidup", "vidsrc-fyi", "vidsrc-mov", "vidsrc-wtf-1", "vidsrc-wtf-2", "vidsrc-wtf-3", "vidsrc-wtf-4", "vidking"]
+  },
+
+  "integration_snippet": {
+    "parse_id": "function parseMediaId(raw) { /* see id_parsing */ }",
+    "build_url": "function buildUrl(server, id, isTv, season, episode) { replace {id},{season},{episode},{hex} in movie_url or tv_url }",
+    "filter_servers": "servers.filter(s => idKind === 'imdb' ? s.imdb : s.tmdb)",
+    "preconnect_hosts": ["111movies.net", "peachify.top", "vidfast.pro", "vidup.to", "vidsrc.fyi", "vidsrc.mov", "vidsrc.wtf", "www.vidsrc.wtf", "www.vidking.net", "vidnest.fun", "vidlink.pro", "player.videasy.net"]
+  }
+}
