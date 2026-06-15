@@ -125,7 +125,7 @@
       return iframe;
     }
 
-    if (ctx.showBuffer) ctx.showBuffer();
+    if (!ctx.skipBuffer && ctx.showBuffer) ctx.showBuffer();
 
     function onReady() {
       entry.loaded = true;

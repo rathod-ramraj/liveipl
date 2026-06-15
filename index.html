@@ -891,12 +891,27 @@
     /* ─── TESTIMONIALS ───────────────────────────────── */
     /* ─── FOOTER ──────────────────────────────────── */
     footer {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 28px 40px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 32px;
+      padding: 56px 48px;
+      padding-right: max(48px, 190px);
       border-top: 1px solid var(--glass-border-2);
       background: rgba(255,255,255,0.02);
+      flex-wrap: wrap;
     }
-    .footer-copy { font-size: 13px; color: var(--text-3); }
+    .footer-brand {
+      font-size: 20px; font-weight: 700; color: var(--text-1);
+      margin-bottom: 8px; letter-spacing: -0.3px;
+    }
+    .footer-copy {
+      font-size: 15px; color: var(--text-2); line-height: 1.65;
+      max-width: 520px;
+    }
+    .footer-meta {
+      font-size: 14px; color: var(--text-3); line-height: 1.65;
+      text-align: right; max-width: 440px; margin-left: auto;
+    }
+    .footer-meta strong { color: var(--text-2); font-weight: 600; }
 
     /* ─── DEVTOOLS BLOCK OVERLAY ─────────────────────── */
     #dt-block {
@@ -1073,7 +1088,15 @@
       .feat-grid { grid-template-columns: 1fr; }
       .alt-row { grid-template-columns: 1fr; gap: 32px; }
       .alt-row .alt-visual-card { display: none; }
-      footer { flex-direction: column; gap: 8px; text-align: center; padding: 24px 20px; }
+      footer {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+        padding: 44px 20px calc(88px + env(safe-area-inset-bottom, 0px));
+        padding-right: 20px;
+      }
+      .footer-meta { text-align: center; margin-left: 0; max-width: none; }
+      .footer-copy { max-width: none; }
     }
     @media (min-width: 769px) and (max-width: 1024px) {
       .feat-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1822,11 +1845,11 @@
 <!-- ═══ FOOTER ════════════════════════════════════════ -->
 <footer>
   <div>
-    <div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:5px">PlayUp</div>
+    <div class="footer-brand">PlayUp</div>
     <div class="footer-copy">Free live TV and on-demand streaming. No signup required.</div>
   </div>
-  <div class="footer-copy" style="text-align:right">
-    <div style="margin-top:4px"> Made with ❤️ by DIAMOND STAR</div>
+  <div class="footer-meta">
+    <div><strong>Made with ❤️ by DIAMOND STAR</strong></div>
     <div>Disclaimer: We only link to streams available on the internet. We do not host any content.</div>
   </div>
 </footer>
@@ -1855,9 +1878,9 @@ var stallTimer = null;
 var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.buildHlsConfig
 
 var ALLOWED = new Set([
-  'ss1eng','ss2hd','eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
-  'starsp1tel','star_telugu','star_tamil','willowextra','willowhd','willow','willow2','skynz','kayohin','fox501',
-  'foxsports','willow_amagi','fc1','fancode','tnt4','tnt2','star2eng','star2hindi'
+  'eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
+  'star_tamil','willowsports','willow','willow2','skynz','kayohin','fox501',
+  'fc1','tnt4','tnt2','star2eng','star2hindi','shamshad','sliv3'
 ]);
 
 var SITE_TITLE = 'PlayUp';
@@ -1899,28 +1922,22 @@ var CH_LINK_ICON =
   '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
 
 var META = {
-  ss1eng:     { name: 'Star Sports HD 1 English', sub: 'Star Sports 1 · English HD' },
-  ss2hd:      { name: 'Star Sports 2 HD English', sub: 'Star Sports 2 · English HD' },
   star2eng:   { name: 'Star Sports 2 English',    sub: 'Star Sports 2 · English' },
   star2hindi: { name: 'Star Sports 2 Hindi',      sub: 'Star Sports 2 · Hindi' },
   eng:        { name: 'Star Sports HD English', sub: 'Star Sports English' },
   starhindi:  { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
   star_hindi: { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
   hindi:      { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
-  star_telugu:{ name: 'Star Sports HD Telugu',  sub: 'Telugu HD' },
   star_tamil: { name: 'Star Sports HD Tamil',   sub: 'Tamil HD' },
-  starsp1tel: { name: 'Star Sports Telugu',     sub: 'Telugu Commentary' },
   willow:     { name: 'Willow',                 sub: 'Cricket Live' },
-  willow2:    { name: 'Willow 2',               sub: 'HLS Live' },
-  willowhd:   { name: 'Willow HD',              sub: 'Cricket HD' },
+  willow2:    { name: 'Willow 2',               sub: 'Cricket Live' },
+  sliv3:      { name: 'Sony LIV Hindi',         sub: 'Sony LIV · Hindi' },
+  shamshad:   { name: 'Shamshad TV',            sub: 'Live Stream' },
+  willowsports:{ name: 'Willow Sports',          sub: 'Willow · Sports' },
   fox501:     { name: 'Fox 501 HD Live',        sub: 'Fox Sports · HD' },
-  foxsports:  { name: 'Fox Sports',             sub: 'Fox Sports Live' },
-  willow_amagi:{ name: 'Willow TV Plus',        sub: 'Willow · Amagi' },
   fc1:        { name: 'FanCode FC1',            sub: 'FanCode Live' },
-  fancode:    { name: 'FanCode English',        sub: 'FanCode · English' },
   tnt4:       { name: 'TNT Sports 4',           sub: 'TNT Sports' },
   tnt2:       { name: 'TNT Sports 2',           sub: 'TNT Sports' },
-  willowextra:{ name: 'Willow Extra',           sub: 'Cricket HD' },
   skynz:      { name: 'Sky Sports Live',        sub: 'Sky Sports · Live' },
   kayohin:    { name: 'Kayo Hindi',             sub: 'Hindi Commentary' },
   star:       { name: 'Star Sports',            sub: 'India Coverage' },
@@ -1964,27 +1981,22 @@ function sortChannels(list) {
     }
   }
 
-  take('ss1eng');
-  take('ss2hd');
   take('star2eng');
   take('star2hindi');
   take('eng');
   if (!used.starhindi) take('starhindi');
   if (!used.starhindi) take('star_hindi');
   if (!used.starhindi) take('hindi');
-  take('star_telugu');
   take('star_tamil');
-  take('starsp1tel');
   take('willow');
-  take('willowhd');
   take('willow2');
+  take('willowsports');
+  take('sliv3');
+  take('shamshad');
   take('skynz');
   take('kayohin');
   take('fox501');
-  take('foxsports');
-  take('willow_amagi');
   take('fc1');
-  take('fancode');
   take('tnt4');
   take('tnt2');
 
@@ -2095,7 +2107,7 @@ function analyzeChannel(ch, ms) {
   var src = ch.iframeSrc || '';
   if (!src) return Promise.resolve(false);
   var stream = extractStreamUrl(src);
-  var isHls = ch.type === 'hls' || !!(stream && /\.m3u8/i.test(stream));
+  var isHls = ch.type === 'hls' || (ch.type !== 'iframe' && !!(stream && /\.m3u8/i.test(stream)));
   var budget = ms || 700;
 
   function checkStream(url) {
@@ -2241,14 +2253,16 @@ function showStreamFailure() {
 //  STREAM LOADER — HLS.js / Safari native / iframe (see js/player-core.js)
 // ════════════════════════════════════════════════════
 function playerCtx(ch) {
+  var iframeOnly = ch.type === 'iframe';
   return {
     container: elRatio,
     bufOverlay: elBufOv,
     lowLatency: lowLatMode,
+    skipBuffer: iframeOnly,
     showBuffer: showBuffer,
     hideBuffer: hideBuffer,
     onBeforeLoad: function () {
-      showBuffer();
+      if (!iframeOnly) showBuffer();
       armStallTimer(ch.id, false);
     },
     onFragBuffered: function () {
@@ -2274,7 +2288,7 @@ function setStream(ch) {
   }
   if (elRatio) elRatio.classList.remove('is-iframe-active');
 
-  showBuffer();
+  if (ch.type !== 'iframe') showBuffer();
   armStallTimer(ch.id);
 
   if (!window.LivePlayerCore) {
@@ -2641,28 +2655,25 @@ window._chFetch
       'cricbuzz-live': 'cricbuzz',
       'cricbuzz_live': 'cricbuzz',
       'cricbuzz live': 'cricbuzz',
+      'willow-sports': 'willowsports',
+      'willowextra':   'willowsports',
     };
 
     var raw = data.iframes || [];
 
     var localChannels = [
-      { id: 'ss1eng', name: 'Star Sports HD 1 English', type: 'hls', iframeSrc: 'https://tvsen7.aynaott.com/sspts1/tracks-v1a1/mono.ts.m3u8' },
-      { id: 'ss2hd',  name: 'Star Sports 2 HD English', type: 'hls', iframeSrc: 'https://tvsen7.aynaott.com/ssport2hd/tracks-v1a1/mono.ts.m3u8' },
       { id: 'star2eng', name: 'Star Sports 2 English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/2eng' },
       { id: 'star2hindi', name: 'Star Sports 2 Hindi', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/2hindi' },
       { id: 'skynz', name: 'Sky Sports Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/skynz/' },
       { id: 'kayohin', name: 'Kayo Hindi', type: 'iframe', iframeSrc: 'https://b-player3.pages.dev/p1?id=kayohin' },
-      { id: 'star_telugu', name: 'Star Sports HD Telugu', type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/telugu' },
       { id: 'star_tamil',  name: 'Star Sports HD Tamil',  type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/tamil-1' },
-      { id: 'willow2',     name: 'Willow 2', type: 'hls', iframeSrc: 'https://tvsen5.aynaott.com/willowhd/tracks-v1a1/mono.ts.m3u8' },
-      { id: 'starsp1tel',  name: 'Star Sports',  type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=starsp1tel' },
-      { id: 'willowextra', name: 'Willow Extra', type: 'iframe', iframeSrc: 'https://playerado.top/embed2.php?id=willowextra' },
-      { id: 'willowhd',    name: 'Willow HD',    type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/willow' },
+      { id: 'willow', name: 'Willow', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/willow' },
+      { id: 'willow2', name: 'Willow 2', type: 'iframe', iframeSrc: 'https://allrounder-live12.pages.dev/channel/willow' },
+      { id: 'willowsports', name: 'Willow Sports', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
+      { id: 'sliv3', name: 'Sony LIV Hindi', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/sliv3' },
+      { id: 'shamshad', name: 'Shamshad TV', type: 'iframe', iframeSrc: 'https://cinearena.fun/ios/?url=https://5a1178b42cc03.streamlock.net/shamshadtelevision/shamshadtelevision/playlist.m3u8' },
       { id: 'fox501',      name: 'Fox 501 HD Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/fox/' },
-      { id: 'foxsports',   name: 'Fox Sports', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/fox-sports/' },
-      { id: 'willow_amagi',name: 'Willow TV Plus', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
       { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/fc1' },
-      { id: 'fancode',     name: 'FanCode English', type: 'iframe', iframeSrc: 'https://cinearena.fun/ios/?url=https://dai-partner.fancode.com/primary/143396_english_hls_308563297d37105_1ta-di_h264/index.m3u8' },
       { id: 'tnt4',        name: 'TNT Sports 4', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt4' },
       { id: 'tnt2',        name: 'TNT Sports 2', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt2' },
       { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
@@ -2696,7 +2707,7 @@ window._chFetch
       IframePlayer.warmChannels(channels);
     }
     if (window.PlayerPrefetch && PlayerPrefetch.prefetchChannels) {
-      PlayerPrefetch.prefetchChannels(channels, ['ss1eng', 'ss2hd']);
+      PlayerPrefetch.prefetchChannels(channels, ['eng', 'willow']);
     }
 
     showIdlePlayer();

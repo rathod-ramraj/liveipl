@@ -309,6 +309,15 @@
     return true;
   }
 
+  function isDirectM3u8Src(src) {
+    if (!src) return false;
+    try {
+      return /\.m3u8$/i.test(new URL(src).pathname);
+    } catch (_) {
+      return /^[^?#]+\.m3u8(\?|#|$)/i.test(src);
+    }
+  }
+
   function attachIframe(src, ch, ctx) {
     if (!global.IframePlayer) {
       var iframe = document.createElement('iframe');
@@ -340,15 +349,22 @@
     destroy(ctx.container);
 
     var src = ch.iframeSrc || '';
-    var isM3u8 = /\.m3u8(\?|$)/i.test(src);
+    var iframeOnly = ch.type === 'iframe';
+    var isM3u8 = !iframeOnly && (ch.type === 'hls' || isDirectM3u8Src(src));
 
     if (ctx.showControls == null) {
-      ctx.showControls = isM3u8 || ch.type === 'hls';
+      ctx.showControls = isM3u8;
     }
 
-    ctx.showBuffer();
+    ctx.skipBuffer = iframeOnly;
 
-    if (!isM3u8 && global.IframePlayer) {
+    if (!iframeOnly) {
+      ctx.showBuffer();
+    }
+
+    if (iframeOnly && global.IframePlayer) {
+      global.IframePlayer.preconnect(src);
+    } else if (!isM3u8 && global.IframePlayer) {
       global.IframePlayer.preconnect(src);
     } else if (global.PlayerPrefetch && PlayerPrefetch.scheduleWarm && !isPlaybackBusy()) {
       PlayerPrefetch.scheduleWarm(src);
