@@ -1880,7 +1880,7 @@ var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.build
 var ALLOWED = new Set([
   'eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
   'star_tamil','willowsports','willow','willow2','skynz','kayohin','fox501',
-  'fc1','tnt4','tnt2','star2eng','star2hindi','shamshad','sliv3'
+  'fc1','tnt4','tnt2','star2eng','star2hindi','star1eng','prime_eng','shamshad','sliv3'
 ]);
 
 var SITE_TITLE = 'PlayUp';
@@ -1924,7 +1924,9 @@ var CH_LINK_ICON =
 var META = {
   star2eng:   { name: 'Star Sports 2 English',    sub: 'Star Sports 2 · English' },
   star2hindi: { name: 'Star Sports 2 Hindi',      sub: 'Star Sports 2 · Hindi' },
-  eng:        { name: 'Star Sports HD English', sub: 'Star Sports English' },
+  star1eng:   { name: 'Star Sports 1 HD English', sub: 'Star Sports 1 · English' },
+  prime_eng:  { name: 'Prime English',            sub: 'Prime · English' },
+  eng:        { name: 'Star Sports 1 HD English', sub: 'Star Sports English' },
   starhindi:  { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
   star_hindi: { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
   hindi:      { name: 'Star Sports HD Hindi',   sub: 'Hindi Commentary' },
@@ -1963,9 +1965,50 @@ function getMeta(id) {
   return { name: cleanChannelName(m.name), sub: m.sub };
 }
 
-function updatePageTitle(id) {
-  var m = getMeta(id);
-  setLivePageTitle(m.name);
+function iframeSiteLabel(src) {
+  if (!src) return '';
+  try {
+    var host = new URL(src).hostname.replace(/^www\./i, '').toLowerCase();
+    if (host === 'cinearena.fun') return 'CineArena';
+    if (host.indexOf('cinearena-plyr') !== -1) return 'CineArena-Plyr';
+    if (host.indexOf('allrounder-live12') !== -1) return 'Allrounder-Live12';
+    if (host.indexOf('allrounder-live4') !== -1) return 'Allrounder-Live4';
+    if (host.indexOf('allrounder-live') !== -1) return 'Allrounder-Live';
+    if (host.indexOf('allrounderlive') !== -1 || host === 'allrounderlive.in') return 'AllrounderLive';
+    if (host.indexOf('b-player3') !== -1) return 'B-Player3';
+    if (host.indexOf('zee-seven') !== -1) return 'Zee';
+    if (host.indexOf('playerado') !== -1) return 'Playerado';
+    if (host.indexOf('cricketstan') !== -1) return 'Cricketstan';
+    var base = host.split('.')[0];
+    return base.split('-').map(function (p) {
+      return p.charAt(0).toUpperCase() + p.slice(1);
+    }).join('-');
+  } catch (_) {
+    return '';
+  }
+}
+
+function channelDisplayName(ch) {
+  var m = getMeta(ch && ch.id);
+  var name = m.name;
+  var src = ch && ch.iframeSrc;
+  if (!src || /\([^)]+\)\s*$/.test(name)) return name;
+  var label = iframeSiteLabel(src);
+  return label ? name + ' (' + label + ')' : name;
+}
+
+function updatePageTitle(chOrId) {
+  var name;
+  if (chOrId && typeof chOrId === 'object') {
+    name = channelDisplayName(chOrId);
+  } else {
+    var ch = null;
+    for (var i = 0; i < channels.length; i++) {
+      if (channels[i].id === chOrId) { ch = channels[i]; break; }
+    }
+    name = ch ? channelDisplayName(ch) : getMeta(chOrId).name;
+  }
+  setLivePageTitle(name);
 }
 
 function sortChannels(list) {
@@ -1983,6 +2026,7 @@ function sortChannels(list) {
 
   take('star2eng');
   take('star2hindi');
+  take('star1eng');
   take('eng');
   if (!used.starhindi) take('starhindi');
   if (!used.starhindi) take('star_hindi');
@@ -1992,6 +2036,7 @@ function sortChannels(list) {
   take('willow2');
   take('willowsports');
   take('sliv3');
+  take('prime_eng');
   take('shamshad');
   take('skynz');
   take('kayohin');
@@ -2155,11 +2200,12 @@ function paintChannelGrid(list, rows) {
 
 function createChBtn(ch) {
   var m = getMeta(ch.id);
+  var label = channelDisplayName(ch);
   var btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'ch-btn';
   btn.dataset.id = ch.id;
-  btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + m.name + '</span>';
+  btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + label + '</span>';
   btn.setAttribute('aria-pressed', 'false');
   btn.addEventListener('click', function () { switchChannel(ch.id); }, { passive: true });
   btn.addEventListener('mouseenter', function () {
@@ -2318,9 +2364,9 @@ function switchChannel(id) {
   }
 
   var m = getMeta(id);
-  elName.textContent = m.name;
+  elName.textContent = channelDisplayName(ch);
   elMeta.textContent = m.sub + ' · HD Live';
-  updatePageTitle(id);
+  updatePageTitle(ch);
 
   setStream(ch);
   if (mobilePlayerFs) exitMobilePlayerFs();
@@ -2657,6 +2703,7 @@ window._chFetch
       'cricbuzz live': 'cricbuzz',
       'willow-sports': 'willowsports',
       'willowextra':   'willowsports',
+      'prime-eng':     'prime_eng',
     };
 
     var raw = data.iframes || [];
@@ -2664,6 +2711,8 @@ window._chFetch
     var localChannels = [
       { id: 'star2eng', name: 'Star Sports 2 English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/2eng' },
       { id: 'star2hindi', name: 'Star Sports 2 Hindi', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/2hindi' },
+      { id: 'star1eng', name: 'Star Sports 1 HD English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/1eng/' },
+      { id: 'prime_eng', name: 'Prime English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/prime-eng' },
       { id: 'skynz', name: 'Sky Sports Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/skynz/' },
       { id: 'kayohin', name: 'Kayo Hindi', type: 'iframe', iframeSrc: 'https://b-player3.pages.dev/p1?id=kayohin' },
       { id: 'star_tamil',  name: 'Star Sports HD Tamil',  type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/tamil-1' },
