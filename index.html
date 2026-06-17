@@ -1880,7 +1880,7 @@ var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.build
 var ALLOWED = new Set([
   'eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
   'star_tamil','willowsports','willow','willow2','skynz','kayohin','fox501',
-  'fc1','tnt4','tnt2','star2eng','star2hindi','star1eng','prime_eng','shamshad','sliv3'
+  'fc1','tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','prime_eng','shamshad','sliv3'
 ]);
 
 var SITE_TITLE = 'PlayUp';
@@ -1938,6 +1938,7 @@ var META = {
   willowsports:{ name: 'Willow Sports',          sub: 'Willow · Sports' },
   fox501:     { name: 'Fox 501 HD Live',        sub: 'Fox Sports · HD' },
   fc1:        { name: 'FanCode FC1',            sub: 'FanCode Live' },
+  tnt1:       { name: 'TNT Sports 1 Live',      sub: 'TNT Sports' },
   tnt4:       { name: 'TNT Sports 4',           sub: 'TNT Sports' },
   tnt2:       { name: 'TNT Sports 2',           sub: 'TNT Sports' },
   skynz:      { name: 'Sky Sports Live',        sub: 'Sky Sports · Live' },
@@ -2042,6 +2043,7 @@ function sortChannels(list) {
   take('kayohin');
   take('fox501');
   take('fc1');
+  take('tnt1');
   take('tnt4');
   take('tnt2');
 
@@ -2723,6 +2725,7 @@ window._chFetch
       { id: 'shamshad', name: 'Shamshad TV', type: 'iframe', iframeSrc: 'https://cinearena.fun/ios/?url=https://5a1178b42cc03.streamlock.net/shamshadtelevision/shamshadtelevision/playlist.m3u8' },
       { id: 'fox501',      name: 'Fox 501 HD Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/fox/' },
       { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/fc1' },
+      { id: 'tnt1',        name: 'TNT Sports 1 Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt1' },
       { id: 'tnt4',        name: 'TNT Sports 4', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt4' },
       { id: 'tnt2',        name: 'TNT Sports 2', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt2' },
       { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
