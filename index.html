@@ -1880,7 +1880,7 @@ var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.build
 var ALLOWED = new Set([
   'eng','starhindi','star_hindi','hindi','zee','crichd','star','sonyliv',
   'star_tamil','star1tel','willowsports','willow','willow2','skynz','kayohin','fox501',
-  'fc1','tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3'
+  'fc1','tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket'
 ]);
 
 var SITE_TITLE = 'PlayUp';
@@ -1935,6 +1935,7 @@ var META = {
   star1tel:   { name: 'Star Sports 1 HD Telugu', sub: 'Star Sports 1 · Telugu' },
   willow:     { name: 'Willow',                 sub: 'Cricket Live' },
   willow2:    { name: 'Willow 2',               sub: 'Cricket Live' },
+  willow_cricket: { name: 'Willow Cricket Player', sub: 'Willow Cricket' },
   sliv1:      { name: 'Sony LIV English',         sub: 'Sony LIV · English' },
   sliv3:      { name: 'Sony LIV Hindi',         sub: 'Sony LIV · Hindi' },
   shamshad:   { name: 'Shamshad TV',            sub: 'Live Stream' },
@@ -2729,6 +2730,7 @@ window._chFetch
       { id: 'star1tel', name: 'Star Sports 1 HD Telugu', type: 'iframe', iframeSrc: 'https://cineweb.pages.dev/play/?id=ss1tehd' },
       { id: 'willow', name: 'Willow', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/willow' },
       { id: 'willow2', name: 'Willow 2', type: 'iframe', iframeSrc: 'https://allrounder-live12.pages.dev/channel/willow' },
+      { id: 'willow_cricket', name: 'Willow Cricket Player', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/admin-willow-cricket/1' },
       { id: 'willowsports', name: 'Willow Sports', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
       { id: 'sliv1', name: 'Sony LIV English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/sliv1' },
       { id: 'sliv3', name: 'Sony LIV Hindi', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/sliv3' },
