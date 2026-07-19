@@ -1879,7 +1879,7 @@ var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.build
 
 var ALLOWED = new Set([
   'eng', /* 'starhindi','star_hindi','hindi', */ 'zee', /* 'crichd','star','sonyliv',
-  'star_tamil','star1tel', */ 'willowsports', 'main3', 'fifa_hindi', 'willow_cricbuzz', 'cinecrichd', /* 'willow','willow2','skynz','kayohin','fox501',
+  'star_tamil','star1tel', */ 'willowsports', 'main3', 'fifa_hindi', 'willow_cricbuzz', 'skysports_cricket', 'willow', /* 'willow2','skynz','kayohin','fox501',
   'fc1','tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
 ]);
 
@@ -1941,9 +1941,9 @@ var META = {
   shamshad:   { name: 'Shamshad TV',            sub: 'Live Stream' },
   willowsports:{ name: 'Main 2',                 sub: 'Main 2' },
   main3:      { name: 'Main 3',                 sub: 'Main 3' },
-  fifa_hindi: { name: 'FIFA Hindi',             sub: 'Live Sports' },
+  fifa_hindi: { name: 'Main 4',                 sub: 'Main 4' },
   willow_cricbuzz: { name: 'Willow Cricbuzz',   sub: 'Cricket Live' },
-  cinecrichd: { name: 'CineCricHD',             sub: 'Sports Live' },
+  skysports_cricket: { name: 'Sky Sports Cricket', sub: 'Cricket Live' },
   fox501:     { name: 'Fox 501 HD Live',        sub: 'Fox Sports · HD' },
   fc1:        { name: 'FanCode FC1',            sub: 'FanCode Live' },
   tnt1:       { name: 'TNT Sports 1 Live',      sub: 'TNT Sports' },
@@ -2035,7 +2035,8 @@ function sortChannels(list) {
   take('main3');
   take('fifa_hindi');
   take('willow_cricbuzz');
-  take('cinecrichd');
+  take('skysports_cricket');
+  take('willow');
   take('star2eng');
   take('star2hindi');
   take('star1eng');
@@ -2045,7 +2046,6 @@ function sortChannels(list) {
   if (!used.starhindi) take('hindi');
   take('star_tamil');
   take('star1tel');
-  take('willow');
   take('willow2');
   take('sliv1');
   take('sliv3');
@@ -2732,14 +2732,14 @@ window._chFetch
       // { id: 'kayohin', name: 'Kayo Hindi', type: 'iframe', iframeSrc: 'https://b-player3.pages.dev/p1?id=kayohin' },
       // { id: 'star_tamil',  name: 'Star Sports HD Tamil',  type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/tamil-1' },
       // { id: 'star1tel', name: 'Star Sports 1 HD Telugu', type: 'iframe', iframeSrc: 'https://cineweb.pages.dev/play/?id=ss1tehd' },
-      // { id: 'willow', name: 'Willow', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/willow' },
+      { id: 'willow', name: 'Willow', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=willowusa' },
       // { id: 'willow2', name: 'Willow 2', type: 'iframe', iframeSrc: 'https://allrounder-live12.pages.dev/channel/willow' },
       // { id: 'willow_cricket', name: 'Willow Cricket Player', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/admin-willow-cricket/1' },
       { id: 'willowsports', name: 'Main 2', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
       { id: 'main3', name: 'Main 3', type: 'iframe', iframeSrc: 'https://allrounder2-0.pages.dev/fox' },
-      { id: 'fifa_hindi', name: 'FIFA Hindi', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
+      { id: 'fifa_hindi', name: 'Main 4', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
       { id: 'willow_cricbuzz', name: 'Willow Cricbuzz', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/willow-cricbuzz' },
-      { id: 'cinecrichd', name: 'CineCricHD', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/' },
+      { id: 'skysports_cricket', name: 'Sky Sports Cricket', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=skyscric' },
       // { id: 'sliv1', name: 'Sony LIV English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/sliv1' },
       // { id: 'sliv3', name: 'Sony LIV Hindi', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/sliv3' },
       // { id: 'shamshad', name: 'Shamshad TV', type: 'iframe', iframeSrc: 'https://cinearena.fun/ios/?url=https://5a1178b42cc03.streamlock.net/shamshadtelevision/shamshadtelevision/playlist.m3u8' },
