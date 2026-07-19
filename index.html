@@ -1879,7 +1879,7 @@ var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.build
 
 var ALLOWED = new Set([
   'eng', /* 'starhindi','star_hindi','hindi', */ 'zee', /* 'crichd','star','sonyliv',
-  'star_tamil','star1tel', */ 'willowsports', 'fifa_hindi', 'willow_cricbuzz', 'cinecrichd', /* 'willow','willow2','skynz','kayohin','fox501',
+  'star_tamil','star1tel', */ 'willowsports', 'main3', 'fifa_hindi', 'willow_cricbuzz', 'cinecrichd', /* 'willow','willow2','skynz','kayohin','fox501',
   'fc1','tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
 ]);
 
@@ -1940,6 +1940,7 @@ var META = {
   sliv3:      { name: 'Sony LIV Hindi',         sub: 'Sony LIV · Hindi' },
   shamshad:   { name: 'Shamshad TV',            sub: 'Live Stream' },
   willowsports:{ name: 'Main 2',                 sub: 'Main 2' },
+  main3:      { name: 'Main 3',                 sub: 'Main 3' },
   fifa_hindi: { name: 'FIFA Hindi',             sub: 'Live Sports' },
   willow_cricbuzz: { name: 'Willow Cricbuzz',   sub: 'Cricket Live' },
   cinecrichd: { name: 'CineCricHD',             sub: 'Sports Live' },
@@ -2031,6 +2032,7 @@ function sortChannels(list) {
 
   take('eng');
   take('willowsports');
+  take('main3');
   take('fifa_hindi');
   take('willow_cricbuzz');
   take('cinecrichd');
@@ -2734,6 +2736,7 @@ window._chFetch
       // { id: 'willow2', name: 'Willow 2', type: 'iframe', iframeSrc: 'https://allrounder-live12.pages.dev/channel/willow' },
       // { id: 'willow_cricket', name: 'Willow Cricket Player', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/admin-willow-cricket/1' },
       { id: 'willowsports', name: 'Main 2', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
+      { id: 'main3', name: 'Main 3', type: 'iframe', iframeSrc: 'https://allrounder2-0.pages.dev/fox' },
       { id: 'fifa_hindi', name: 'FIFA Hindi', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
       { id: 'willow_cricbuzz', name: 'Willow Cricbuzz', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/willow-cricbuzz' },
       { id: 'cinecrichd', name: 'CineCricHD', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/' },
