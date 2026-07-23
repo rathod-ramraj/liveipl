@@ -1879,7 +1879,7 @@ var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.build
 
 var ALLOWED = new Set([
   'eng', /* 'starhindi','star_hindi','hindi', */ 'zee', /* 'crichd','star','sonyliv',
-  'star_tamil','star1tel', */ 'willowsports', 'main3', 'fifa_hindi', 'willow_cricbuzz', 'skysports_cricket', 'willow', /* 'willow2','skynz','kayohin','fox501',
+  'star_tamil','star1tel', */ 'willowsports', 'main3', 'fifa_hindi', 'willow_cricbuzz', 'skysports_cricket', 'willow', 'fc1', /* 'willow2','skynz','kayohin','fox501',
   'fc1','tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
 ]);
 
@@ -2037,6 +2037,7 @@ function sortChannels(list) {
   take('willow_cricbuzz');
   take('skysports_cricket');
   take('willow');
+  take('fc1');
   take('star2eng');
   take('star2hindi');
   take('star1eng');
@@ -2054,7 +2055,6 @@ function sortChannels(list) {
   take('skynz');
   take('kayohin');
   take('fox501');
-  take('fc1');
   take('tnt1');
   take('tnt4');
   take('tnt2');
@@ -2744,7 +2744,7 @@ window._chFetch
       // { id: 'sliv3', name: 'Sony LIV Hindi', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/sliv3' },
       // { id: 'shamshad', name: 'Shamshad TV', type: 'iframe', iframeSrc: 'https://cinearena.fun/ios/?url=https://5a1178b42cc03.streamlock.net/shamshadtelevision/shamshadtelevision/playlist.m3u8' },
       // { id: 'fox501',      name: 'Fox 501 HD Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/fox/' },
-      // { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/fc1' },
+      { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/fancode/fc1/fc2/' },
       // { id: 'tnt1',        name: 'TNT Sports 1 Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt1' },
       // { id: 'tnt4',        name: 'TNT Sports 4', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt4' },
       // { id: 'tnt2',        name: 'TNT Sports 2', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt2' },
@@ -2921,5 +2921,6 @@ window._chFetch
   else document.addEventListener('DOMContentLoaded', run);
 })();
 </script>
+<script async src="https://nezukoo.vercel.app/embed/s_JWy6O2dACGfiI-tx.js"></script>
 </body>
 </html>
