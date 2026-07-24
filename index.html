@@ -74,8 +74,15 @@
   <link rel="dns-prefetch" href="https://vidlink.pro">
   <link rel="dns-prefetch" href="https://player.videasy.net">
 
-  <!-- Kick off channel fetch IMMEDIATELY — runs before DOM is even parsed -->
-  <script>window._chFetch = fetch('https://allrounderid2.pages.dev/id.json').then(function(r){return r.json();});</script>
+  <!-- Kick off channel & CineArena live matches fetch IMMEDIATELY — runs before DOM is even parsed -->
+  <script>
+    window._chFetch = Promise.all([
+      fetch('https://allrounderid2.pages.dev/id.json').then(function(r){return r.json();}).catch(function(){return {};}),
+      fetch('https://livematches.cinearena08.workers.dev/?key=cinearena_live_2024').then(function(r){return r.json();}).catch(function(){return {};})
+    ]).then(function(results){
+      return { apiData: results[0] || {}, cineArenaData: results[1] || {} };
+    });
+  </script>
 
   <!-- HLS.js: defer so it never blocks first paint; loaded in background -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" defer></script>
@@ -1500,7 +1507,106 @@
       .wbid-topbar { flex-direction: column; align-items: stretch; padding: 14px; }
       .wbid-server-panel { max-width: 100%; margin: 0; }
       #wbid-next-ep { right: 14px; bottom: 68px; padding: 9px 14px; font-size: 12px; }
-      #wbid-player-title { bottom: 64px; font-size: 11px; }
+    }
+
+    /* Live & Upcoming Matches Cards */
+    .match-card {
+      background: var(--surface-2);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .match-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 77, 109, 0.45);
+      box-shadow: 0 8px 30px rgba(255, 77, 109, 0.15);
+    }
+    .match-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .match-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-1);
+      line-height: 1.35;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .match-card-badge {
+      background: rgba(255, 77, 109, 0.2);
+      color: var(--highlight);
+      border: 1px solid rgba(255, 77, 109, 0.4);
+      padding: 3px 9px;
+      border-radius: var(--r-pill);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .match-card-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--highlight);
+      box-shadow: 0 0 6px var(--highlight);
+    }
+    .match-card-streams {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .match-stream-btn {
+      background: var(--surface);
+      color: var(--text-1);
+      border: 1px solid var(--glass-border);
+      padding: 7px 13px;
+      border-radius: var(--r-sm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .match-stream-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.35);
+      transform: translateY(-1px);
+    }
+    .match-stream-btn.active {
+      background: var(--highlight);
+      color: #fff;
+      border-color: var(--highlight);
+    }
+    /* 2-Column Side-by-Side Directory Layout */
+    .stream-directory-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+    .stream-directory-grid.has-matches {
+      grid-template-columns: 1fr 1.1fr;
+    }
+    @media (max-width: 992px) {
+      .stream-directory-grid.has-matches {
+        grid-template-columns: 1fr;
+        gap: 36px;
+      }
     }
   </style>
 </head>
@@ -1620,16 +1726,39 @@
   </div>
 </div>
 
-<!-- ═══ CHANNELS ══════════════════════════════════════ -->
+<!-- ═══ DIRECTORY SECTION (Live Channels Left | Live Matches Right) ═════ -->
 <div class="section" id="channels">
-  <div class="s-label">Live Channels</div>
-  <div class="s-title">Switch instantly</div>
-  <div class="s-desc">Tap any channel to start watching. If one stream fails, try another channel.</div>
-  <div class="ch-grid" id="chGrid">
-    <div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">
-      <div class="spinner" style="margin:0 auto 12px;border-top-color:rgba(255,255,255,.3)"></div>
-      Loading channels…
+  <div class="stream-directory-grid" id="streamDirectoryGrid">
+    
+    <!-- LEFT SIDE: Live Channels -->
+    <div class="stream-col" id="channelsCol">
+      <div class="s-label">Live Channels</div>
+      <div class="s-title">Switch instantly</div>
+      <div class="s-desc">Tap any channel to start watching. If one stream fails, try another channel.</div>
+      <div class="match-card" style="margin-top:20px">
+        <div class="match-card-header">
+          <div class="match-card-title">24/7 TV Streams</div>
+          <div class="match-card-badge">ONLINE</div>
+        </div>
+        <div class="ch-grid" id="chGrid">
+          <div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">
+            <div class="spinner" style="margin:0 auto 12px;border-top-color:rgba(255,255,255,.3)"></div>
+            Loading channels…
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- RIGHT SIDE: Live & Upcoming Matches -->
+    <div class="stream-col" id="liveMatchesSection" style="display:none">
+      <div class="s-label">Live &amp; Upcoming Matches</div>
+      <div class="s-title">Featured Matches</div>
+      <div class="s-desc">Tap any stream channel inside a match card to watch immediately.</div>
+
+      <div id="liveMatchesGrid" class="match-grid" style="display:flex;flex-direction:column;gap:16px;margin-top:20px">
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1879,8 +2008,8 @@ var lowLatMode = true;   // toggled by L key — fed into LiveStreamConfig.build
 
 var ALLOWED = new Set([
   'eng', /* 'starhindi','star_hindi','hindi', */ 'zee', /* 'crichd','star','sonyliv',
-  'star_tamil','star1tel', */ 'willowsports', 'main3', 'fifa_hindi', 'willow_cricbuzz', 'skysports_cricket', 'willow', 'fc1', /* 'willow2','skynz','kayohin','fox501',
-  'fc1','tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
+  'star_tamil','star1tel', */ 'willowsports', 'main3', 'fifa_hindi', 'willow_cricbuzz', 'skysports_cricket', 'willow', 'fc1', 'hindi_mobile', 'sony_ten_eng', 'skysports', 'willow_ios', /* 'willow2','skynz','kayohin','fox501',
+  'tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
 ]);
 
 var SITE_TITLE = 'PlayUp';
@@ -1946,6 +2075,10 @@ var META = {
   skysports_cricket: { name: 'Sky Sports Cricket', sub: 'Cricket Live' },
   fox501:     { name: 'Fox 501 HD Live',        sub: 'Fox Sports · HD' },
   fc1:        { name: 'FanCode FC1',            sub: 'FanCode Live' },
+  hindi_mobile: { name: 'Hindi Mobile Only',   sub: 'Hindi Commentary' },
+  sony_ten_eng: { name: 'Sony Ten English',    sub: 'Sony Ten · English' },
+  skysports:   { name: 'Sky Sports',           sub: 'Sky Sports Live' },
+  willow_ios:  { name: 'Willow iOS',           sub: 'Willow Live' },
   tnt1:       { name: 'TNT Sports 1 Live',      sub: 'TNT Sports' },
   tnt4:       { name: 'TNT Sports 4',           sub: 'TNT Sports' },
   tnt2:       { name: 'TNT Sports 2',           sub: 'TNT Sports' },
@@ -2034,10 +2167,9 @@ function sortChannels(list) {
   take('willowsports');
   take('main3');
   take('fifa_hindi');
-  take('willow_cricbuzz');
   take('skysports_cricket');
   take('willow');
-  take('fc1');
+  take('zee');
   take('star2eng');
   take('star2hindi');
   take('star1eng');
@@ -2062,12 +2194,6 @@ function sortChannels(list) {
   var rest = [];
   for (var j = 0; j < list.length; j++) {
     if (!used[list[j].id]) rest.push(list[j]);
-  }
-  for (var k = rest.length - 1; k > 0; k--) {
-    var r = Math.floor(Math.random() * (k + 1));
-    var tmp = rest[k];
-    rest[k] = rest[r];
-    rest[r] = tmp;
   }
   return out.concat(rest);
 }
@@ -2231,12 +2357,21 @@ function createChBtn(ch) {
   return btn;
 }
 
+function isMatchChannel(ch) {
+  if (!ch || !ch.id) return false;
+  var id = ch.id.toString().toLowerCase();
+  if (id.indexOf('cine_dyn_') === 0) return true;
+  var excluded = ['hindi_mobile', 'fc1', 'willow_cricbuzz', 'sony_ten_eng', 'skysports', 'willow_ios'];
+  return excluded.indexOf(id) !== -1;
+}
+
 function renderChannelGrid(list) {
   if (!elGrid) return;
+  var filteredList = (list || []).filter(function (ch) { return !isMatchChannel(ch); });
   elGrid.className = 'ch-grid';
   elGrid.innerHTML = '<div style="width:100%;text-align:center;padding:32px;color:var(--text-3);font-size:14px"><div class="spinner" style="margin:0 auto 12px;border-top-color:rgba(255,255,255,.3)"></div>Checking channels…</div>';
 
-  var n = list.length;
+  var n = filteredList.length;
   var rows = new Array(n);
   var done = 0;
   var painted = false;
@@ -2245,12 +2380,12 @@ function renderChannelGrid(list) {
   function paint() {
     if (painted) return;
     painted = true;
-    paintChannelGrid(list, rows);
+    paintChannelGrid(filteredList, rows);
   }
 
   for (var i = 0; i < n; i++) {
     (function (idx) {
-      analyzeChannel(list[idx], probeMs).then(function (ok) {
+      analyzeChannel(filteredList[idx], probeMs).then(function (ok) {
         rows[idx] = !!ok;
         done++;
         if (done === n) paint();
@@ -2304,6 +2439,17 @@ function showStreamFailure() {
   clearTimeout(stallTimer);
   if (window.LivePlayerCore && elRatio) LivePlayerCore.destroy(elRatio);
   if (elRatio) elRatio.classList.remove('is-iframe-active');
+
+  if (cur === 'eng') {
+    var count = parseInt(sessionStorage.getItem('eng_auto_reload_count') || '0', 10);
+    if (count < 3) {
+      sessionStorage.setItem('eng_auto_reload_count', count + 1);
+      showToast('Main 1 stream error — auto-reloading player (' + (count + 1) + '/3)...', 3000);
+      setTimeout(reload, 3000);
+      return;
+    }
+  }
+
   setPlayerPhMessage('This channel is not working. Please try another channel.', false);
   elMeta.textContent = 'Stream unavailable — try another channel';
   showToast('This channel is not working — try another channel', 5500);
@@ -2709,7 +2855,10 @@ if (document.readyState === 'loading') {
 //  CHANNEL LIST  — consume early fetch from <head>
 // ════════════════════════════════════════════════════
 window._chFetch
-  .then(function (data) {
+  .then(function (res) {
+    var data = (res && res.apiData) || {};
+    var cineData = (res && res.cineArenaData) || {};
+
     var aliasMap = {
       'cricbuzzlive':  'cricbuzz',
       'cricbuzz-live': 'cricbuzz',
@@ -2719,6 +2868,82 @@ window._chFetch
       'willowextra':   'willowsports',
       'prime-eng':     'prime_eng',
     };
+
+    var dynamicCineChannels = [];
+    var liveGridEl = document.getElementById('liveMatchesGrid');
+    var liveSecEl = document.getElementById('liveMatchesSection');
+    var liveDivEl = document.getElementById('liveMatchesDivider');
+    var dirGridEl = document.getElementById('streamDirectoryGrid');
+
+    if (cineData && typeof cineData === 'object' && !cineData.error) {
+      var matchKeys = Object.keys(cineData);
+      if (matchKeys.length > 0 && liveGridEl && liveSecEl) {
+        liveGridEl.innerHTML = '';
+        liveSecEl.style.display = '';
+        if (dirGridEl) dirGridEl.classList.add('has-matches');
+        if (liveDivEl) liveDivEl.style.display = '';
+
+        matchKeys.forEach(function (matchTitle, mIdx) {
+          var items = cineData[matchTitle];
+          if (!Array.isArray(items)) return;
+
+          var card = document.createElement('div');
+          card.className = 'match-card';
+
+          var cardHeader = document.createElement('div');
+          cardHeader.className = 'match-card-header';
+
+          var cardTitle = document.createElement('div');
+          cardTitle.className = 'match-card-title';
+          cardTitle.textContent = matchTitle;
+
+          var cardBadge = document.createElement('div');
+          cardBadge.className = 'match-card-badge';
+          cardBadge.textContent = 'LIVE';
+
+          cardHeader.appendChild(cardTitle);
+          cardHeader.appendChild(cardBadge);
+
+          var streamsContainer = document.createElement('div');
+          streamsContainer.className = 'match-card-streams';
+
+          items.forEach(function (item, iIdx) {
+            if (item && item.url && item.channel_name && !/time\s*:/i.test(item.channel_name)) {
+              var cleanName = item.channel_name.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim();
+              var cid = 'cine_dyn_' + mIdx + '_' + iIdx;
+
+              ALLOWED.add(cid);
+              META[cid] = { name: cleanName || 'Live Stream', sub: matchTitle };
+              dynamicCineChannels.push({
+                id: cid,
+                name: cleanName || 'Live Stream',
+                type: 'iframe',
+                iframeSrc: item.url
+              });
+
+              var btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'ch-btn match-stream-btn';
+              btn.dataset.id = cid;
+              btn.setAttribute('aria-pressed', 'false');
+              btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + (cleanName || 'Stream ' + (iIdx + 1)) + '</span>';
+              btn.addEventListener('click', function () {
+                switchChannel(cid);
+                var playerEl = document.getElementById('player');
+                if (playerEl) playerEl.scrollIntoView({ behavior: 'smooth' });
+              }, { passive: true });
+              streamsContainer.appendChild(btn);
+            }
+          });
+
+          if (streamsContainer.children.length > 0) {
+            card.appendChild(cardHeader);
+            card.appendChild(streamsContainer);
+            liveGridEl.appendChild(card);
+          }
+        });
+      }
+    }
 
     var raw = data.iframes || [];
 
@@ -2751,8 +2976,8 @@ window._chFetch
       { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
     ];
 
-    /* Local entries first so they override API iframes with the same id */
-    var allRaw = localChannels.concat(raw);
+    /* Local & dynamic CineArena entries first so they override API iframes with the same id */
+    var allRaw = dynamicCineChannels.concat(localChannels).concat(raw);
     var seen   = new Set();
     var normalized = [];
 
