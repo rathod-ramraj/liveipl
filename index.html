@@ -127,12 +127,10 @@
       return tryProxy(0);
     }
 
-    window._chFetch = Promise.all([
-      fetchWithTimeout('https://allrounderid2.pages.dev/id.json', 3500).then(function(r){return r.json();}).catch(function(){return {};}),
-      fetchCineArenaMatches()
-    ]).then(function(results){
-      return { apiData: results[0] || {}, cineArenaData: results[1] || {} };
-    });
+    window._cineFetch = fetchCineArenaMatches();
+    window._chFetch = fetchWithTimeout('https://allrounderid2.pages.dev/id.json', 3500)
+      .then(function(r){ return r.json(); })
+      .catch(function(){ return {}; });
   </script>
 
   <!-- HLS.js: defer so it never blocks first paint; loaded in background -->
@@ -1792,10 +1790,13 @@
           <div class="match-card-badge">ONLINE</div>
         </div>
         <div class="ch-grid" id="chGrid">
-          <div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">
-            <div class="spinner" style="margin:0 auto 12px;border-top-color:rgba(255,255,255,.3)"></div>
-            Loading channels…
-          </div>
+          <button type="button" class="ch-btn" data-id="eng" aria-pressed="false" onclick="switchChannel('eng')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="ch-btn-label">Main 1</span></button>
+          <button type="button" class="ch-btn" data-id="willowsports" aria-pressed="false" onclick="switchChannel('willowsports')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="ch-btn-label">Main 2</span></button>
+          <button type="button" class="ch-btn" data-id="main3" aria-pressed="false" onclick="switchChannel('main3')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="ch-btn-label">Main 3</span></button>
+          <button type="button" class="ch-btn" data-id="fifa_hindi" aria-pressed="false" onclick="switchChannel('fifa_hindi')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="ch-btn-label">Main 4</span></button>
+          <button type="button" class="ch-btn" data-id="skysports_cricket" aria-pressed="false" onclick="switchChannel('skysports_cricket')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="ch-btn-label">Sky Sports Cricket</span></button>
+          <button type="button" class="ch-btn" data-id="willow" aria-pressed="false" onclick="switchChannel('willow')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="ch-btn-label">Willow</span></button>
+          <button type="button" class="ch-btn" data-id="zee" aria-pressed="false" onclick="switchChannel('zee')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span class="ch-btn-label">Zee Cinema</span></button>
         </div>
       </div>
     </div>
@@ -2897,112 +2898,93 @@ window._chFetch
       'prime-eng':     'prime_eng',
     };
 
-    var dynamicCineChannels = [];
-    var liveGridEl = document.getElementById('liveMatchesGrid');
-    var liveSecEl = document.getElementById('liveMatchesSection');
-    var liveDivEl = document.getElementById('liveMatchesDivider');
-    var dirGridEl = document.getElementById('streamDirectoryGrid');
+function renderLiveMatches(cineData) {
+  var liveGridEl = document.getElementById('liveMatchesGrid');
+  var liveSecEl = document.getElementById('liveMatchesSection');
+  var liveDivEl = document.getElementById('liveMatchesDivider');
+  var dirGridEl = document.getElementById('streamDirectoryGrid');
 
-    if (cineData && typeof cineData === 'object' && !cineData.error) {
-      var matchKeys = Object.keys(cineData);
-      if (matchKeys.length > 0 && liveGridEl && liveSecEl) {
-        liveGridEl.innerHTML = '';
-        liveSecEl.style.display = '';
-        if (dirGridEl) dirGridEl.classList.add('has-matches');
-        if (liveDivEl) liveDivEl.style.display = '';
+  if (!cineData || typeof cineData !== 'object' || cineData.error) return;
+  var matchKeys = Object.keys(cineData);
+  if (matchKeys.length === 0 || !liveGridEl || !liveSecEl) return;
 
-        matchKeys.forEach(function (matchTitle, mIdx) {
-          var items = cineData[matchTitle];
-          if (!Array.isArray(items)) return;
+  liveGridEl.innerHTML = '';
+  liveSecEl.style.display = '';
+  if (dirGridEl) dirGridEl.classList.add('has-matches');
+  if (liveDivEl) liveDivEl.style.display = '';
 
-          var card = document.createElement('div');
-          card.className = 'match-card';
+  matchKeys.forEach(function (matchTitle, mIdx) {
+    var items = cineData[matchTitle];
+    if (!Array.isArray(items)) return;
 
-          var cardHeader = document.createElement('div');
-          cardHeader.className = 'match-card-header';
+    var card = document.createElement('div');
+    card.className = 'match-card';
 
-          var cardTitle = document.createElement('div');
-          cardTitle.className = 'match-card-title';
-          cardTitle.textContent = matchTitle;
+    var cardHeader = document.createElement('div');
+    cardHeader.className = 'match-card-header';
 
-          var cardBadge = document.createElement('div');
-          cardBadge.className = 'match-card-badge';
-          cardBadge.textContent = 'LIVE';
+    var cardTitle = document.createElement('div');
+    cardTitle.className = 'match-card-title';
+    cardTitle.textContent = matchTitle;
 
-          cardHeader.appendChild(cardTitle);
-          cardHeader.appendChild(cardBadge);
+    var cardBadge = document.createElement('div');
+    cardBadge.className = 'match-card-badge';
+    cardBadge.textContent = 'LIVE';
 
-          var streamsContainer = document.createElement('div');
-          streamsContainer.className = 'match-card-streams';
+    cardHeader.appendChild(cardTitle);
+    cardHeader.appendChild(cardBadge);
 
-          items.forEach(function (item, iIdx) {
-            if (item && item.url && item.channel_name && !/time\s*:/i.test(item.channel_name)) {
-              var cleanName = item.channel_name.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim();
-              var cid = 'cine_dyn_' + mIdx + '_' + iIdx;
+    var streamsContainer = document.createElement('div');
+    streamsContainer.className = 'match-card-streams';
 
-              ALLOWED.add(cid);
-              META[cid] = { name: cleanName || 'Live Stream', sub: matchTitle };
-              dynamicCineChannels.push({
-                id: cid,
-                name: cleanName || 'Live Stream',
-                type: 'iframe',
-                iframeSrc: item.url
-              });
+    items.forEach(function (item, iIdx) {
+      if (item && item.url && item.channel_name && !/time\s*:/i.test(item.channel_name)) {
+        var cleanName = item.channel_name.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim();
+        var cid = 'cine_dyn_' + mIdx + '_' + iIdx;
 
-              var btn = document.createElement('button');
-              btn.type = 'button';
-              btn.className = 'ch-btn match-stream-btn';
-              btn.dataset.id = cid;
-              btn.setAttribute('aria-pressed', 'false');
-              btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + (cleanName || 'Stream ' + (iIdx + 1)) + '</span>';
-              btn.addEventListener('click', function () {
-                switchChannel(cid);
-                var playerEl = document.getElementById('player');
-                if (playerEl) playerEl.scrollIntoView({ behavior: 'smooth' });
-              }, { passive: true });
-              streamsContainer.appendChild(btn);
-            }
-          });
+        ALLOWED.add(cid);
+        META[cid] = { name: cleanName || 'Live Stream', sub: matchTitle };
 
-          if (streamsContainer.children.length > 0) {
-            card.appendChild(cardHeader);
-            card.appendChild(streamsContainer);
-            liveGridEl.appendChild(card);
-          }
-        });
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ch-btn match-stream-btn';
+        btn.dataset.id = cid;
+        btn.setAttribute('aria-pressed', 'false');
+        btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + (cleanName || 'Stream ' + (iIdx + 1)) + '</span>';
+        btn.addEventListener('click', function () {
+          switchChannel(cid);
+          var playerEl = document.getElementById('player');
+          if (playerEl) playerEl.scrollIntoView({ behavior: 'smooth' });
+        }, { passive: true });
+        streamsContainer.appendChild(btn);
       }
+    });
+
+    if (streamsContainer.children.length > 0) {
+      card.appendChild(cardHeader);
+      card.appendChild(streamsContainer);
+      liveGridEl.appendChild(card);
     }
+  });
+}
+
+if (window._cineFetch) {
+  window._cineFetch.then(renderLiveMatches).catch(function(){});
+}
 
     var raw = data.iframes || [];
 
     var localChannels = [
-      // { id: 'star2eng', name: 'Star Sports 2 English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/2eng' },
-      // { id: 'star2hindi', name: 'Star Sports 2 Hindi', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/2hindi' },
-      // { id: 'star1eng', name: 'Star Sports 1 HD English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/1eng/' },
-      // { id: 'star1hindi', name: 'Star Sports 1 HD Hindi', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/1hindisd/' },
-      // { id: 'prime_eng', name: 'Prime English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/prime-eng' },
-      // { id: 'skynz', name: 'Sky Sports Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/skynz/' },
-      // { id: 'kayohin', name: 'Kayo Hindi', type: 'iframe', iframeSrc: 'https://b-player3.pages.dev/p1?id=kayohin' },
-      // { id: 'star_tamil',  name: 'Star Sports HD Tamil',  type: 'iframe', iframeSrc: 'https://allrounder-live4.pages.dev/star/tamil-1' },
-      // { id: 'star1tel', name: 'Star Sports 1 HD Telugu', type: 'iframe', iframeSrc: 'https://cineweb.pages.dev/play/?id=ss1tehd' },
       { id: 'willow', name: 'Willow', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=willowusa' },
-      // { id: 'willow2', name: 'Willow 2', type: 'iframe', iframeSrc: 'https://allrounder-live12.pages.dev/channel/willow' },
-      // { id: 'willow_cricket', name: 'Willow Cricket Player', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/admin-willow-cricket/1' },
       { id: 'willowsports', name: 'Main 2', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
       { id: 'main3', name: 'Main 3', type: 'iframe', iframeSrc: 'https://allrounder2-0.pages.dev/fox' },
       { id: 'fifa_hindi', name: 'Main 4', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
       { id: 'willow_cricbuzz', name: 'Willow Cricbuzz', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/willow-cricbuzz' },
       { id: 'skysports_cricket', name: 'Sky Sports Cricket', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=skyscric' },
-      // { id: 'sliv1', name: 'Sony LIV English', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/sliv1' },
-      // { id: 'sliv3', name: 'Sony LIV Hindi', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/sliv3' },
-      // { id: 'shamshad', name: 'Shamshad TV', type: 'iframe', iframeSrc: 'https://cinearena.fun/ios/?url=https://5a1178b42cc03.streamlock.net/shamshadtelevision/shamshadtelevision/playlist.m3u8' },
-      // { id: 'fox501',      name: 'Fox 501 HD Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/str/fox/' },
       { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/fancode/fc1/fc2/' },
-      // { id: 'tnt1',        name: 'TNT Sports 1 Live', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt1' },
-      // { id: 'tnt4',        name: 'TNT Sports 4', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt4' },
-      // { id: 'tnt2',        name: 'TNT Sports 2', type: 'iframe', iframeSrc: 'https://cinearena.fun/chns/tnt2' },
       { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
     ];
+    window._localChannels = localChannels;
 
     /* Local & dynamic CineArena entries first so they override API iframes with the same id */
     var allRaw = dynamicCineChannels.concat(localChannels).concat(raw);
