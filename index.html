@@ -76,9 +76,31 @@
 
   <!-- Kick off channel & CineArena live matches fetch IMMEDIATELY — runs before DOM is even parsed -->
   <script>
+    function fetchCineArenaMatches() {
+      var directUrl = 'https://livematches.cinearena08.workers.dev/?key=cinearena_live_2024';
+      var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(directUrl);
+      return fetch(directUrl)
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (d && typeof d === 'object' && !d.error) return d;
+          throw new Error('Access denied');
+        })
+        .catch(function(){
+          return fetch(proxyUrl)
+            .then(function(r){ return r.json(); })
+            .then(function(res){
+              if (res && res.contents) {
+                return typeof res.contents === 'string' ? JSON.parse(res.contents) : res.contents;
+              }
+              return {};
+            })
+            .catch(function(){ return {}; });
+        });
+    }
+
     window._chFetch = Promise.all([
       fetch('https://allrounderid2.pages.dev/id.json').then(function(r){return r.json();}).catch(function(){return {};}),
-      fetch('https://livematches.cinearena08.workers.dev/?key=cinearena_live_2024').then(function(r){return r.json();}).catch(function(){return {};})
+      fetchCineArenaMatches()
     ]).then(function(results){
       return { apiData: results[0] || {}, cineArenaData: results[1] || {} };
     });
