@@ -76,30 +76,59 @@
 
   <!-- Kick off channel & CineArena live matches fetch IMMEDIATELY — runs before DOM is even parsed -->
   <script>
+    function fetchWithTimeout(url, ms) {
+      return new Promise(function(resolve, reject) {
+        var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        var timer = setTimeout(function() {
+          if (ctrl) ctrl.abort();
+          reject(new Error('timeout'));
+        }, ms || 3500);
+        var opts = { mode: 'cors' };
+        if (ctrl) opts.signal = ctrl.signal;
+        fetch(url, opts).then(function(r) {
+          clearTimeout(timer);
+          resolve(r);
+        }).catch(function(e) {
+          clearTimeout(timer);
+          reject(e);
+        });
+      });
+    }
+
     function fetchCineArenaMatches() {
       var directUrl = 'https://livematches.cinearena08.workers.dev/?key=cinearena_live_2024';
-      var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(directUrl);
-      return fetch(directUrl)
-        .then(function(r){ return r.json(); })
-        .then(function(d){
-          if (d && typeof d === 'object' && !d.error) return d;
-          throw new Error('Access denied');
-        })
-        .catch(function(){
-          return fetch(proxyUrl)
-            .then(function(r){ return r.json(); })
-            .then(function(res){
-              if (res && res.contents) {
-                return typeof res.contents === 'string' ? JSON.parse(res.contents) : res.contents;
-              }
-              return {};
-            })
-            .catch(function(){ return {}; });
-        });
+      var proxies = [
+        directUrl,
+        'https://api.allorigins.win/get?url=' + encodeURIComponent(directUrl),
+        'https://corsproxy.io/?' + encodeURIComponent(directUrl),
+        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(directUrl)
+      ];
+
+      function tryProxy(idx) {
+        if (idx >= proxies.length) return Promise.resolve({});
+        var url = proxies[idx];
+        return fetchWithTimeout(url, 3500)
+          .then(function(r){ return r.json(); })
+          .then(function(d){
+            var data = d;
+            if (d && d.contents) {
+              try { data = typeof d.contents === 'string' ? JSON.parse(d.contents) : d.contents; } catch(_) {}
+            }
+            if (data && typeof data === 'object' && !data.error && Object.keys(data).length > 0) {
+              return data;
+            }
+            return tryProxy(idx + 1);
+          })
+          .catch(function(){
+            return tryProxy(idx + 1);
+          });
+      }
+
+      return tryProxy(0);
     }
 
     window._chFetch = Promise.all([
-      fetch('https://allrounderid2.pages.dev/id.json').then(function(r){return r.json();}).catch(function(){return {};}),
+      fetchWithTimeout('https://allrounderid2.pages.dev/id.json', 3500).then(function(r){return r.json();}).catch(function(){return {};}),
       fetchCineArenaMatches()
     ]).then(function(results){
       return { apiData: results[0] || {}, cineArenaData: results[1] || {} };
@@ -2390,31 +2419,8 @@ function isMatchChannel(ch) {
 function renderChannelGrid(list) {
   if (!elGrid) return;
   var filteredList = (list || []).filter(function (ch) { return !isMatchChannel(ch); });
-  elGrid.className = 'ch-grid';
-  elGrid.innerHTML = '<div style="width:100%;text-align:center;padding:32px;color:var(--text-3);font-size:14px"><div class="spinner" style="margin:0 auto 12px;border-top-color:rgba(255,255,255,.3)"></div>Checking channels…</div>';
-
-  var n = filteredList.length;
-  var rows = new Array(n);
-  var done = 0;
-  var painted = false;
-  var probeMs = Math.min(700, Math.max(400, Math.floor(900 / Math.max(1, Math.ceil(n / 4)))));
-
-  function paint() {
-    if (painted) return;
-    painted = true;
-    paintChannelGrid(filteredList, rows);
-  }
-
-  for (var i = 0; i < n; i++) {
-    (function (idx) {
-      analyzeChannel(filteredList[idx], probeMs).then(function (ok) {
-        rows[idx] = !!ok;
-        done++;
-        if (done === n) paint();
-      });
-    })(i);
-  }
-  setTimeout(paint, 900);
+  // Instant 0ms delay channel rendering!
+  paintChannelGrid(filteredList, []);
 }
 
 // ════════════════════════════════════════════════════
