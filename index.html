@@ -2972,7 +2972,7 @@ if (window._cineFetch) {
   window._cineFetch.then(renderLiveMatches).catch(function(){});
 }
 
-    var raw = data.iframes || [];
+    var raw = (res && res.iframes) || [];
 
     var localChannels = [
       { id: 'willow', name: 'Willow', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=willowusa' },
@@ -2984,10 +2984,8 @@ if (window._cineFetch) {
       { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/fancode/fc1/fc2/' },
       { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
     ];
-    window._localChannels = localChannels;
 
-    /* Local & dynamic CineArena entries first so they override API iframes with the same id */
-    var allRaw = dynamicCineChannels.concat(localChannels).concat(raw);
+    var allRaw = localChannels.concat(raw);
     var seen   = new Set();
     var normalized = [];
 
@@ -3003,34 +3001,26 @@ if (window._cineFetch) {
 
     channels = sortChannels(normalized);
 
-    if (!channels.length) {
-      elGrid.innerHTML = '<div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">No channels available</div>';
-      return;
-    }
-
-    renderChannelGrid(channels);
-
-    if (window.IframePlayer && IframePlayer.warmChannels) {
-      IframePlayer.warmChannels(channels);
-    }
-    if (window.PlayerPrefetch && PlayerPrefetch.prefetchChannels) {
-      PlayerPrefetch.prefetchChannels(channels, ['eng', 'willow']);
-    }
-
     if (channels.length > 0) {
-      switchChannel(channels[0].id);
-    } else {
-      showIdlePlayer();
+      renderChannelGrid(channels);
+      if (!cur) switchChannel(channels[0].id);
     }
   })
-  .catch(function () {
-    elGrid.innerHTML = '<div style="width:100%;text-align:center;padding:40px;color:var(--text-3);font-size:14px">Failed to load channels</div>';
-    hideBuffer();
-    if (elPh) {
-      elPh.style.display = '';
-      var span = elPh.querySelector('span');
-      if (span) span.textContent = 'Failed to load stream';
-    }
+  .catch(function (err) {
+    console.error('Channel fetch error:', err);
+    var fallback = [
+      { id: 'willow', name: 'Willow', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=willowusa' },
+      { id: 'willowsports', name: 'Main 2', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
+      { id: 'main3', name: 'Main 3', type: 'iframe', iframeSrc: 'https://allrounder2-0.pages.dev/fox' },
+      { id: 'fifa_hindi', name: 'Main 4', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
+      { id: 'willow_cricbuzz', name: 'Willow Cricbuzz', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/willow-cricbuzz' },
+      { id: 'skysports_cricket', name: 'Sky Sports Cricket', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=skyscric' },
+      { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/fancode/fc1/fc2/' },
+      { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
+    ];
+    channels = sortChannels(fallback);
+    renderChannelGrid(channels);
+    if (!cur) switchChannel('eng');
   });
 
 // ════════════════════════════════════════════════════
