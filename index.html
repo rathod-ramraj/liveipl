@@ -2948,6 +2948,18 @@ function renderLiveMatches(cineData) {
         ALLOWED.add(cid);
         META[cid] = { name: cleanName || 'Live Stream', sub: matchTitle };
 
+        var chObj = {
+          id: cid,
+          name: cleanName || 'Live Stream',
+          type: 'iframe',
+          iframeSrc: item.url
+        };
+        var exists = false;
+        for (var cIdx = 0; cIdx < channels.length; cIdx++) {
+          if (channels[cIdx].id === cid) { exists = true; channels[cIdx] = chObj; break; }
+        }
+        if (!exists) channels.push(chObj);
+
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'ch-btn match-stream-btn';
