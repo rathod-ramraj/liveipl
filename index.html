@@ -1773,6 +1773,12 @@
       </button>
     </div>
   </div>
+  <div class="player-note-banner" style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-border-2);border-radius:var(--r-md, 12px);font-size:13px;color:var(--text-2);text-align:center">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--highlight);flex-shrink:0" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+    </svg>
+    <span><strong>Note:</strong> If the stream is not playing, either change the channel from below or refresh the player.</span>
+  </div>
 </div>
 
 <!-- ═══ DIRECTORY SECTION (Live Channels Left | Live Matches Right) ═════ -->
@@ -2540,7 +2546,7 @@ function setStream(ch) {
 // ════════════════════════════════════════════════════
 //  CHANNEL SWITCH
 // ════════════════════════════════════════════════════
-function switchChannel(id) {
+function switchChannel(id, skipScroll) {
   var ch = null;
   for (var i = 0; i < channels.length; i++) {
     if (channels[i].id === id) { ch = channels[i]; break; }
@@ -2562,7 +2568,9 @@ function switchChannel(id) {
 
   setStream(ch);
   if (mobilePlayerFs) exitMobilePlayerFs();
-  elPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!skipScroll && elPlayer) {
+    elPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // ════════════════════════════════════════════════════
@@ -3019,7 +3027,7 @@ if (window._cineFetch) {
 
     if (channels.length > 0) {
       renderChannelGrid(channels);
-      if (!cur) switchChannel(channels[0].id);
+      if (!cur) switchChannel(channels[0].id, true);
     }
   })
   .catch(function (err) {
@@ -3036,7 +3044,7 @@ if (window._cineFetch) {
     ];
     channels = sortChannels(fallback);
     renderChannelGrid(channels);
-    if (!cur) switchChannel('eng');
+    if (!cur) switchChannel('eng', true);
   });
 
 // ════════════════════════════════════════════════════
