@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PlayUp — Live TV, Movies &amp; Series Streaming</title>
+  <title>PlayUp | Watch Free Live Cricket Matches &amp; Movies</title>
   <meta name="description" content="PlayUp lets you watch live sports channels, movies, and TV series in HD. Use Watch by ID with IMDb or TMDB IDs and switch streaming servers instantly.">
   <meta name="keywords" content="playup, watch movies online free, live cricket streaming, watch IPL live, HD movies online, free streaming platform">
   <meta name="robots" content="index,follow,noai,noimageai,max-image-preview:none,max-snippet:0,max-video-preview:0">
@@ -11,12 +11,12 @@
   <link rel="canonical" href="https://playup.vercel.app/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="PlayUp">
-  <meta property="og:title" content="PlayUp — Live TV, Movies &amp; Series Streaming">
+  <meta property="og:title" content="PlayUp | Watch Free Live Cricket Matches &amp; Movies">
   <meta property="og:description" content="Watch live sports channels, movies, and TV series in HD on PlayUp.">
   <meta property="og:url" content="https://playup.vercel.app/">
   <meta property="og:image" content="https://playup.vercel.app/favicon.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="PlayUp — Live TV, Movies &amp; Series Streaming">
+  <meta name="twitter:title" content="PlayUp | Watch Free Live Cricket Matches &amp; Movies">
   <meta name="twitter:description" content="Watch live channels, movies, and TV series in HD on PlayUp.">
   <meta name="twitter:image" content="https://playup.vercel.app/favicon.png">
   <link rel="icon" href="/favicon.png">
@@ -2077,26 +2077,20 @@ var ALLOWED = new Set([
   'tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
 ]);
 
-var SITE_TITLE = 'PlayUp';
-var DEFAULT_SITE_TITLE = 'PlayUp — Live TV, Movies & Series';
+var SITE_TITLE = 'PlayUp | Watch Free Live Cricket Matches & Movies';
+var DEFAULT_SITE_TITLE = 'PlayUp | Watch Free Live Cricket Matches & Movies';
 window.SITE_TITLE = SITE_TITLE;
 
 function setLivePageTitle(channelName) {
-  if (document.body.classList.contains('wbid-active')) return;
-  document.title = (channelName || 'Live TV') + ' · Live — ' + SITE_TITLE;
+  document.title = DEFAULT_SITE_TITLE;
 }
 
 function setMoviePageTitle(name, isTv, season, episode) {
-  var label = name || 'Movie';
-  if (isTv) {
-    document.title = label + ' · S' + (season || 1) + 'E' + (episode || 1) + ' — ' + SITE_TITLE;
-  } else {
-    document.title = label + ' — ' + SITE_TITLE;
-  }
+  document.title = DEFAULT_SITE_TITLE;
 }
 
 function setWbidPageTitle() {
-  document.title = 'Watch by ID — ' + SITE_TITLE;
+  document.title = DEFAULT_SITE_TITLE;
 }
 
 function setHomePageTitle() {
