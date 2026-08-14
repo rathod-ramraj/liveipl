@@ -49,14 +49,30 @@
 
   function syncShapeGrid() {
     if (!sg) return;
-    if (sg.unfreeze) sg.unfreeze();
-    if (sg.resume) sg.resume();
-    if (sg.setSpeedMultiplier) sg.setSpeedMultiplier(1);
+    if (isMobile()) {
+      sg.freeze && sg.freeze();
+      return;
+    }
+    if ((streaming || iframeActive) && playerVisible) {
+      sg.freeze && sg.freeze();
+    } else if (document.body.classList.contains('wbid-active')) {
+      sg.freeze && sg.freeze();
+    } else if (isLowPowerDevice() && sg.freeze) {
+      sg.freeze();
+    } else if (sg.unfreeze) {
+      sg.unfreeze();
+    } else if (sg.resume) {
+      sg.resume();
+    }
   }
 
   function setShapeGrid(handle) {
     sg = handle;
-    syncShapeGrid();
+    if (isMobile() && sg && sg.freeze) {
+      sg.freeze();
+    } else {
+      syncShapeGrid();
+    }
     applyRootClasses();
   }
 

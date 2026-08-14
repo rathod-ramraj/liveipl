@@ -5,9 +5,6 @@
  * Note: Browsers cannot open the real "new tab" page from JS or force-close
  * user-opened tabs. We use history back + about:blank (closest behavior).
  */
-(function () {
-  'use strict';
-
   function isMobileOrTablet() {
     var ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
     var isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|silk|kindle|playbook|nexus/i.test(ua);

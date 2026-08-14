@@ -28,18 +28,9 @@
       "active": true
     },
     {
-      "id": "main3",
+      "id": "fifa_hindi",
       "name": "Main 4",
       "subtitle": "Main 4",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://allrounder2-0.pages.dev/fox",
-      "active": true
-    },
-    {
-      "id": "fifa_hindi",
-      "name": "Main 5",
-      "subtitle": "Main 5",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://fifa-world-cup-live.pages.dev/hindi",
