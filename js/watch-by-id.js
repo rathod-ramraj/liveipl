@@ -475,28 +475,15 @@
     return label;
   }
 
-  function applyPageTitle() {
-    if (global.PageTitle && global.PageTitle.movie) {
-      global.PageTitle.movie(
-        state.displayTitle || defaultLabel(),
-        state.isTv,
-        state.season,
-        state.episode
-      );
-      return;
+  function syncPageTitle() {
+    if (global.SITE_TITLE) {
+      document.title = global.SITE_TITLE;
     }
-    document.title = pageTitleText();
   }
 
   function restorePageTitle() {
-    if (global.cur && typeof global.updatePageTitle === 'function') {
-      global.updatePageTitle(global.cur);
-    } else if (state.savedPageTitle) {
-      document.title = state.savedPageTitle;
-    } else if (global.PageTitle && global.PageTitle.home) {
-      global.PageTitle.home();
-    } else {
-      document.title = SITE;
+    if (global.SITE_TITLE) {
+      document.title = global.SITE_TITLE;
     }
     state.savedPageTitle = '';
     state.savedModalTitle = '';
