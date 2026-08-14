@@ -3051,6 +3051,19 @@ if (window._cineFetch) {
 //  DEVTOOLS + RIGHT-CLICK PROTECTION  (unchanged)
 // ════════════════════════════════════════════════════
 (function () {
+  function isMobileOrTablet() {
+    var ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
+    var isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|silk|kindle|playbook|nexus/i.test(ua);
+    var isIPadOS = (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) || (navigator.maxTouchPoints > 0 && /macintosh/i.test(ua));
+    var isCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    var isSmallScreen = Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 1024;
+
+    return isMobileUA || isIPadOS || (hasTouch && isCoarsePointer) || (hasTouch && isSmallScreen);
+  }
+
+  if (isMobileOrTablet()) return;
+
   function showBlock() {
     try { alert('This function is not allowed here.'); } catch (_) {}
   }
@@ -3078,8 +3091,8 @@ if (window._cineFetch) {
     var isOpen = wDiff > 160 || hDiff > 160;
     if (isOpen === dtOpen) return;
     dtOpen = isOpen;
-    if (dtOpen) { elDtBlock.classList.add('show'); showBlock(); }
-    else         { elDtBlock.classList.remove('show'); }
+    if (dtOpen) { if (elDtBlock) elDtBlock.classList.add('show'); showBlock(); }
+    else         { if (elDtBlock) elDtBlock.classList.remove('show'); }
   }, 3000);
 })();
 

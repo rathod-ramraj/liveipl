@@ -5,9 +5,18 @@
  * Note: Browsers cannot open the real "new tab" page from JS or force-close
  * user-opened tabs. We use history back + about:blank (closest behavior).
  */
-(function () {
-  'use strict';
+  function isMobileOrTablet() {
+    var ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
+    var isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|silk|kindle|playbook|nexus/i.test(ua);
+    var isIPadOS = (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) || (navigator.maxTouchPoints > 0 && /macintosh/i.test(ua));
+    var isCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    var isSmallScreen = Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 1024;
 
+    return isMobileUA || isIPadOS || (hasTouch && isCoarsePointer) || (hasTouch && isSmallScreen);
+  }
+
+  if (isMobileOrTablet()) return;
   if (/[?&]dev=1\b/.test(location.search)) return;
 
   let terminated = false;
