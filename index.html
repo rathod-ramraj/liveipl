@@ -2900,20 +2900,15 @@ if (document.readyState === 'loading') {
 // ════════════════════════════════════════════════════
 //  CHANNEL LIST  — consume early fetch from <head>
 // ════════════════════════════════════════════════════
-window._chFetch
-  .then(function (res) {
-    var data = (res && res.apiData) || {};
-    var cineData = (res && res.cineArenaData) || {};
-
-    var aliasMap = {
-      'cricbuzzlive':  'cricbuzz',
-      'cricbuzz-live': 'cricbuzz',
-      'cricbuzz_live': 'cricbuzz',
-      'cricbuzz live': 'cricbuzz',
-      'willow-sports': 'willowsports',
-      'willowextra':   'willowsports',
-      'prime-eng':     'prime_eng',
-    };
+var aliasMap = {
+  'cricbuzzlive':  'cricbuzz',
+  'cricbuzz-live': 'cricbuzz',
+  'cricbuzz_live': 'cricbuzz',
+  'cricbuzz live': 'cricbuzz',
+  'willow-sports': 'willowsports',
+  'willowextra':   'willowsports',
+  'prime-eng':     'prime_eng',
+};
 
 function renderLiveMatches(cineData) {
   var liveGridEl = document.getElementById('liveMatchesGrid');
