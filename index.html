@@ -3160,15 +3160,12 @@ if (window._cineFetch) {
         backgroundColor:  '#121019',
         borderColor:      '#262335',
         hoverFillColor:   hoverFill,
-        hoverTrailAmount: window.PerfController && PerfController.isMobile() ? 0 : 3,
+        hoverTrailAmount: 3,
         vignetteEdge:     'rgba(5, 3, 14, 0.44)',
       });
       window._sgHandle = sgHandle;
       if (window.PerfController) {
         PerfController.setShapeGrid(sgHandle);
-        if (PerfController.isMobile() && sgHandle.setSpeedMultiplier) {
-          sgHandle.setSpeedMultiplier(0);
-        }
       }
     } catch (e) { console.warn('ShapeGrid init error:', e); }
   }

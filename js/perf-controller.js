@@ -49,30 +49,14 @@
 
   function syncShapeGrid() {
     if (!sg) return;
-    if (isMobile()) {
-      sg.freeze && sg.freeze();
-      return;
-    }
-    if ((streaming || iframeActive) && playerVisible) {
-      sg.freeze && sg.freeze();
-    } else if (document.body.classList.contains('wbid-active')) {
-      sg.freeze && sg.freeze();
-    } else if (isLowPowerDevice() && sg.freeze) {
-      sg.freeze();
-    } else if (sg.unfreeze) {
-      sg.unfreeze();
-    } else if (sg.resume) {
-      sg.resume();
-    }
+    if (sg.unfreeze) sg.unfreeze();
+    if (sg.resume) sg.resume();
+    if (sg.setSpeedMultiplier) sg.setSpeedMultiplier(1);
   }
 
   function setShapeGrid(handle) {
     sg = handle;
-    if (isMobile() && sg && sg.freeze) {
-      sg.freeze();
-    } else {
-      syncShapeGrid();
-    }
+    syncShapeGrid();
     applyRootClasses();
   }
 
