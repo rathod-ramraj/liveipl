@@ -131,6 +131,9 @@
     window._chFetch = fetchWithTimeout('https://allrounderid2.pages.dev/id.json', 3500)
       .then(function(r){ return r.json(); })
       .catch(function(){ return {}; });
+    window._channelsJsonFetch = fetchWithTimeout('./channels.json', 3500)
+      .then(function(r){ return r.json(); })
+      .catch(function(){ return null; });
   </script>
 
   <!-- HLS.js: defer so it never blocks first paint; loaded in background -->
@@ -2989,57 +2992,80 @@ if (window._cineFetch) {
   window._cineFetch.then(renderLiveMatches).catch(function(){});
 }
 
-    var raw = (res && res.iframes) || [];
+    Promise.all([window._chFetch, window._channelsJsonFetch]).then(function (results) {
+      var res = results[0] || {};
+      var channelsJsonData = results[1] || {};
+      var raw = (res && res.iframes) || [];
+      var jsonList = (channelsJsonData && Array.isArray(channelsJsonData.channels)) ? channelsJsonData.channels : [];
 
-    var localChannels = [
-      { id: 'main2', name: 'Main 2', type: 'iframe', iframeSrc: 'https://cineios.pages.dev/hls/?url=https://fuck-you.kasin-tv.com/fc/proxy.php/https://allinonereborn2.online/fctest/playlists/match_143352/english.m3u8' },
-      { id: 'willowsports', name: 'Main 3', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
-      { id: 'main3', name: 'Main 4', type: 'iframe', iframeSrc: 'https://allrounder2-0.pages.dev/fox' },
-      { id: 'fifa_hindi', name: 'Main 5', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
-      { id: 'willow', name: 'Willow', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=willowusa' },
-      { id: 'willow_cricbuzz', name: 'Willow Cricbuzz', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/willow-cricbuzz' },
-      { id: 'skysports_cricket', name: 'Sky Sports Cricket', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=skyscric' },
-      { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/fancode/fc1/fc2/' },
-      { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
-    ];
+      var localChannels = [];
+      if (jsonList.length > 0) {
+        jsonList.forEach(function (c) {
+          if (c && c.id && c.active !== false) {
+            ALLOWED.add(c.id);
+            META[c.id] = {
+              name: c.name || c.id,
+              sub: c.subtitle || c.category || 'Live Channel'
+            };
+            localChannels.push({
+              id: c.id,
+              name: c.name || c.id,
+              type: c.type || 'iframe',
+              iframeSrc: c.streamUrl || c.iframeSrc,
+              category: c.category
+            });
+          }
+        });
+      } else {
+        localChannels = [
+          { id: 'main2', name: 'Main 2', type: 'iframe', iframeSrc: 'https://cineios.pages.dev/hls/?url=https://fuck-you.kasin-tv.com/fc/proxy.php/https://allinonereborn2.online/fctest/playlists/match_143352/english.m3u8' },
+          { id: 'willowsports', name: 'Main 3', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
+          { id: 'main3', name: 'Main 4', type: 'iframe', iframeSrc: 'https://allrounder2-0.pages.dev/fox' },
+          { id: 'fifa_hindi', name: 'Main 5', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
+          { id: 'willow', name: 'Willow', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=willowusa' },
+          { id: 'willow_cricbuzz', name: 'Willow Cricbuzz', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/willow-cricbuzz' },
+          { id: 'skysports_cricket', name: 'Sky Sports Cricket', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=skyscric' },
+          { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/fancode/fc1/fc2/' },
+          { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
+        ];
+      }
 
-    var allRaw = localChannels.concat(raw);
-    var seen   = new Set();
-    var normalized = [];
+      var allRaw = localChannels.concat(raw);
+      var seen   = new Set();
+      var normalized = [];
 
-    for (var i = 0; i < allRaw.length; i++) {
-      var item  = allRaw[i];
-      var idRaw = (item.id || '').toString();
-      var key   = idRaw.toLowerCase();
-      var canon = aliasMap[key] || key;
-      if (!ALLOWED.has(canon) || seen.has(canon)) continue;
-      seen.add(canon);
-      normalized.push(Object.assign({}, item, { id: canon }));
-    }
+      for (var i = 0; i < allRaw.length; i++) {
+        var item  = allRaw[i];
+        var idRaw = (item.id || '').toString();
+        var key   = idRaw.toLowerCase();
+        var canon = aliasMap[key] || key;
+        if (!ALLOWED.has(canon) || seen.has(canon)) continue;
+        seen.add(canon);
+        normalized.push(Object.assign({}, item, { id: canon }));
+      }
 
-    channels = sortChannels(normalized);
+      channels = sortChannels(normalized);
 
-    if (channels.length > 0) {
+      if (channels.length > 0) {
+        renderChannelGrid(channels);
+        if (!cur) switchChannel(channels[0].id, true);
+      }
+    }).catch(function (err) {
+      console.error('Channel fetch error:', err);
+      var fallback = [
+        { id: 'main2', name: 'Main 2', type: 'iframe', iframeSrc: 'https://cineios.pages.dev/hls/?url=https://fuck-you.kasin-tv.com/fc/proxy.php/https://allinonereborn2.online/fctest/playlists/match_143352/english.m3u8' },
+        { id: 'willowsports', name: 'Main 3', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
+        { id: 'main3', name: 'Main 4', type: 'iframe', iframeSrc: 'https://allrounder2-0.pages.dev/fox' },
+        { id: 'fifa_hindi', name: 'Main 5', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
+        { id: 'willow_cricbuzz', name: 'Willow Cricbuzz', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/willow-cricbuzz' },
+        { id: 'skysports_cricket', name: 'Sky Sports Cricket', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=skyscric' },
+        { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/fancode/fc1/fc2/' },
+        { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
+      ];
+      channels = sortChannels(fallback);
       renderChannelGrid(channels);
-      if (!cur) switchChannel(channels[0].id, true);
-    }
-  })
-  .catch(function (err) {
-    console.error('Channel fetch error:', err);
-    var fallback = [
-      { id: 'main2', name: 'Main 2', type: 'iframe', iframeSrc: 'https://cineios.pages.dev/hls/?url=https://fuck-you.kasin-tv.com/fc/proxy.php/https://allinonereborn2.online/fctest/playlists/match_143352/english.m3u8' },
-      { id: 'willowsports', name: 'Main 3', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
-      { id: 'main3', name: 'Main 4', type: 'iframe', iframeSrc: 'https://allrounder2-0.pages.dev/fox' },
-      { id: 'fifa_hindi', name: 'Main 5', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
-      { id: 'willow_cricbuzz', name: 'Willow Cricbuzz', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/willow-cricbuzz' },
-      { id: 'skysports_cricket', name: 'Sky Sports Cricket', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=skyscric' },
-      { id: 'fc1',         name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/fancode/fc1/fc2/' },
-      { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
-    ];
-    channels = sortChannels(fallback);
-    renderChannelGrid(channels);
-    if (!cur) switchChannel('eng', true);
-  });
+      if (!cur) switchChannel('eng', true);
+    });
 
 // ════════════════════════════════════════════════════
 //  DEVTOOLS + RIGHT-CLICK PROTECTION  (unchanged)
