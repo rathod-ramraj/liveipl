@@ -40,9 +40,121 @@
 
   var SERVERS = [
     {
+      id: 'videasy',
+      name: 'Videasy',
+      badge: 'Main 1 · TMDB',
+      imdb: false,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://player.videasy.to/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://player.videasy.to/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode) +
+          '?nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true'
+        );
+      },
+    },
+    {
+      id: 'vidsrc_wtf_1',
+      name: 'VidSrc.wtf 1',
+      badge: 'Main 2 · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://www.vidsrc.wtf/api/1/movie/?color=' + VIDSRC_WTF_COLOR + '&id=' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return 'https://www.vidsrc.wtf/api/1/tv/?color=' + VIDSRC_WTF_COLOR + '&id=' + encodeURIComponent(id) + '&s=' + encodeURIComponent(season) + '&e=' + encodeURIComponent(episode);
+      },
+    },
+    {
+      id: 'vidup',
+      name: 'Vidup',
+      badge: 'Main 3 · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return (
+          'https://vidup.to/movie/' +
+          encodeURIComponent(id) +
+          '?autoPlay=true&title=true&poster=true&theme=' +
+          VIDSRC_WTF_COLOR
+        );
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://vidup.to/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode) +
+          '?autoPlay=true&title=true&poster=true&theme=' +
+          VIDSRC_WTF_COLOR +
+          '&nextButton=false&autoNext=false'
+        );
+      },
+    },
+    {
+      id: 'vidlink',
+      name: 'Vidlink Pro',
+      badge: 'Main 4 · TMDB',
+      imdb: false,
+      tmdb: true,
+      movie: function (id) {
+        return (
+          'https://vidlink.pro/movie/' +
+          encodeURIComponent(id) +
+          '?primaryColor=' +
+          VIDSRC_WTF_COLOR +
+          '&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=default&title=true&poster=true&autoplay=true'
+        );
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://vidlink.pro/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode) +
+          '?primaryColor=' +
+          VIDSRC_WTF_COLOR +
+          '&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=default&title=true&poster=true&autoplay=true&nextbutton=false'
+        );
+      },
+    },
+    {
+      id: 'vidfast',
+      name: 'Vidfast',
+      badge: 'Main 5 · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://vidfast.pro/movie/' + encodeURIComponent(id) + '?autoPlay=true';
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://vidfast.pro/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode) +
+          '?autoPlay=true&nextButton=true&autoNext=true'
+        );
+      },
+    },
+    {
       id: '111movies',
       name: '111movies',
-      badge: 'Default · IMDb · TMDB',
+      badge: 'Main 6 · IMDb · TMDB',
       imdb: true,
       tmdb: true,
       movie: function (id) {
@@ -60,17 +172,39 @@
       },
     },
     {
-      id: 'peachify',
-      name: 'Peachify',
-      badge: 'IMDb · TMDB',
+      id: 'vidcore',
+      name: 'Vidcore',
+      badge: 'Main 7 · IMDb · TMDB',
       imdb: true,
       tmdb: true,
       movie: function (id) {
-        return 'https://peachify.top/embed/movie/' + encodeURIComponent(id);
+        return 'https://vidcore.net/movie/' + encodeURIComponent(id) + '?autoPlay=true&theme=' + VIDSRC_WTF_COLOR;
       },
       tv: function (id, season, episode) {
         return (
-          'https://peachify.top/embed/tv/' +
+          'https://vidcore.net/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode) +
+          '?autoPlay=true&nextButton=true&autoNext=true&theme=' +
+          VIDSRC_WTF_COLOR
+        );
+      },
+    },
+    {
+      id: 'vidnest',
+      name: 'Vidnest',
+      badge: 'Main 8 · TMDB',
+      imdb: false,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://vidnest.fun/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://vidnest.fun/tv/' +
           encodeURIComponent(id) +
           '/' +
           encodeURIComponent(season) +
@@ -80,54 +214,279 @@
       },
     },
     {
-      id: 'vidfast',
-      name: 'Vidfast',
-      badge: 'TMDB · Auto-play',
-      imdb: false,
+      id: 'vidsrc_wtf_2',
+      name: 'VidSrc.wtf 2',
+      badge: 'Multi Lang · IMDb · TMDB',
+      imdb: true,
       tmdb: true,
       movie: function (id) {
-        return (
-          'https://vidfast.pro/movie/' +
-          encodeURIComponent(id) +
-          '?autoPlay=true&fullscreenButton=true&chromecast=true&theme=ff4d6d'
-        );
+        return 'https://www.vidsrc.wtf/api/2/movie/?color=' + VIDSRC_WTF_COLOR + '&id=' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return 'https://www.vidsrc.wtf/api/2/tv/?color=' + VIDSRC_WTF_COLOR + '&id=' + encodeURIComponent(id) + '&s=' + encodeURIComponent(season) + '&e=' + encodeURIComponent(episode);
+      },
+    },
+    {
+      id: 'screenscape',
+      name: 'Screenscape',
+      badge: 'Multi Lang 2 · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://flix.screenscape.me/embed?type=movie&lan=eng&tmdb=' + encodeURIComponent(id);
       },
       tv: function (id, season, episode) {
         return (
-          'https://vidfast.pro/tv/' +
+          'https://flix.screenscape.me/embed?type=tv&lan=eng&tmdb=' +
           encodeURIComponent(id) +
-          '/' +
+          '&s=' +
           encodeURIComponent(season) +
-          '/' +
-          encodeURIComponent(episode) +
-          '?autoPlay=true&nextButton=true&autoNext=true&fullscreenButton=true&theme=ff4d6d'
+          '&e=' +
+          encodeURIComponent(episode)
         );
       },
     },
     {
-      id: 'vidup',
-      name: 'Vidup',
-      badge: 'IMDb · TMDB · Auto-play',
+      id: 'nxsha',
+      name: 'Nxsha',
+      badge: 'Multi Lang 3 · IMDb · TMDB',
       imdb: true,
       tmdb: true,
       movie: function (id) {
-        return (
-          'https://vidup.to/movie/' +
-          encodeURIComponent(id) +
-          '?autoPlay=true&fullscreenButton=true&chromecast=true&theme=' +
-          VIDSRC_WTF_COLOR
-        );
+        return 'https://nxsha.space/embed/movie/' + encodeURIComponent(id);
       },
       tv: function (id, season, episode) {
         return (
-          'https://vidup.to/tv/' +
+          'https://nxsha.space/embed/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: 'peachify',
+      name: 'Peachify',
+      badge: 'Multi Lang 4 · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://peachify.top/embed/movie/' + encodeURIComponent(id) + '?accent=' + VIDSRC_WTF_COLOR;
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://peachify.top/embed/tv/' +
           encodeURIComponent(id) +
           '/' +
           encodeURIComponent(season) +
           '/' +
           encodeURIComponent(episode) +
-          '?autoPlay=true&nextButton=true&autoNext=true&fullscreenButton=true&chromecast=true&theme=' +
+          '?accent=' +
           VIDSRC_WTF_COLOR
+        );
+      },
+    },
+    {
+      id: 'vidout',
+      name: 'WatchOut',
+      badge: 'Multi Lang 5 · TMDB',
+      imdb: false,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://watchout-player.netlify.app/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://watchout-player.netlify.app/tv/' +
+          encodeURIComponent(id) +
+          '/S' +
+          encodeURIComponent(season) +
+          '/E' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: 'iqsmartgames',
+      name: 'IQSmart Stream',
+      badge: 'Download · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://streams.iqsmartgames.com/embed/movie/' + encodeURIComponent(id) + '?key=e11a7debaaa4f5d25b671706ffe4d2acb56efbd4';
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://streams.iqsmartgames.com/embed/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode) +
+          '?key=e11a7debaaa4f5d25b671706ffe4d2acb56efbd4'
+        );
+      },
+    },
+    {
+      id: 'vidstorm',
+      name: 'Vidstorm',
+      badge: 'Download 2 · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://vidstorm.ru/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://vidstorm.ru/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: '2embed',
+      name: '2Embed',
+      badge: 'Download 3 · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://www.2embed.cc/embed/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return 'https://www.2embed.cc/embedtv/' + encodeURIComponent(id) + '&s=' + encodeURIComponent(season) + '&e=' + encodeURIComponent(episode);
+      },
+    },
+    {
+      id: 'vidsrc_wtf_4',
+      name: 'VidSrc.wtf 4',
+      badge: 'Premium · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://www.vidsrc.wtf/api/4/movie/?id=' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return 'https://www.vidsrc.wtf/api/4/tv/?id=' + encodeURIComponent(id) + '&s=' + encodeURIComponent(season) + '&e=' + encodeURIComponent(episode);
+      },
+    },
+    {
+      id: 'vidsrc_wtf_3',
+      name: 'VidSrc.wtf 3',
+      badge: 'Premium 2 · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return vidsrcWtfMovie(3, id);
+      },
+      tv: function (id, season, episode) {
+        return vidsrcWtfTv(3, id, season, episode);
+      },
+    },
+    {
+      id: 'primesrc',
+      name: 'PrimeSrc',
+      badge: 'Premium 3 · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://primesrc.me/embed/movie?tmdb=' + encodeURIComponent(id) + '&fallback=true';
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://primesrc.me/embed/tv?tmdb=' +
+          encodeURIComponent(id) +
+          '&season=' +
+          encodeURIComponent(season) +
+          '&episode=' +
+          encodeURIComponent(episode) +
+          '&fallback=true'
+        );
+      },
+    },
+    {
+      id: 'xplay',
+      name: 'XPlay',
+      badge: 'XPass · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://play.xpass.top/e/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://play.xpass.top/e/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: 'nextgen',
+      name: 'NextGen Cloud',
+      badge: 'NextGen · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://nextgencloudfabric.com/embed/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://nextgencloudfabric.com/embed/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: 'nontongo',
+      name: 'Nontongo',
+      badge: 'Nontongo · IMDb · TMDB',
+      imdb: true,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://www.nontongo.win/embed/movie/' + encodeURIComponent(id);
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://www.nontongo.win/embed/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode)
+        );
+      },
+    },
+    {
+      id: 'vidking',
+      name: 'VidKing',
+      badge: 'VidKing · TMDB',
+      imdb: false,
+      tmdb: true,
+      movie: function (id) {
+        return 'https://www.vidking.net/embed/movie/' + encodeURIComponent(id) + '?autoPlay=true';
+      },
+      tv: function (id, season, episode) {
+        return (
+          'https://www.vidking.net/embed/tv/' +
+          encodeURIComponent(id) +
+          '/' +
+          encodeURIComponent(season) +
+          '/' +
+          encodeURIComponent(episode) +
+          '?autoPlay=true'
         );
       },
     },
@@ -168,143 +527,6 @@
           encodeURIComponent(season) +
           '/' +
           encodeURIComponent(episode)
-        );
-      },
-    },
-    {
-      id: 'vidsrc-wtf-1',
-      name: 'VidSrc.wtf',
-      badge: 'IMDb · TMDB · Multi Server',
-      imdb: true,
-      tmdb: true,
-      movie: function (id) {
-        return vidsrcWtfMovie(1, id);
-      },
-      tv: function (id, season, episode) {
-        return vidsrcWtfTv(1, id, season, episode);
-      },
-    },
-    {
-      id: 'vidsrc-wtf-2',
-      name: 'VidSrc.wtf',
-      badge: 'IMDb · TMDB · Multi Language',
-      imdb: true,
-      tmdb: true,
-      movie: function (id) {
-        return vidsrcWtfMovie(2, id);
-      },
-      tv: function (id, season, episode) {
-        return vidsrcWtfTv(2, id, season, episode);
-      },
-    },
-    {
-      id: 'vidsrc-wtf-3',
-      name: 'VidSrc.wtf',
-      badge: 'IMDb · TMDB · Multi Embeds',
-      imdb: true,
-      tmdb: true,
-      movie: function (id) {
-        return vidsrcWtfMovie(3, id);
-      },
-      tv: function (id, season, episode) {
-        return vidsrcWtfTv(3, id, season, episode);
-      },
-    },
-    {
-      id: 'vidsrc-wtf-4',
-      name: 'VidSrc.wtf',
-      badge: 'IMDb · TMDB · Premium',
-      imdb: true,
-      tmdb: true,
-      movie: function (id) {
-        return vidsrcWtfMovie(4, id);
-      },
-      tv: function (id, season, episode) {
-        return vidsrcWtfTv(4, id, season, episode);
-      },
-    },
-    {
-      id: 'vidking',
-      name: 'VidKing',
-      badge: 'IMDb · TMDB',
-      imdb: true,
-      tmdb: true,
-      movie: function (id) {
-        return 'https://www.vidking.net/embed/movie/' + encodeURIComponent(id);
-      },
-      tv: function (id, season, episode) {
-        return (
-          'https://www.vidking.net/embed/tv/' +
-          encodeURIComponent(id) +
-          '/' +
-          encodeURIComponent(season) +
-          '/' +
-          encodeURIComponent(episode)
-        );
-      },
-    },
-    {
-      id: 'vidnest',
-      name: 'Vidnest',
-      badge: 'TMDB only',
-      imdb: false,
-      tmdb: true,
-      movie: function (id) {
-        return 'https://vidnest.fun/movie/' + encodeURIComponent(id);
-      },
-      tv: function (id, season, episode) {
-        return (
-          'https://vidnest.fun/tv/' +
-          encodeURIComponent(id) +
-          '/' +
-          encodeURIComponent(season) +
-          '/' +
-          encodeURIComponent(episode)
-        );
-      },
-    },
-    {
-      id: 'vidlink',
-      name: 'Vidlink Pro',
-      badge: 'TMDB only',
-      imdb: false,
-      tmdb: true,
-      movie: function (id) {
-        return 'https://vidlink.pro/movie/' + encodeURIComponent(id);
-      },
-      tv: function (id, season, episode) {
-        return (
-          'https://vidlink.pro/tv/' +
-          encodeURIComponent(id) +
-          '/' +
-          encodeURIComponent(season) +
-          '/' +
-          encodeURIComponent(episode)
-        );
-      },
-    },
-    {
-      id: 'videasy',
-      name: 'Videasy',
-      badge: 'TMDB · Next ep',
-      imdb: false,
-      tmdb: true,
-      movie: function (id) {
-        return (
-          'https://player.videasy.net/movie/' +
-          encodeURIComponent(id) +
-          '?overlay=true&color=ff4d6d'
-        );
-      },
-      tv: function (id, season, episode) {
-        return (
-          'https://player.videasy.net/tv/' +
-          encodeURIComponent(id) +
-          '/' +
-          encodeURIComponent(season) +
-          '/' +
-          encodeURIComponent(episode) +
-          '?overlay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&color=ff4d6d'
         );
       },
     },
