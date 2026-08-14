@@ -1,0 +1,202 @@
+{
+  "servers": [
+    {
+      "name": "videasy",
+      "label": "Main 1",
+      "imdbSupported": false,
+      "tmdbSupported": true,
+      "moviePattern": "https://player.videasy.to/movie/{tmdbId}",
+      "tvPattern": "https://player.videasy.to/tv/{tmdbId}/{season}/{episode}?nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true"
+    },
+    {
+      "name": "vidsrc_wtf_1",
+      "label": "Main 2",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://www.vidsrc.wtf/api/1/movie/?color=FF0000&id={tmdbId}",
+      "tvPattern": "https://www.vidsrc.wtf/api/1/tv/?color=FF0000&id={tmdbId}&s={season}&e={episode}"
+    },
+    {
+      "name": "vidup",
+      "label": "Main 3",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://vidup.to/movie/{tmdbId}?autoPlay=true&title=true&poster=true&theme=FF0000",
+      "tvPattern": "https://vidup.to/tv/{tmdbId}/{season}/{episode}?autoPlay=true&title=true&poster=true&theme=FF0000&nextButton=false&autoNext=false"
+    },
+    {
+      "name": "vidlink",
+      "label": "Main 4",
+      "imdbSupported": false,
+      "tmdbSupported": true,
+      "moviePattern": "https://vidlink.pro/movie/{tmdbId}?primaryColor=FF0000&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=default&title=true&poster=true&autoplay=true",
+      "tvPattern": "https://vidlink.pro/tv/{tmdbId}/{season}/{episode}?primaryColor=FF0000&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=default&title=true&poster=true&autoplay=true&nextbutton=false"
+    },
+    {
+      "name": "vidfast",
+      "label": "Main 5",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://vidfast.pro/movie/{tmdbId}?autoPlay=true",
+      "tvPattern": "https://vidfast.pro/tv/{tmdbId}/{season}/{episode}?autoPlay=true&nextButton=true&autoNext=true"
+    },
+    {
+      "name": "111movies",
+      "label": "Main 6",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://111movies.net/movie/{tmdbId}",
+      "tvPattern": "https://111movies.net/tv/{tmdbId}/{season}/{episode}"
+    },
+    {
+      "name": "vidcore",
+      "label": "Main 7",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://vidcore.net/movie/{tmdbId}?autoPlay=true&theme={hex}",
+      "tvPattern": "https://vidcore.net/tv/{tmdbId}/{season}/{episode}?autoPlay=true&nextButton=true&autoNext=true&theme={hex}"
+    },
+    {
+      "name": "vidnest",
+      "label": "Main 8",
+      "imdbSupported": false,
+      "tmdbSupported": true,
+      "moviePattern": "https://vidnest.fun/movie/{tmdbId}",
+      "tvPattern": "https://vidnest.fun/tv/{tmdbId}/{season}/{episode}"
+    },
+    {
+      "name": "vidsrc_wtf_2",
+      "label": "MULTI LANGUAGE",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://www.vidsrc.wtf/api/2/movie/?color=FF0000&id={tmdbId}",
+      "tvPattern": "https://www.vidsrc.wtf/api/2/tv/?color=FF0000&id={tmdbId}&s={season}&e={episode}"
+    },
+    {
+      "name": "screenscape",
+      "label": "MULTI LANGUAGE 2",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://flix.screenscape.me/embed?type=movie&lan=eng&tmdb={tmdbId}",
+      "tvPattern": "https://flix.screenscape.me/embed?type=tv&lan=eng&tmdb={tmdbId}&s={season}&e={episode}"
+    },
+    {
+      "name": "nxsha",
+      "label": "MULTI LANGUAGE 3",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://nxsha.space/embed/movie/{tmdbId}",
+      "tvPattern": "https://nxsha.space/embed/tv/{tmdbId}/{season}/{episode}"
+    },
+    {
+      "name": "peachify",
+      "label": "MULTI LANGUAGE 4",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://peachify.top/embed/movie/{tmdbId}?accent={hex}",
+      "tvPattern": "https://peachify.top/embed/tv/{tmdbId}/{season}/{episode}?accent={hex}"
+    },
+    {
+      "name": "vidout",
+      "label": "MULTI LANGUAGE 5",
+      "imdbSupported": false,
+      "tmdbSupported": true,
+      "moviePattern": "https://watchout-player.netlify.app/movie/{tmdbId}",
+      "tvPattern": "https://watchout-player.netlify.app/tv/{tmdbId}/S{season}/E{episode}"
+    },
+    {
+      "name": "iqsmartgames",
+      "label": "DOWNLOAD SERVERS",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "tvPattern": "https://streams.iqsmartgames.com/embed/tv/{tmdbId}/{season}/{episode}?key=e11a7debaaa4f5d25b671706ffe4d2acb56efbd4",
+      "moviePattern": "https://streams.iqsmartgames.com/embed/movie/{imdbId}?key=e11a7debaaa4f5d25b671706ffe4d2acb56efbd4"
+    },
+    {
+      "name": "vidstorm",
+      "label": "DOWNLOAD SERVERS 2",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://vidstorm.ru/movie/{tmdbId}",
+      "tvPattern": "https://vidstorm.ru/tv/{tmdbId}/{season}/{episode}"
+    },
+    {
+      "name": "2embed",
+      "label": "DOWNLOAD SERVERS 3",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://www.2embed.cc/embed/{tmdbId}",
+      "tvPattern": "https://www.2embed.cc/embedtv/{tmdbId}&s={season}&e={episode}"
+    },
+    {
+      "name": "vidsrc_wtf_4",
+      "label": "PREMIUM EMBEDS",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://www.vidsrc.wtf/api/4/movie/?id={tmdbId}",
+      "tvPattern": "https://www.vidsrc.wtf/api/4/tv/?id={tmdbId}&s={season}&e={episode}"
+    },
+    {
+      "name": "vidsrc_wtf_3",
+      "label": "PREMIUM EMBEDS 2",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://vidsrc.wtf/3/movie/{tmdbId}?color={hex}",
+      "tvPattern": "https://vidsrc.wtf/3/tv/{tmdbId}/{season}/{episode}?color={hex}"
+    },
+    {
+      "name": "primesrc",
+      "label": "PREMIUM EMBEDS 3",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://primesrc.me/embed/movie?tmdb={tmdbId}&fallback=true",
+      "tvPattern": "https://primesrc.me/embed/tv?tmdb={tmdbId}&season={season}&episode={episode}&fallback=true"
+    },
+    {
+      "name": "xplay",
+      "label": "XPLAY SERVER",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://play.xpass.top/e/movie/{tmdbId}",
+      "tvPattern": "https://play.xpass.top/e/tv/{tmdbId}/{season}/{episode}"
+    },
+    {
+      "name": "nextgen",
+      "label": "NEXTGEN CLOUD SERVER",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://nextgencloudfabric.com/embed/movie/{tmdbId}",
+      "tvPattern": "https://nextgencloudfabric.com/embed/tv/{tmdbId}/{season}/{episode}"
+    },
+    {
+      "name": "nontongo",
+      "label": "NONTONGO SERVER",
+      "imdbSupported": true,
+      "tmdbSupported": true,
+      "moviePattern": "https://www.nontongo.win/embed/movie/{tmdbId}",
+      "tvPattern": "https://www.nontongo.win/embed/tv/{tmdbId}/{season}/{episode}"
+    },
+    {
+      "name": "vidking",
+      "label": "VIDKING SERVER",
+      "imdbSupported": false,
+      "tmdbSupported": true,
+      "moviePattern": "https://www.vidking.net/embed/movie/{tmdbId}?autoPlay=true",
+      "tvPattern": "https://www.vidking.net/embed/tv/{tmdbId}/{season}/{episode}?autoPlay=true"
+    }
+  ],
+  "usageRules": {
+    "placeholders": {
+      "{tmdbId}": "Replace with the primary TMDB numeric ID for the movie or TV show.",
+      "{imdbId}": "Replace with the IMDb title ID starting with 'tt' (used in fallbacks or specific APIs).",
+      "{season}": "Replace with the requested season number (positive integer, e.g. 1). Defaults to 1.",
+      "{episode}": "Replace with the requested episode number (positive integer, e.g. 1). Defaults to 1.",
+      "{hex}": "Optional placeholder representing theme accent color in hexadecimal format (e.g. ff4d6d)."
+    },
+    "routingLogic": [
+      "If tmdbId is present and the server supports TMDB (tmdbSupported is true), use it as the primary parameter.",
+      "If the server does not support IMDb (imdbSupported is false), you MUST use tmdbId.",
+      "For TV Shows / Episodes, always replace {season} and {episode} with positive integers (fallback to 1 if undefined)."
+    ]
+  }
+}

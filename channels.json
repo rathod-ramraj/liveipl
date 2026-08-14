@@ -1,107 +1,106 @@
 {
-  "$schema": "playup-channels/v1",
-  "version": "1.0",
-  "description": "Live TV and 24/7 Channels directory for PlayUp",
   "channels": [
     {
       "id": "eng",
       "name": "Main 1",
-      "category": "Main Channels",
+      "subtitle": "Main 1",
+      "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://allrounder2-0.pages.dev/fox",
-      "iframeSrc": "https://allrounder2-0.pages.dev/fox",
-      "subtitle": "Main 1",
       "active": true
     },
     {
       "id": "main2",
       "name": "Main 2",
-      "category": "Main Channels",
+      "subtitle": "Main 2",
+      "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://cineios.pages.dev/hls/?url=https://fuck-you.kasin-tv.com/fc/proxy.php/https://allinonereborn2.online/fctest/playlists/match_143352/english.m3u8",
-      "iframeSrc": "https://cineios.pages.dev/hls/?url=https://fuck-you.kasin-tv.com/fc/proxy.php/https://allinonereborn2.online/fctest/playlists/match_143352/english.m3u8",
-      "subtitle": "Main 2",
       "active": true
     },
     {
       "id": "willowsports",
       "name": "Main 3",
-      "category": "Main Channels",
+      "subtitle": "Main 3",
+      "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8",
-      "iframeSrc": "https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8",
-      "subtitle": "Main 3",
       "active": true
     },
     {
       "id": "main3",
       "name": "Main 4",
-      "category": "Main Channels",
+      "subtitle": "Main 4",
+      "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://allrounder2-0.pages.dev/fox",
-      "iframeSrc": "https://allrounder2-0.pages.dev/fox",
-      "subtitle": "Main 4",
       "active": true
     },
     {
       "id": "fifa_hindi",
       "name": "Main 5",
-      "category": "Main Channels",
+      "subtitle": "Main 5",
+      "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://fifa-world-cup-live.pages.dev/hindi",
-      "iframeSrc": "https://fifa-world-cup-live.pages.dev/hindi",
-      "subtitle": "Main 5",
       "active": true
     },
     {
       "id": "skysports_cricket",
       "name": "Sky Sports Cricket",
-      "category": "Sports",
+      "subtitle": "Cricket Live",
+      "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://tv4wab.wapka.site/?app=crichd&id=skyscric",
-      "iframeSrc": "https://tv4wab.wapka.site/?app=crichd&id=skyscric",
-      "subtitle": "Cricket Live",
       "active": true
     },
     {
       "id": "willow",
       "name": "Willow",
-      "category": "Sports",
+      "subtitle": "Cricket Live",
+      "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://tv4wab.wapka.site/?app=crichd&id=willowusa",
-      "iframeSrc": "https://tv4wab.wapka.site/?app=crichd&id=willowusa",
-      "subtitle": "Cricket Live",
       "active": true
     },
     {
       "id": "willow_cricbuzz",
       "name": "Willow Cricbuzz",
-      "category": "Sports",
+      "subtitle": "Cricket Live",
+      "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://cinecrichd.pages.dev/willow-cricbuzz",
-      "iframeSrc": "https://cinecrichd.pages.dev/willow-cricbuzz",
-      "subtitle": "Cricket Live",
       "active": true
     },
     {
       "id": "fc1",
       "name": "FanCode FC1",
-      "category": "Sports",
+      "subtitle": "FanCode · HD",
+      "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://cinecrichd.pages.dev/fancode/fc1/fc2/",
-      "iframeSrc": "https://cinecrichd.pages.dev/fancode/fc1/fc2/",
-      "subtitle": "FanCode Live",
       "active": true
     },
     {
       "id": "zee",
       "name": "Zee Cinema",
-      "category": "Movies & Entertainment",
+      "subtitle": "Movies · Hindi",
+      "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://zee-seven.vercel.app/",
-      "iframeSrc": "https://zee-seven.vercel.app/",
-      "subtitle": "Premium Movie",
       "active": true
     }
-  ]
+  ],
+  "usageRules": {
+    "description": "Add, remove, edit, or reorder channels by modifying the channels array above.",
+    "fields": {
+      "id": "Unique string channel identifier used for canonical lookup and routing.",
+      "name": "Display name rendered on channel buttons and player header.",
+      "subtitle": "Subtitle text rendered under the channel title in player header.",
+      "category": "Category grouping name for filtering.",
+      "type": "Stream embed type: 'iframe' or 'hls'.",
+      "streamUrl": "Direct iframe embed URL or HLS manifest .m3u8 URL.",
+      "active": "Set false to temporarily hide channel without deleting entry."
+    }
+  }
 }
