@@ -2568,9 +2568,6 @@ function switchChannel(id, skipScroll) {
 
   setStream(ch);
   if (mobilePlayerFs) exitMobilePlayerFs();
-  if (!skipScroll && elPlayer) {
-    elPlayer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
 }
 
 // ════════════════════════════════════════════════════
@@ -2971,8 +2968,6 @@ function renderLiveMatches(cineData) {
         btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + (cleanName || 'Stream ' + (iIdx + 1)) + '</span>';
         btn.addEventListener('click', function () {
           switchChannel(cid);
-          var playerEl = document.getElementById('player');
-          if (playerEl) playerEl.scrollIntoView({ behavior: 'smooth' });
         }, { passive: true });
         streamsContainer.appendChild(btn);
       }
