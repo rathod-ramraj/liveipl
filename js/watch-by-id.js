@@ -1132,6 +1132,7 @@
     if (els.iframe) {
       els.iframe.setAttribute('loading', 'eager');
       els.iframe.setAttribute('importance', 'high');
+      els.iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock');
     }
 
     bindEvents();
