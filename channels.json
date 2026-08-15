@@ -28,12 +28,12 @@
       "active": true
     },
     {
-      "id": "fifa_hindi",
+      "id": "embed-st",
       "name": "Main 4",
       "subtitle": "Main 4",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://fifa-world-cup-live.pages.dev/hindi",
+      "streamUrl": "https://embed.st/embed/admin/admin-willow-cricket/3",
       "active": true
     },
     {

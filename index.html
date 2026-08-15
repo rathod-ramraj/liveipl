@@ -2026,7 +2026,7 @@
     <div style="width:88px;flex-shrink:0" aria-hidden="true"></div>
   </div>
   <div class="wbid-frame-wrap">
-    <iframe id="wbid-iframe" title="Watch by ID player" loading="eager" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <iframe id="wbid-iframe" title="Watch by ID player" loading="eager" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
     <div class="wbid-loading" id="wbid-loading" aria-live="polite"><span></span></div>
     <button type="button" id="wbid-next-ep" hidden aria-label="Play next episode">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -2211,52 +2211,17 @@ function updatePageTitle(chOrId) {
 }
 
 function sortChannels(list) {
-  var byId = {};
-  for (var i = 0; i < list.length; i++) byId[list[i].id] = list[i];
+  if (!Array.isArray(list)) return [];
+  var seen = new Set();
   var out = [];
-  var used = {};
-
-  function take(id) {
-    if (byId[id] && !used[id]) {
-      out.push(byId[id]);
-      used[id] = true;
+  for (var i = 0; i < list.length; i++) {
+    var item = list[i];
+    if (item && item.id && !seen.has(item.id)) {
+      seen.add(item.id);
+      out.push(item);
     }
   }
-
-  take('eng');
-  take('main2');
-  take('willowsports');
-  take('main3');
-  take('fifa_hindi');
-  take('skysports_cricket');
-  take('willow');
-  take('zee');
-  take('star2eng');
-  take('star2hindi');
-  take('star1eng');
-  take('star1hindi');
-  if (!used.starhindi) take('starhindi');
-  if (!used.starhindi) take('star_hindi');
-  if (!used.starhindi) take('hindi');
-  take('star_tamil');
-  take('star1tel');
-  take('willow2');
-  take('sliv1');
-  take('sliv3');
-  take('prime_eng');
-  take('shamshad');
-  take('skynz');
-  take('kayohin');
-  take('fox501');
-  take('tnt1');
-  take('tnt4');
-  take('tnt2');
-
-  var rest = [];
-  for (var j = 0; j < list.length; j++) {
-    if (!used[list[j].id]) rest.push(list[j]);
-  }
-  return out.concat(rest);
+  return out;
 }
 
 function extractStreamUrl(src) {
