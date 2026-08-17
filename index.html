@@ -52,6 +52,23 @@
       "query-input": "required name=search_term_string"
     }
   }
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BroadcastService",
+    "name": "PlayUp Free Cricket & Sports Streaming",
+    "broadcastDisplayName": "PlayUp Live Sports",
+    "videoFormat": "HD",
+    "category": "Cricket",
+    "description": "Watch free live cricket matches, IPL, T20 World Cup, and HD sports channels online on PlayUp.",
+    "url": "https://playup.vercel.app/",
+    "broadcaster": {
+      "@type": "Organization",
+      "name": "PlayUp",
+      "url": "https://playup.vercel.app/",
+      "logo": "https://playup.vercel.app/favicon.png"
+    }
+  }
   </script>
   <script type="application/ld+json">
   {
@@ -60,14 +77,33 @@
     "name": "PlayUp Free Cricket & Sports Streaming",
     "sport": "Cricket",
     "description": "Watch free live cricket matches, IPL, T20 World Cup, and HD sports channels on PlayUp.",
+    "startDate": "2026-01-01T00:00:00+00:00",
+    "endDate": "2026-12-31T23:59:59+00:00",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
     "location": {
       "@type": "VirtualLocation",
       "url": "https://playup.vercel.app/"
     },
+    "image": [
+      "https://playup.vercel.app/favicon.png"
+    ],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "url": "https://playup.vercel.app/"
+    },
+    "performer": {
+      "@type": "SportsTeam",
+      "name": "Live Cricket Teams & Sports Players"
+    },
     "organizer": {
       "@type": "Organization",
       "name": "PlayUp",
-      "url": "https://playup.vercel.app/"
+      "url": "https://playup.vercel.app/",
+      "logo": "https://playup.vercel.app/favicon.png"
     }
   }
   </script>
