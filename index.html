@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PlayUp | Free Cricket Live — Watch Live Cricket Matches</title>
-  <meta name="description" content="Watch free live cricket matches online on PlayUp. Stream PlayUp free cricket, IPL, T20 World Cup, Test matches, and live sports channels in HD with zero subscription.">
-  <meta name="keywords" content="playup free cricket, playup cricket live, playup live cricket, watch cricket live playup, free live cricket, watch live cricket online, playup live streaming, IPL live match free, live cricket streaming HD, free sports streaming">
+  <title>PlayUp | Free Cricket, Movies &amp; Series</title>
+  <meta name="description" content="Watch free live cricket, movies, and TV series online on PlayUp. Stream live cricket matches, IPL, HD movies, and TV shows with instant Watch by ID.">
+  <meta name="keywords" content="playup free cricket, playup cricket live, playup live cricket, playup movies, playup free movies, playup series, playup tv, watch movies online playup, watch series online playup, free live cricket, watch live cricket online">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#121019">
   <link rel="canonical" href="https://playup.vercel.app/">
@@ -13,15 +13,15 @@
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="PlayUp">
-  <meta property="og:title" content="PlayUp | Free Cricket Live — Watch Live Cricket Matches">
-  <meta property="og:description" content="Watch free live cricket matches online on PlayUp. Stream IPL, T20 World Cup, Test matches, and HD sports channels with zero subscription.">
+  <meta property="og:title" content="PlayUp | Free Cricket, Movies &amp; Series">
+  <meta property="og:description" content="Watch free live cricket, movies, and TV series online on PlayUp. Stream live sports channels and HD movies with zero subscription.">
   <meta property="og:url" content="https://playup.vercel.app/">
   <meta property="og:image" content="https://playup.vercel.app/favicon.png">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="PlayUp | Free Cricket Live — Watch Live Cricket Matches">
-  <meta name="twitter:description" content="Watch free live cricket matches online on PlayUp. Stream IPL, T20, Test matches, and HD sports channels instantly.">
+  <meta name="twitter:title" content="PlayUp | Free Cricket, Movies &amp; Series">
+  <meta name="twitter:description" content="Watch free live cricket, movies, and TV series online on PlayUp. Stream live sports and HD movies instantly.">
   <meta name="twitter:image" content="https://playup.vercel.app/favicon.png">
   <link rel="icon" href="/favicon.png">
   <link rel="shortcut icon" href="/favicon.png">
@@ -32,9 +32,19 @@
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "PlayUp",
-    "alternateName": ["PlayUp Free Cricket", "PlayUp Cricket Live", "PlayUp Live Cricket", "Watch Cricket Live PlayUp"],
+    "alternateName": [
+      "PlayUp Free Cricket",
+      "PlayUp Cricket Live",
+      "PlayUp Live Cricket",
+      "PlayUp Movies",
+      "PlayUp Free Movies",
+      "PlayUp Series",
+      "PlayUp TV",
+      "Watch Movies Online PlayUp",
+      "Watch Series Online PlayUp"
+    ],
     "url": "https://playup.vercel.app/",
-    "description": "Watch free live cricket matches online on PlayUp with HD streaming.",
+    "description": "Watch free live cricket, movies, and TV series online on PlayUp with HD streaming.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": "https://playup.vercel.app/?q={search_term_string}",
@@ -46,9 +56,9 @@
   {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
-    "name": "PlayUp Free Cricket Live Streaming",
+    "name": "PlayUp Free Cricket & Sports Streaming",
     "sport": "Cricket",
-    "description": "Free live cricket match streaming for IPL, T20 World Cup, Test matches, and international fixtures on PlayUp.",
+    "description": "Watch free live cricket matches, IPL, T20 World Cup, and HD sports channels on PlayUp.",
     "location": {
       "@type": "VirtualLocation",
       "url": "https://playup.vercel.app/"
@@ -1747,10 +1757,10 @@
 <div class="hero anim-fade-up">
   <div class="hero-badge" role="note">
     <span class="hero-badge-tag">Live</span>
-    <span class="hero-badge-msg">Free Live Cricket · Sports · HD Channels</span>
+    <span class="hero-badge-msg">Free Live Cricket · Movies · Series · HD Streams</span>
   </div>
-  <h1 class="anim-fade-up-1">PlayUp Free Cricket Live<br><span class="g">Watch Live Matches &amp; Sports</span></h1>
-  <p class="anim-fade-up-2 hero-lead">Watch free live cricket matches on PlayUp. Stream IPL, T20 World Cup, Test matches, and live sports channels in HD with instant server switching.</p>
+  <h1 class="anim-fade-up-1">PlayUp Free Cricket, Movies &amp; Series<br><span class="g">Watch Live Sports &amp; On-Demand</span></h1>
+  <p class="anim-fade-up-2 hero-lead">Watch free live cricket matches, HD movies, and TV series on PlayUp. Stream live sports channels or enter any IMDb / TMDB ID to watch instantly.</p>
   <div class="hero-cta-row anim-fade-up-3">
     <a href="#player" class="btn btn-primary">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -2116,26 +2126,26 @@ var ALLOWED = new Set([
   'tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
 ]);
 
-var SITE_TITLE = 'PlayUp | Free Cricket Live';
-var DEFAULT_SITE_TITLE = 'PlayUp | Free Cricket Live — Watch Live Cricket Matches';
+var SITE_TITLE = 'PlayUp | Free Cricket, Movies & Series';
+var DEFAULT_SITE_TITLE = 'PlayUp | Free Cricket, Movies & Series — Watch Online Free';
 window.SITE_TITLE = SITE_TITLE;
 
 function setLivePageTitle(channelName) {
   if (document.body.classList.contains('wbid-active')) return;
-  document.title = (channelName ? channelName + ' — PlayUp Free Cricket Live' : DEFAULT_SITE_TITLE);
+  document.title = (channelName ? channelName + ' — PlayUp Cricket Live' : DEFAULT_SITE_TITLE);
 }
 
 function setMoviePageTitle(name, isTv, season, episode) {
   var label = name || 'Movie';
   if (isTv) {
-    document.title = label + ' · S' + (season || 1) + 'E' + (episode || 1) + ' — PlayUp';
+    document.title = label + ' · S' + (season || 1) + 'E' + (episode || 1) + ' — PlayUp Series';
   } else {
-    document.title = label + ' — PlayUp';
+    document.title = label + ' — PlayUp Movies';
   }
 }
 
 function setWbidPageTitle() {
-  document.title = 'Watch Movies & Shows by ID — PlayUp Free Cricket';
+  document.title = 'Watch Movies & Series by ID — PlayUp Free Movies';
 }
 
 function setHomePageTitle() {
