@@ -3,24 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PlayUp | Watch Free Live Cricket Matches &amp; Movies</title>
-  <meta name="description" content="PlayUp lets you watch live sports channels, movies, and TV series in HD. Use Watch by ID with IMDb or TMDB IDs and switch streaming servers instantly.">
-  <meta name="keywords" content="playup, watch movies online free, live cricket streaming, watch IPL live, HD movies online, free streaming platform">
-  <meta name="robots" content="index,follow,noai,noimageai,max-image-preview:none,max-snippet:0,max-video-preview:0">
+  <title>PlayUp | Free Cricket Live — Watch Live Cricket Matches</title>
+  <meta name="description" content="Watch free live cricket matches online on PlayUp. Stream PlayUp free cricket, IPL, T20 World Cup, Test matches, and live sports channels in HD with zero subscription.">
+  <meta name="keywords" content="playup free cricket, playup cricket live, playup live cricket, watch cricket live playup, free live cricket, watch live cricket online, playup live streaming, IPL live match free, live cricket streaming HD, free sports streaming">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta name="theme-color" content="#121019">
   <link rel="canonical" href="https://playup.vercel.app/">
+
+  <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="PlayUp">
-  <meta property="og:title" content="PlayUp | Watch Free Live Cricket Matches &amp; Movies">
-  <meta property="og:description" content="Watch live sports channels, movies, and TV series in HD on PlayUp.">
+  <meta property="og:title" content="PlayUp | Free Cricket Live — Watch Live Cricket Matches">
+  <meta property="og:description" content="Watch free live cricket matches online on PlayUp. Stream IPL, T20 World Cup, Test matches, and HD sports channels with zero subscription.">
   <meta property="og:url" content="https://playup.vercel.app/">
   <meta property="og:image" content="https://playup.vercel.app/favicon.png">
+
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="PlayUp | Watch Free Live Cricket Matches &amp; Movies">
-  <meta name="twitter:description" content="Watch live channels, movies, and TV series in HD on PlayUp.">
+  <meta name="twitter:title" content="PlayUp | Free Cricket Live — Watch Live Cricket Matches">
+  <meta name="twitter:description" content="Watch free live cricket matches online on PlayUp. Stream IPL, T20, Test matches, and HD sports channels instantly.">
   <meta name="twitter:image" content="https://playup.vercel.app/favicon.png">
   <link rel="icon" href="/favicon.png">
   <link rel="shortcut icon" href="/favicon.png">
+
+  <!-- JSON-LD Structured Data for Google Search -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PlayUp",
+    "alternateName": ["PlayUp Free Cricket", "PlayUp Cricket Live", "PlayUp Live Cricket", "Watch Cricket Live PlayUp"],
+    "url": "https://playup.vercel.app/",
+    "description": "Watch free live cricket matches online on PlayUp with HD streaming.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://playup.vercel.app/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    "name": "PlayUp Free Cricket Live Streaming",
+    "sport": "Cricket",
+    "description": "Free live cricket match streaming for IPL, T20 World Cup, Test matches, and international fixtures on PlayUp.",
+    "location": {
+      "@type": "VirtualLocation",
+      "url": "https://playup.vercel.app/"
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": "PlayUp",
+      "url": "https://playup.vercel.app/"
+    }
+  }
+  </script>
 
   <!-- Inter font for premium typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1707,11 +1746,11 @@
 <div class="hero-outer">
 <div class="hero anim-fade-up">
   <div class="hero-badge" role="note">
-    <span class="hero-badge-tag">New</span>
-    <span class="hero-badge-msg">Live TV · Movies · Free · Always on</span>
+    <span class="hero-badge-tag">Live</span>
+    <span class="hero-badge-msg">Free Live Cricket · Sports · HD Channels</span>
   </div>
-  <h1 class="anim-fade-up-1">Live TV &amp; Movies<br><span class="g">Anywhere, Anytime</span></h1>
-  <p class="anim-fade-up-2 hero-lead">Stream live channels in HD, or paste any IMDb / TMDB ID to watch movies and series instantly.</p>
+  <h1 class="anim-fade-up-1">PlayUp Free Cricket Live<br><span class="g">Watch Live Matches &amp; Sports</span></h1>
+  <p class="anim-fade-up-2 hero-lead">Watch free live cricket matches on PlayUp. Stream IPL, T20 World Cup, Test matches, and live sports channels in HD with instant server switching.</p>
   <div class="hero-cta-row anim-fade-up-3">
     <a href="#player" class="btn btn-primary">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -1735,7 +1774,7 @@
     <div class="player-bar">
       <div class="player-info">
         <div class="ch-icon">
-          <img src="favicon.png" alt="Logo">
+          <img src="favicon.png" alt="PlayUp Free Live Cricket Logo">
         </div>
         <div class="player-info-text">
           <div class="ch-name-row">
@@ -2077,20 +2116,26 @@ var ALLOWED = new Set([
   'tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
 ]);
 
-var SITE_TITLE = 'PlayUp | Watch Free Live Cricket Matches & Movies';
-var DEFAULT_SITE_TITLE = 'PlayUp | Watch Free Live Cricket Matches & Movies';
+var SITE_TITLE = 'PlayUp | Free Cricket Live';
+var DEFAULT_SITE_TITLE = 'PlayUp | Free Cricket Live — Watch Live Cricket Matches';
 window.SITE_TITLE = SITE_TITLE;
 
 function setLivePageTitle(channelName) {
-  document.title = DEFAULT_SITE_TITLE;
+  if (document.body.classList.contains('wbid-active')) return;
+  document.title = (channelName ? channelName + ' — PlayUp Free Cricket Live' : DEFAULT_SITE_TITLE);
 }
 
 function setMoviePageTitle(name, isTv, season, episode) {
-  document.title = DEFAULT_SITE_TITLE;
+  var label = name || 'Movie';
+  if (isTv) {
+    document.title = label + ' · S' + (season || 1) + 'E' + (episode || 1) + ' — PlayUp';
+  } else {
+    document.title = label + ' — PlayUp';
+  }
 }
 
 function setWbidPageTitle() {
-  document.title = DEFAULT_SITE_TITLE;
+  document.title = 'Watch Movies & Shows by ID — PlayUp Free Cricket';
 }
 
 function setHomePageTitle() {
@@ -2703,25 +2748,26 @@ function onFullscreenChange() {
 // ════════════════════════════════════════════════════
 //  AUTO-RETRY  (3× with exponential back-off)
 // ════════════════════════════════════════════════════
+//  CHANNEL RETRY / AUTO-RELOAD (5 SECONDS GUARD)
+// ════════════════════════════════════════════════════
 function retryChannel(id) {
   if (!retryMap[id]) retryMap[id] = 0;
-  if (retryMap[id] >= 3) {
+  if (retryMap[id] >= 4) {
     if (cur === id) showStreamFailure();
     return;
   }
   retryMap[id]++;
-  var delay = retryMap[id] * 3000;
-  showToast('Stream error — retrying in ' + (delay / 1000) + 's…', delay);
-  setTimeout(function () { if (cur === id) switchChannel(id); }, delay);
+  showToast('Player not working — auto reloading stream...', 2000);
+  setTimeout(function () { if (cur === id) switchChannel(id); }, 400);
 }
 
-// Stall guard: if overlay still showing 12 s after switch, trigger retry
+// Auto reload guard: if player is not working in 5s, trigger auto reload
 function armStallTimer(id) {
   clearTimeout(stallTimer);
   stallTimer = setTimeout(function () {
-    if (cur !== id || !elBufOv || !elBufOv.classList.contains('show')) return;
+    if (cur !== id) return;
     retryChannel(id);
-  }, 12000);
+  }, 5000);
 }
 
 // ════════════════════════════════════════════════════
