@@ -1,4 +1,21 @@
-# Block AI training / scraping crawlers
+# PlayUp robots.txt — Free Live Cricket Streaming
+# Allow Google, Bing, and search engines to index public cricket pages
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: *
+Allow: /
+Disallow: /.git/
+Disallow: /.trunk/
+Disallow: /.vscode/
+Disallow: /scratch/
+Disallow: /admin/
+Disallow: /private/
+
+# Block AI scrapers
 User-agent: GPTBot
 Disallow: /
 
@@ -11,62 +28,10 @@ Disallow: /
 User-agent: Claude-Web
 Disallow: /
 
-User-agent: anthropic-ai
-Disallow: /
-
-User-agent: Google-Extended
+User-agent: Bytespider
 Disallow: /
 
 User-agent: CCBot
 Disallow: /
-
-User-agent: cohere-ai
-Disallow: /
-
-User-agent: PerplexityBot
-Disallow: /
-
-User-agent: Bytespider
-Disallow: /
-
-User-agent: meta-externalagent
-Disallow: /
-
-User-agent: Applebot-Extended
-Disallow: /
-
-User-agent: Diffbot
-Disallow: /
-
-User-agent: Omgilibot
-Disallow: /
-
-User-agent: ImagesiftBot
-Disallow: /
-
-User-agent: Amazonbot
-Disallow: /
-
-User-agent: FacebookBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
-
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: DotBot
-Disallow: /
-
-User-agent: PetalBot
-Disallow: /
-
-User-agent: DataForSeoBot
-Disallow: /
-
-# Allow normal search indexing for real users
-User-agent: *
-Allow: /
 
 Sitemap: https://playup.vercel.app/sitemap.xml
