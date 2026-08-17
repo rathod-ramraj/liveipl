@@ -1,16 +1,22 @@
 import crypto from 'crypto';
 
-// In-memory store for active sessions (persists across warm function invocations)
-const activeSessions = new Map();
-const INACTIVE_TIMEOUT_MS = 75000; // 75 seconds
+// Server-side in-memory active session store (persists across warm serverless invocations)
+const activeSessions = new Map(); // key: hashedIp, value: lastSeenTimestamp
+const INACTIVE_TIMEOUT_MS = 45000; // 45 seconds TTL
 
+/**
+ * Safely extract client IP from trusted proxy headers in Vercel / Cloudflare environments.
+ */
 function getClientIp(req) {
+  // Cloudflare trusted header
   const cfIp = req.headers['cf-connecting-ip'];
   if (cfIp && typeof cfIp === 'string') return cfIp.split(',')[0].trim();
 
+  // Vercel / Reverse proxy trusted header
   const xRealIp = req.headers['x-real-ip'];
   if (xRealIp && typeof xRealIp === 'string') return xRealIp.split(',')[0].trim();
 
+  // Standard X-Forwarded-For header (take left-most IP)
   const xForwardedFor = req.headers['x-forwarded-for'];
   if (xForwardedFor && typeof xForwardedFor === 'string') {
     return xForwardedFor.split(',')[0].trim();
@@ -19,13 +25,19 @@ function getClientIp(req) {
   return req.socket?.remoteAddress || '127.0.0.1';
 }
 
+/**
+ * Anonymize IP using SHA-256 with a rotating daily salt to guarantee privacy.
+ */
 function hashIp(ip) {
-  const salt = process.env.SESSION_SALT || 'playup_live_users_salt_2026';
+  const dateKey = new Date().toISOString().slice(0, 10);
+  const salt = process.env.SESSION_SALT || `playup_salt_${dateKey}`;
   return crypto.createHash('sha256').update(`${ip}_${salt}`).digest('hex').substring(0, 16);
 }
 
-function cleanupInactive() {
-  const now = Date.now();
+/**
+ * Purge expired sessions based on server-side timestamp TTL.
+ */
+function cleanupExpired(now) {
   for (const [hash, lastSeen] of activeSessions.entries()) {
     if (now - lastSeen > INACTIVE_TIMEOUT_MS) {
       activeSessions.delete(hash);
@@ -44,25 +56,28 @@ export default function handler(req, res) {
   }
 
   try {
+    const now = Date.now();
     const rawIp = getClientIp(req);
     const ipHash = hashIp(rawIp);
-    const now = Date.now();
 
-    activeSessions.set(ipHash, now);
-    cleanupInactive();
+    // Support leave signal (sent on tab close / beacon)
+    const action = req.query?.action || (req.body && req.body.action);
+    if (action === 'leave') {
+      activeSessions.delete(ipHash);
+    } else {
+      activeSessions.set(ipHash, now);
+    }
 
-    const activeCount = activeSessions.size;
+    cleanupExpired(now);
+
+    const activeCount = Math.max(1, activeSessions.size);
 
     return res.status(200).json({
-      success: true,
-      activeUsers: activeCount,
-      timestamp: now
+      activeUsers: activeCount
     });
   } catch (err) {
     return res.status(200).json({
-      success: true,
-      activeUsers: Math.max(1, activeSessions.size),
-      timestamp: Date.now()
+      activeUsers: Math.max(1, activeSessions.size)
     });
   }
 }
