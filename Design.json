@@ -5,13 +5,12 @@
     "version": "2.0",
     "description": "Portable design specification for dark glass streaming apps. Load this file at runtime to apply CSS variables and ShapeGrid background. All values mirror index.html.",
     "source_project": "liveStream / playup.vercel.app",
-
     "style": {
       "theme": "dark_glass",
       "theme_color": "#121019",
       "design_principles": [
         "Glassmorphism with frosted surfaces over animated grid background",
-        "Depth through blur, transparency, and soft shadows — not heavy borders",
+        "Depth through blur, transparency, and soft shadows - not heavy borders",
         "Pink-to-purple accent gradient as brand signature",
         "Content-first layering: background → vignette → UI (z-index 2+)",
         "Pill-shaped interactive elements for a modern streaming feel",
@@ -19,7 +18,6 @@
         "Motion pauses during playback to protect performance",
         "Adaptive page titles reflect user context (live / movie / modal)"
       ],
-
       "css_custom_properties": {
         "_comment": "Map 1:1 to :root in index.html. Override at runtime via applyDesignPalette().",
         "--bg": "#121019",
@@ -42,7 +40,6 @@
         "--r-pill": "999px",
         "--font": "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif"
       },
-
       "color_palette": {
         "primary_bg": "#121019",
         "secondary_bg": "rgba(255,255,255,0.04)",
@@ -63,43 +60,61 @@
         "warning": "#f59e0b",
         "cyan": "#06b6d4"
       },
-
       "gradients": {
         "brand_primary": {
           "css": "linear-gradient(135deg, #ff4d6d, #c93cff)",
-          "usage": ["nav-logo-mark", "ch-icon", "btn-grad", "chk checkmarks", "wbid-card-icon"]
+          "usage": [
+            "nav-logo-mark",
+            "ch-icon",
+            "btn-grad",
+            "chk checkmarks",
+            "wbid-card-icon"
+          ]
         },
         "brand_hero_text": {
           "css": "linear-gradient(135deg, #ff4d6d 0%, #c93cff 50%, #3b82f6 100%)",
           "background_size": "200% auto",
-          "usage": [".g shimmer text class on hero headings"]
+          "usage": [
+            ".g shimmer text class on hero headings"
+          ]
         },
         "body_vignette": {
           "css": "radial-gradient(ellipse 85% 75% at 50% 42%, transparent 0%, rgba(8, 6, 14, 0.5) 100%)",
-          "usage": ["body::before fixed overlay"]
+          "usage": [
+            "body::before fixed overlay"
+          ]
         },
         "section_divider": {
           "css": "linear-gradient(to right, transparent, var(--glass-border-2), transparent)",
-          "usage": [".divider"]
+          "usage": [
+            ".divider"
+          ]
         },
         "glass_card_orb_purple": {
           "css": "radial-gradient(circle, rgba(201,60,255,.12) 0%, transparent 70%)",
-          "usage": [".glass-card::before floating orb"]
+          "usage": [
+            ".glass-card::before floating orb"
+          ]
         },
         "glass_card_orb_blue": {
           "css": "radial-gradient(circle, rgba(59,130,246,.10) 0%, transparent 70%)",
-          "usage": [".glass-card::after floating orb"]
+          "usage": [
+            ".glass-card::after floating orb"
+          ]
         },
         "alt_screen_overlay": {
           "css": "linear-gradient(135deg, rgba(255,77,109,.08), rgba(201,60,255,.06))",
-          "usage": [".alt-screen::after"]
+          "usage": [
+            ".alt-screen::after"
+          ]
         },
         "video_controls_panel": {
           "css": "linear-gradient(transparent, rgba(0,0,0,0.65))",
-          "usage": ["webkit media controls panel"]
+          "usage": [
+            "webkit media controls panel"
+          ]
         }
       },
-
       "typography": {
         "font_family": "Inter, SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif",
         "google_fonts_url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap",
@@ -152,10 +167,29 @@
           }
         }
       },
-
       "spacing": {
         "unit": 8,
-        "scale_px": [4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 28, 32, 40, 48, 52, 56, 64, 72],
+        "scale_px": [
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          18,
+          20,
+          22,
+          24,
+          28,
+          32,
+          40,
+          48,
+          52,
+          56,
+          64,
+          72
+        ],
         "section_padding_desktop": "72px 32px",
         "section_padding_mobile": "52px 16px",
         "hero_outer_padding": "118px 28px 56px",
@@ -164,7 +198,6 @@
         "max_nav_width": "min(720px, calc(100% - 32px))",
         "scroll_padding_top": "112px"
       },
-
       "radius": {
         "small": "8px",
         "medium": "16px",
@@ -177,7 +210,6 @@
           "--r-pill": "999px"
         }
       },
-
       "shadows": {
         "soft": "0 8px 32px rgba(0,0,0,0.5)",
         "glass_inset": "inset 0 0 0 1px rgba(255,255,255,0.08)",
@@ -192,7 +224,6 @@
         "wbid_modal_card": "0 24px 80px rgba(0,0,0,0.7)",
         "ks_toast": "0 8px 24px rgba(0,0,0,0.4)"
       },
-
       "blur": {
         "glass": "blur(20px)",
         "buffer_overlay": "blur(14px)",
@@ -203,7 +234,6 @@
         "player_fs_exit": "blur(10px)",
         "css_var": "--blur: blur(20px)"
       },
-
       "z_index_layers": {
         "shapegrid_background": 0,
         "body_vignette": 1,
@@ -218,7 +248,6 @@
         "devtools_block": 999999
       }
     },
-
     "layout": {
       "type": "single_page_layered",
       "scroll_behavior": "smooth",
@@ -259,7 +288,6 @@
         ]
       }
     },
-
     "background": {
       "shapegrid": {
         "container_id": "sg-global-bg",
@@ -287,7 +315,12 @@
           "backgroundColor": "",
           "vignetteEdge": "rgba(8, 6, 14, 0.35)"
         },
-        "supported_shapes": ["square", "hexagon", "triangle", "circle"],
+        "supported_shapes": [
+          "square",
+          "hexagon",
+          "triangle",
+          "circle"
+        ],
         "performance": {
           "mobile": "freeze grid, speed multiplier 0",
           "streaming": "freeze via PerfController",
@@ -302,7 +335,6 @@
         "pointer_events": "none"
       }
     },
-
     "components": {
       "navbar": {
         "id": "site-nav",
@@ -354,9 +386,12 @@
           "html.perf-streaming": "backdrop-filter none, solid background rgba(18,16,25,0.94)"
         }
       },
-
       "live_badge": {
-        "classes": ["live-badge", "nav-logo .live-badge", "player-live-badge"],
+        "classes": [
+          "live-badge",
+          "nav-logo .live-badge",
+          "player-live-badge"
+        ],
         "style": {
           "display": "inline-flex align center gap 5-6px",
           "font_size": "10.5px – 11px",
@@ -375,7 +410,6 @@
           "animation": "livepulse 1.8s ease-in-out infinite"
         }
       },
-
       "hero": {
         "wrapper": "hero-outer min-height 100vh flex center",
         "classes": "hero anim-fade-up",
@@ -395,11 +429,13 @@
           },
           "cta_row": {
             "class": "hero-cta-row anim-fade-up-3",
-            "buttons": ["btn-primary Watch live", "btn-secondary-outline Watch by ID"]
+            "buttons": [
+              "btn-primary Watch live",
+              "btn-secondary-outline Watch by ID"
+            ]
           }
         }
       },
-
       "buttons": {
         "base": {
           "class": ".btn",
@@ -412,7 +448,11 @@
           "transition": "transform .2s, box-shadow .2s, background .2s"
         },
         "primary": {
-          "classes": ["btn-primary", "nav-cta", "wbid-watch"],
+          "classes": [
+            "btn-primary",
+            "nav-cta",
+            "wbid-watch"
+          ],
           "background": "#ffffff",
           "color": "#000000",
           "border_radius": "var(--r-pill)",
@@ -441,7 +481,10 @@
           "background": "var(--surface)",
           "border": "1px solid var(--glass-border-2)",
           "backdrop_filter": "var(--blur)",
-          "usage": ["player reload", "player fullscreen"]
+          "usage": [
+            "player reload",
+            "player fullscreen"
+          ]
         },
         "small": {
           "class": "btn-sm",
@@ -450,7 +493,6 @@
           "border_radius": "var(--r-sm)"
         }
       },
-
       "player": {
         "wrapper": "player-wrap max-width 1100px",
         "card": {
@@ -502,7 +544,6 @@
           "fs_exit_button": "36px circle top-right safe-area"
         }
       },
-
       "channel_pills": {
         "grid_class": "ch-grid",
         "button_class": "ch-btn",
@@ -528,7 +569,6 @@
         },
         "transition": "color .25s, background .25s, border-color .25s, transform .25s, box-shadow .25s"
       },
-
       "feature_cards": {
         "grid": "feat-grid",
         "card": "feat-card",
@@ -536,7 +576,6 @@
         "icon_box": "40×40px rgba surface border radius 10px",
         "hover": "translateY(-4px), shadow soft, border lighten"
       },
-
       "glass_cta_card": {
         "wrapper": "glass-wrap",
         "card": "glass-card",
@@ -544,21 +583,18 @@
         "floating_orbs": "glass-card::before and ::after with orbFloat animation",
         "mock_ui": "glass-mock with 16:9 glass-mock-screen"
       },
-
       "alt_feature_rows": {
         "section": "alt-section",
         "row": "alt-row grid 2 columns",
         "check_list": "alt-check-list with gradient chk circles",
         "visual_card": "alt-visual-card with alt-screen 16:9"
       },
-
       "footer": {
         "padding": "28px 40px",
         "border_top": "var(--glass-border-2)",
         "background": "rgba(255,255,255,0.02)",
         "mobile": "column center text"
       },
-
       "watch_by_id_fab": {
         "id": "wbid-fab",
         "position": "fixed right 18px bottom 18px",
@@ -583,13 +619,23 @@
           "lerp_factor": 0.085,
           "compact_threshold": 0.94,
           "compact_class": "is-compact",
-          "animated_properties": ["width", "padding", "gap", "label opacity", "label translateX", "svg size", "border-color alpha"],
+          "animated_properties": [
+            "width",
+            "padding",
+            "gap",
+            "label opacity",
+            "label translateX",
+            "svg size",
+            "border-color alpha"
+          ],
           "transition": "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)"
         },
-        "hidden_states": ["body.wbid-active", "body.wbid-modal-open"],
+        "hidden_states": [
+          "body.wbid-active",
+          "body.wbid-modal-open"
+        ],
         "hidden_transition": "opacity 0.3s ease"
       },
-
       "watch_by_id_modal": {
         "id": "wbid-modal",
         "position": "fixed inset 0 flex align end justify end",
@@ -609,7 +655,6 @@
         },
         "tv_fields": "grid 2 cols, toggled by .is-visible"
       },
-
       "watch_by_id_theater": {
         "id": "wbid-overlay",
         "background": "#000 fullscreen",
@@ -620,7 +665,6 @@
         "next_episode": "wbid-next-ep white pill bottom-right",
         "loading": "wbid-loading spinner overlay"
       },
-
       "keyboard_toast": {
         "id": "ks-toast",
         "position": "fixed bottom 28px center",
@@ -629,7 +673,6 @@
         "shown_transform": "translateY(0) opacity 1",
         "transition": "opacity .2s, transform .2s"
       },
-
       "devtools_block": {
         "id": "dt-block",
         "z_index": 999999,
@@ -637,58 +680,99 @@
         "show_class": "show"
       }
     },
-
     "animations": {
       "keyframes": {
         "fadeUp": {
-          "from": { "opacity": 0, "transform": "translateY(24px)" },
-          "to": { "opacity": 1, "transform": "translateY(0)" }
+          "from": {
+            "opacity": 0,
+            "transform": "translateY(24px)"
+          },
+          "to": {
+            "opacity": 1,
+            "transform": "translateY(0)"
+          }
         },
         "fadeIn": {
-          "from": { "opacity": 0 },
-          "to": { "opacity": 1 }
+          "from": {
+            "opacity": 0
+          },
+          "to": {
+            "opacity": 1
+          }
         },
         "slideDown": {
-          "from": { "opacity": 0, "transform": "translateX(-50%) translateY(-20px)" },
-          "to": { "opacity": 1, "transform": "translateX(-50%) translateY(0)" },
+          "from": {
+            "opacity": 0,
+            "transform": "translateX(-50%) translateY(-20px)"
+          },
+          "to": {
+            "opacity": 1,
+            "transform": "translateX(-50%) translateY(0)"
+          },
           "note": "Used on fixed centered nav"
         },
         "livepulse": {
-          "0%, 100%": { "opacity": 1, "box_shadow": "0 0 0 0 rgba(239,68,68,0.5)" },
-          "50%": { "opacity": 0.6, "box_shadow": "0 0 0 5px rgba(239,68,68,0)" }
+          "0%, 100%": {
+            "opacity": 1,
+            "box_shadow": "0 0 0 0 rgba(239,68,68,0.5)"
+          },
+          "50%": {
+            "opacity": 0.6,
+            "box_shadow": "0 0 0 5px rgba(239,68,68,0)"
+          }
         },
         "orbFloat": {
-          "0%, 100%": { "transform": "translateY(0px)" },
-          "50%": { "transform": "translateY(-12px)" }
+          "0%, 100%": {
+            "transform": "translateY(0px)"
+          },
+          "50%": {
+            "transform": "translateY(-12px)"
+          }
         },
         "shimmer": {
-          "0%": { "background_position": "200% center" },
-          "100%": { "background_position": "-200% center" }
+          "0%": {
+            "background_position": "200% center"
+          },
+          "100%": {
+            "background_position": "-200% center"
+          }
         },
         "spin": {
-          "to": { "transform": "rotate(360deg)" }
+          "to": {
+            "transform": "rotate(360deg)"
+          }
         },
         "glowPulse": {
-          "0%, 100%": { "opacity": 0.7 },
-          "50%": { "opacity": 1 }
+          "0%, 100%": {
+            "opacity": 0.7
+          },
+          "50%": {
+            "opacity": 1
+          }
         }
       },
-
       "entrance_classes": {
-        "anim-fade-up": { "animation": "fadeUp 0.6s cubic-bezier(.22,.68,0,1.2) both" },
-        "anim-fade-up-1": { "delay": "0.1s", "same_curve": true },
-        "anim-fade-up-2": { "delay": "0.2s" },
-        "anim-fade-up-3": { "delay": "0.3s" },
+        "anim-fade-up": {
+          "animation": "fadeUp 0.6s cubic-bezier(.22,.68,0,1.2) both"
+        },
+        "anim-fade-up-1": {
+          "delay": "0.1s",
+          "same_curve": true
+        },
+        "anim-fade-up-2": {
+          "delay": "0.2s"
+        },
+        "anim-fade-up-3": {
+          "delay": "0.3s"
+        },
         "mobile_duration_override": "0.45s for all entrance classes"
       },
-
       "infinite_loops": {
         "live_dot": "livepulse 1.8s ease-in-out infinite",
         "hero_gradient_text": "shimmer 4s linear infinite on .g",
         "glass_card_orbs": "orbFloat 6s / 8s ease-in-out infinite (reverse on ::after)",
         "spinners": "spin 0.75s – 0.8s linear infinite"
       },
-
       "transitions": {
         "nav_links": "color .2s, background .2s",
         "nav_cta": "background .2s, transform .15s, box-shadow .2s",
@@ -703,14 +787,12 @@
         "wbid_loading": "opacity 0.2s, visibility 0.2s",
         "wbid_next_ep": "transform 0.15s, background 0.15s"
       },
-
       "easing_curves": {
         "spring_entrance": "cubic-bezier(.22,.68,0,1.2)",
         "smooth_out": "cubic-bezier(0.22, 1, 0.36, 1)",
         "standard": "ease",
         "live_pulse": "ease-in-out"
       },
-
       "scroll_driven_motion": {
         "wbid_fab_morph": {
           "implementation": "requestAnimationFrame lerp on scroll",
@@ -721,7 +803,6 @@
           "scroll_padding_top": "112px accounts for fixed nav"
         }
       },
-
       "hover_micro_interactions": {
         "buttons": "translateY(-2px) on hover, scale(0.97) on active",
         "nav_cta": "translateY(-1px)",
@@ -731,7 +812,6 @@
         "wbid_next_ep": "translateY(-1px)"
       }
     },
-
     "performance_modes": {
       "html_classes_applied_by_PerfController": {
         "perf-mobile": "mobile breakpoint active",
@@ -742,8 +822,17 @@
         "perf-pause-animations": "pauses infinite CSS animations"
       },
       "behaviors": {
-        "pause_animations_when": ["streaming", "iframe active", "mobile", "prefers-reduced-motion", "player off-screen"],
-        "disable_backdrop_blur_when": ["perf-streaming", "perf-iframe-active on nav/player/cards"],
+        "pause_animations_when": [
+          "streaming",
+          "iframe active",
+          "mobile",
+          "prefers-reduced-motion",
+          "player off-screen"
+        ],
+        "disable_backdrop_blur_when": [
+          "perf-streaming",
+          "perf-iframe-active on nav/player/cards"
+        ],
         "replace_glass_with_solids": {
           "nav": "rgba(18,16,25,0.94)",
           "player_card": "rgba(22,20,28,0.96)"
@@ -754,7 +843,6 @@
         "shapegrid_freeze": "on mobile, streaming, wbid-active, low-power"
       }
     },
-
     "interaction_patterns": {
       "touch": {
         "tap_highlight": "transparent (-webkit-tap-highlight-color)",
@@ -770,11 +858,11 @@
       "page_titles_adaptive": {
         "api": "window.PageTitle",
         "site_title": "PlayUp",
-        "default": "PlayUp — Live TV, Movies & Series",
-        "live": "{channelName} · Live — PlayUp",
-        "movie": "{title} — PlayUp",
-        "tv": "{title} · S{season}E{episode} — PlayUp",
-        "wbid_modal": "Watch by ID — PlayUp",
+        "default": "PlayUp - Live TV, Movies & Series",
+        "live": "{channelName} · Live - PlayUp",
+        "movie": "{title} - PlayUp",
+        "tv": "{title} · S{season}E{episode} - PlayUp",
+        "wbid_modal": "Watch by ID - PlayUp",
         "restore_on_exit": "prefer live channel title via updatePageTitle(cur)"
       },
       "state_body_classes": {
@@ -783,7 +871,6 @@
         "player-mobile-fs": "mobile native/CSS fullscreen"
       }
     },
-
     "responsive_rules": {
       "mobile_max_768": {
         "nav": "full width pill, shorter height, hide some links",
@@ -801,7 +888,6 @@
         "alt_row_gap": "44px"
       }
     },
-
     "reuse_guide": {
       "quick_start": [
         "1. Copy Design.json, ShapeGrid.js, and js/perf-controller.js into new project",
@@ -832,7 +918,7 @@
       "required_font": "Inter weights 300–900",
       "meta_tags": {
         "theme_color": "#121019",
-        "description_pattern": "{Brand} — Live TV, Movies & Series Streaming"
+        "description_pattern": "{Brand} - Live TV, Movies & Series Streaming"
       }
     }
   }

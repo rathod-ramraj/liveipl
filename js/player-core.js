@@ -47,7 +47,7 @@
       v.muted = true;
       v.removeAttribute('src');
       v.load();
-    } catch (_) {}
+    } catch (_) { }
   }
 
   function removeVideos(elRatio) {
@@ -69,7 +69,7 @@
     if (hlsInstance) {
       try {
         hlsInstance.destroy();
-      } catch (_) {}
+      } catch (_) { }
       hlsInstance = null;
     }
     if (videoEl) {
@@ -177,7 +177,7 @@
         ctx.showBuffer && ctx.showBuffer();
         try {
           hls.startLoad();
-        } catch (_) {}
+        } catch (_) { }
       } else if (data.type === HlsLib.ErrorTypes.MEDIA_ERROR) {
         try {
           hls.recoverMediaError();
@@ -224,13 +224,13 @@
     } else if (hls.levels && hls.levels.length) {
       try {
         hls.startLoad();
-      } catch (_) {}
+      } catch (_) { }
       if (video.readyState >= 2) {
         ctx.onFragBuffered && ctx.onFragBuffered();
       }
     }
 
-    video.play().catch(function () {});
+    video.play().catch(function () { });
 
     return true;
   }
@@ -304,7 +304,7 @@
     );
 
     ctx.container.insertBefore(video, ctx.bufOverlay);
-    video.play().catch(function () {});
+    video.play().catch(function () { });
 
     return true;
   }
@@ -343,7 +343,7 @@
   }
 
   /**
-   * @param ch — channel object (iframeSrc, id, …)
+   * @param ch - channel object (iframeSrc, id, …)
    */
   function load(ch, ctx) {
     destroy(ctx.container);

@@ -1,5 +1,5 @@
 /**
- * Iframe player — lazy load, connection warm-up, single-instance reuse per URL.
+ * Iframe player - lazy load, connection warm-up, single-instance reuse per URL.
  */
 (function (global) {
   'use strict';
@@ -50,7 +50,7 @@
     if (!iframe) return;
     try {
       iframe.src = 'about:blank';
-    } catch (_) {}
+    } catch (_) { }
     iframe.removeAttribute('src');
     iframe.style.display = 'none';
   }

@@ -36,7 +36,7 @@
     // Start at lowest rung on slow / save-data; one step up on fast for clarity
     var startLevel = tier === 'slow' || saveData ? 0 : tier === 'fast' ? 1 : 0;
 
-    // Bitrate ceiling (bit/s) — soft cap for ABR on constrained links
+    // Bitrate ceiling (bit/s) - soft cap for ABR on constrained links
     var maxBitrate =
       tier === 'slow' ? 900000 : tier === 'mid' ? 2800000 : 0;
 

@@ -1,5 +1,5 @@
 /**
- * Live HLS player — configuration only.
+ * Live HLS player - configuration only.
  * Tuned for fast startup, 3–6s live buffer window, stable ABR, LL-HLS alignment.
  */
 (function (global) {
@@ -17,7 +17,7 @@
     liveSyncDurationCount: 2,
     liveMaxLatencyDurationCount: 8,
 
-    // cap buffer depth for live (seconds) — slightly deeper for fewer stalls
+    // cap buffer depth for live (seconds) - slightly deeper for fewer stalls
     maxBufferLength: 8,
     maxMaxBufferLength: 18,
     backBufferLength: 12,
@@ -48,7 +48,7 @@
 
   /**
    * Builds hls.js config merged with NetworkProfile hints.
-   * @param {object|null} net — from NetworkProfile.get()
+   * @param {object|null} net - from NetworkProfile.get()
    * @param {{ lowLatency?: boolean, startLevel?: number }} opts
    */
   function buildHlsConfig(net, opts) {

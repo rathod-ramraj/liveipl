@@ -1,5 +1,5 @@
 /**
- * DevTools guard — reacts like net22.cc: leaves the site immediately.
+ * DevTools guard - reacts like net22.cc: leaves the site immediately.
  * Add ?dev=1 to the URL to disable while developing.
  *
  * Note: Browsers cannot open the real "new tab" page from JS or force-close
@@ -46,27 +46,27 @@
       document.documentElement.innerHTML = '';
       document.head && (document.head.innerHTML = '');
       document.body && (document.body.innerHTML = '');
-    } catch (_) {}
+    } catch (_) { }
 
     try {
       document.open();
       document.close();
-    } catch (_) {}
+    } catch (_) { }
 
     // Try to close tab (works only if opened by script)
     try {
       window.open('', '_self');
       window.close();
-    } catch (_) {}
+    } catch (_) { }
 
     // Go back to page before this site (feels like leaving the site)
     try {
       if (history.length > 1) {
         history.go(1 - history.length);
       }
-    } catch (_) {}
+    } catch (_) { }
 
-    // Blank the tab (empty screen — closest to "new" tab from JS)
+    // Blank the tab (empty screen - closest to "new" tab from JS)
     try {
       location.replace('about:blank');
     } catch (_) {
@@ -75,7 +75,7 @@
 
     try {
       window.stop();
-    } catch (_) {}
+    } catch (_) { }
   }
 
   function checkDockedDevTools() {

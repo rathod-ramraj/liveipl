@@ -1,4 +1,4 @@
-/** Lightweight analytics bridge — call LiveStreamAnalytics.get() from devtools or your pipeline. */
+/** Lightweight analytics bridge - call LiveStreamAnalytics.get() from devtools or your pipeline. */
 (function (global) {
   'use strict';
 

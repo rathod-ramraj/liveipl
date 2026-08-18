@@ -1,5 +1,5 @@
 /**
- * Performance controller — pauses heavy work during playback without changing idle UI.
+ * Performance controller - pauses heavy work during playback without changing idle UI.
  * - ShapeGrid motion off while streaming / on mobile (static grid)
  * - CSS infinite animations paused while streaming
  * - Intersection Observer pauses off-screen section animations
@@ -141,7 +141,7 @@
     }, 400);
   }
 
-  /** Iframe / HLS load — treat as active playback */
+  /** Iframe / HLS load - treat as active playback */
   function onStreamStarted(container) {
     setStreaming(true);
     watchVideoIn(container);

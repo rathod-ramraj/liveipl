@@ -1,5 +1,5 @@
 /**
- * Watch by ID — movies & TV via third-party embed providers.
+ * Watch by ID - movies & TV via third-party embed providers.
  */
 (function (global) {
   'use strict';
@@ -365,7 +365,7 @@
         });
         updateServerSelect();
       })
-      .catch(function () {});
+      .catch(function () { });
   }
 
   var state = {
@@ -430,7 +430,7 @@
     if (!next) {
       finishLoading();
       if (typeof global.showToast === 'function') {
-        global.showToast('No working server found — try another ID');
+        global.showToast('No working server found - try another ID');
       }
       return false;
     }
@@ -520,9 +520,9 @@
   function pageTitleText() {
     var label = state.displayTitle || defaultLabel();
     if (state.isTv) {
-      return label + ' · S' + state.season + 'E' + state.episode + ' — ' + SITE;
+      return label + ' · S' + state.season + 'E' + state.episode + ' - ' + SITE;
     }
-    return label + ' — ' + SITE;
+    return label + ' - ' + SITE;
   }
 
   function overlayTitleText() {
@@ -603,7 +603,7 @@
           var row = data && data.d && data.d[0];
           if (row && row.l) apply(row.l);
         })
-        .catch(function () {});
+        .catch(function () { });
 
       fetch('https://search.imdbot.workers.dev/?tt=' + encodeURIComponent(id))
         .then(function (r) {
@@ -616,7 +616,7 @@
             (data && data['#TITLE']);
           if (t) apply(String(t).trim());
         })
-        .catch(function () {});
+        .catch(function () { });
       return;
     }
 
@@ -632,7 +632,7 @@
         var t = (data && (data.title || data.name)) || '';
         if (t) apply(t);
       })
-      .catch(function () {});
+      .catch(function () { });
   }
 
   function preconnectHosts(url) {
@@ -645,7 +645,7 @@
     return src && src !== 'about:blank' && !/^about:/i.test(src);
   }
 
-  /** Stop every iframe except the movie player — prevents double audio / lip-sync issues. */
+  /** Stop every iframe except the movie player - prevents double audio / lip-sync issues. */
   function silenceOtherEmbeds(keepEl) {
     var list = document.querySelectorAll('iframe');
     for (var i = 0; i < list.length; i++) {
@@ -654,7 +654,7 @@
       try {
         frame.src = 'about:blank';
         frame.removeAttribute('src');
-      } catch (_) {}
+      } catch (_) { }
     }
   }
 
@@ -700,7 +700,7 @@
           videos[i].muted = true;
           videos[i].removeAttribute('src');
           videos[i].load();
-        } catch (_) {}
+        } catch (_) { }
       }
     }
     if (global.PerfController) {
@@ -718,7 +718,7 @@
       try {
         els.iframe.src = 'about:blank';
         els.iframe.removeAttribute('src');
-      } catch (_) {}
+      } catch (_) { }
     }
     if (global.PerfController) {
       if (global.PerfController.setIframeActive) global.PerfController.setIframeActive(false);
@@ -727,7 +727,7 @@
     if (savedLiveChannel && typeof global.setStream === 'function') {
       try {
         global.setStream(savedLiveChannel);
-      } catch (_) {}
+      } catch (_) { }
     }
     savedLiveChannel = null;
   }
@@ -767,7 +767,7 @@
     for (var i = 0; i < list.length; i++) {
       var s = list[i];
       var sel = s.id === state.serverId;
-      var label = s.name + (s.badge ? ' — ' + s.badge : '');
+      var label = s.name + (s.badge ? ' - ' + s.badge : '');
       html +=
         '<option value="' +
         s.id +
@@ -835,7 +835,7 @@
       if (isActiveSrc(currentSrc)) {
         try {
           els.iframe.src = 'about:blank';
-        } catch (_) {}
+        } catch (_) { }
         embedSwapTimer = setTimeout(function () {
           embedSwapTimer = null;
           mountEmbedUrl(url, token);
@@ -1096,7 +1096,7 @@
         clearEmbedFailTimer();
         try {
           localStorage.setItem(VIDSRC_WTF_PROGRESS_KEY, JSON.stringify(payload.data));
-        } catch (_) {}
+        } catch (_) { }
       }
     });
   }

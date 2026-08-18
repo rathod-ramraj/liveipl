@@ -1,10 +1,9 @@
 {
   "$schema": "playup-embed-servers/v1",
   "version": "1.0",
-  "source": "PlayUp liveStream — js/watch-by-id.js",
+  "source": "PlayUp liveStream - js/watch-by-id.js",
   "default_server": "111movies",
   "theme_color_hex": "ff4d6d",
-
   "id_parsing": {
     "description": "Normalize user input to a canonical id before building embed URLs.",
     "accepted_inputs": [
@@ -21,16 +20,17 @@
       "Extract numeric id from TMDB movie/tv URL",
       "Raw tt######## or numeric id also accepted"
     ],
-    "tv_requires": ["season (number)", "episode (number)"]
+    "tv_requires": [
+      "season (number)",
+      "episode (number)"
+    ]
   },
-
   "filtering": {
     "description": "Show only servers that support the parsed id type.",
     "imdb_servers": "server.imdb === true",
     "tmdb_servers": "server.tmdb === true",
-    "both_servers": "imdb && tmdb — shown for either id type"
+    "both_servers": "imdb && tmdb - shown for either id type"
   },
-
   "embed_usage": {
     "html_movie": "<iframe src=\"{movie_url}\" frameborder=\"0\" scrolling=\"no\" allowfullscreen allow=\"autoplay; encrypted-media; fullscreen; picture-in-picture\"></iframe>",
     "html_tv": "<iframe src=\"{tv_url}\" frameborder=\"0\" scrolling=\"no\" allowfullscreen allow=\"autoplay; encrypted-media; fullscreen; picture-in-picture\"></iframe>",
@@ -41,26 +41,46 @@
       "{hex}": "Theme color without # (default ff4d6d)"
     },
     "examples": {
-      "imdb_movie": { "id": "tt30413898", "iframe": "https://111movies.net/movie/tt30413898" },
-      "tmdb_movie": { "id": "666243", "iframe": "https://vidnest.fun/movie/666243" },
-      "imdb_tv": { "id": "tt4052886", "season": 1, "episode": 5, "iframe": "https://vidup.to/tv/tt4052886/1/5?autoPlay=true" },
-      "tmdb_tv": { "id": "94997", "season": 1, "episode": 1, "iframe": "https://vidnest.fun/tv/94997/1/1" }
+      "imdb_movie": {
+        "id": "tt30413898",
+        "iframe": "https://111movies.net/movie/tt30413898"
+      },
+      "tmdb_movie": {
+        "id": "666243",
+        "iframe": "https://vidnest.fun/movie/666243"
+      },
+      "imdb_tv": {
+        "id": "tt4052886",
+        "season": 1,
+        "episode": 5,
+        "iframe": "https://vidup.to/tv/tt4052886/1/5?autoPlay=true"
+      },
+      "tmdb_tv": {
+        "id": "94997",
+        "season": 1,
+        "episode": 1,
+        "iframe": "https://vidnest.fun/tv/94997/1/1"
+      }
     }
   },
-
   "failover": {
     "description": "Optional: probe embed URL before iframe load; on 404/403/410/5xx switch to next server for same id type.",
-    "http_failure_codes": [404, 403, 410, 500, 502, 503],
+    "http_failure_codes": [
+      404,
+      403,
+      410,
+      500,
+      502,
+      503
+    ],
     "track_tried_server_ids": true
   },
-
   "watch_progress": {
     "provider": "vidsrc.wtf",
-    "listener": "window.addEventListener('message', …) — origin https://www.vidsrc.wtf or https://vidsrc.wtf",
+    "listener": "window.addEventListener('message', …) - origin https://www.vidsrc.wtf or https://vidsrc.wtf",
     "event_type": "MEDIA_DATA",
     "storage_key": "vidsrcwtf-Progress"
   },
-
   "servers": [
     {
       "id": "111movies",
@@ -130,7 +150,7 @@
     },
     {
       "id": "vidsrc-wtf-1",
-      "name": "VidSrc.wtf — Multi Server",
+      "name": "VidSrc.wtf - Multi Server",
       "imdb": true,
       "tmdb": true,
       "movie_url": "https://vidsrc.wtf/1/movie/{id}?color={hex}",
@@ -140,7 +160,7 @@
     },
     {
       "id": "vidsrc-wtf-2",
-      "name": "VidSrc.wtf — Multi Language",
+      "name": "VidSrc.wtf - Multi Language",
       "imdb": true,
       "tmdb": true,
       "movie_url": "https://vidsrc.wtf/2/movie/{id}?color={hex}",
@@ -150,7 +170,7 @@
     },
     {
       "id": "vidsrc-wtf-3",
-      "name": "VidSrc.wtf — Multi Embeds",
+      "name": "VidSrc.wtf - Multi Embeds",
       "imdb": true,
       "tmdb": true,
       "movie_url": "https://vidsrc.wtf/3/movie/{id}?color={hex}",
@@ -160,7 +180,7 @@
     },
     {
       "id": "vidsrc-wtf-4",
-      "name": "VidSrc.wtf — Premium",
+      "name": "VidSrc.wtf - Premium",
       "imdb": true,
       "tmdb": true,
       "movie_url": "https://vidsrc.wtf/4/movie/{id}?color={hex}",
@@ -206,17 +226,44 @@
       "notes": "TMDB numeric id only; has next-episode UI"
     }
   ],
-
   "quick_reference": {
     "imdb_only_servers": [],
-    "tmdb_only_servers": ["vidfast", "vidnest", "vidlink", "videasy"],
-    "both_imdb_tmdb": ["111movies", "peachify", "vidup", "vidsrc-fyi", "vidsrc-mov", "vidsrc-wtf-1", "vidsrc-wtf-2", "vidsrc-wtf-3", "vidsrc-wtf-4", "vidking"]
+    "tmdb_only_servers": [
+      "vidfast",
+      "vidnest",
+      "vidlink",
+      "videasy"
+    ],
+    "both_imdb_tmdb": [
+      "111movies",
+      "peachify",
+      "vidup",
+      "vidsrc-fyi",
+      "vidsrc-mov",
+      "vidsrc-wtf-1",
+      "vidsrc-wtf-2",
+      "vidsrc-wtf-3",
+      "vidsrc-wtf-4",
+      "vidking"
+    ]
   },
-
   "integration_snippet": {
     "parse_id": "function parseMediaId(raw) { /* see id_parsing */ }",
     "build_url": "function buildUrl(server, id, isTv, season, episode) { replace {id},{season},{episode},{hex} in movie_url or tv_url }",
     "filter_servers": "servers.filter(s => idKind === 'imdb' ? s.imdb : s.tmdb)",
-    "preconnect_hosts": ["111movies.net", "peachify.top", "vidfast.pro", "vidup.to", "vidsrc.fyi", "vidsrc.mov", "vidsrc.wtf", "www.vidsrc.wtf", "www.vidking.net", "vidnest.fun", "vidlink.pro", "player.videasy.net"]
+    "preconnect_hosts": [
+      "111movies.net",
+      "peachify.top",
+      "vidfast.pro",
+      "vidup.to",
+      "vidsrc.fyi",
+      "vidsrc.mov",
+      "vidsrc.wtf",
+      "www.vidsrc.wtf",
+      "www.vidking.net",
+      "vidnest.fun",
+      "vidlink.pro",
+      "player.videasy.net"
+    ]
   }
 }

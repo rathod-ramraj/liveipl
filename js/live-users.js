@@ -1,5 +1,5 @@
 /**
- * Live Users Counter Client — High-performance, multi-tab deduplicated heartbeat client.
+ * Live Users Counter Client - High-performance, multi-tab deduplicated heartbeat client.
  * Uses 15s heartbeat, BroadcastChannel/localStorage tab coordination, and sendBeacon on unload.
  */
 (function (global) {
@@ -38,11 +38,11 @@
     updateBadges(count);
     try {
       localStorage.setItem(STORAGE_KEY_COUNT, String(count));
-    } catch (_) {}
+    } catch (_) { }
     if (bc) {
       try {
         bc.postMessage({ type: 'COUNT_UPDATE', count: count });
-      } catch (_) {}
+      } catch (_) { }
     }
   }
 
@@ -69,7 +69,7 @@
         navigator.sendBeacon(url);
         return;
       }
-      fetch(url, { method: 'GET', keepalive: true, credentials: 'omit' }).catch(function () {});
+      fetch(url, { method: 'GET', keepalive: true, credentials: 'omit' }).catch(function () { });
       return;
     }
 

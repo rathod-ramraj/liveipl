@@ -1,5 +1,5 @@
 /**
- * Vercel Edge Middleware — block AI crawlers and common scraper user-agents.
+ * Vercel Edge Middleware - block AI crawlers and common scraper user-agents.
  */
 const ALLOWED_BOTS = [/Googlebot/i, /Bingbot/i, /DuckDuckBot/i, /Applebot(?!-Extended)/i];
 
@@ -28,7 +28,7 @@ function isBlockedUA(ua) {
 export default function middleware(request) {
   const ua = request.headers.get('user-agent') || '';
   if (isBlockedUA(ua)) {
-    return new Response('Access denied — automated access is not permitted.', {
+    return new Response('Access denied - automated access is not permitted.', {
       status: 403,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
     });

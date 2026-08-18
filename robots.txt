@@ -1,4 +1,4 @@
-# PlayUp robots.txt — Free Live Cricket Streaming
+# PlayUp robots.txt - Free Live Cricket Streaming
 # Allow Google, Bing, and search engines to index public cricket pages
 User-agent: Googlebot
 Allow: /

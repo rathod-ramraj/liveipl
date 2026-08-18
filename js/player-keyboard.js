@@ -1,5 +1,5 @@
 /**
- * Player keyboard UX — isolated from core for thinner main bundle / readability.
+ * Player keyboard UX - isolated from core for thinner main bundle / readability.
  */
 (function (global) {
   'use strict';
@@ -118,7 +118,7 @@
           var video = elRatio.querySelector('video');
           if (video) {
             if (video.paused) {
-              video.play().catch(function () {});
+              video.play().catch(function () { });
               showToast && showToast('Play');
             } else {
               video.pause();
@@ -129,7 +129,7 @@
             if (ifr && ifr.contentWindow) {
               try {
                 ifr.contentWindow.postMessage({ action: 'toggle' }, '*');
-              } catch (_) {}
+              } catch (_) { }
             }
             showToast && showToast('Play / Pause');
           }
@@ -183,7 +183,7 @@
             vid5.currentTime = Math.min(vid5.duration, vid5.currentTime + 10);
             showToast && showToast('+10s');
           } else {
-            showToast && showToast('Live — no forward seek');
+            showToast && showToast('Live - no forward seek');
           }
           return;
         }
@@ -195,7 +195,7 @@
             vid6.currentTime = Math.max(0, vid6.currentTime - 10);
             showToast && showToast('-10s');
           } else {
-            showToast && showToast('Live — DVR when available');
+            showToast && showToast('Live - DVR when available');
           }
           return;
         }
