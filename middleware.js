@@ -1,7 +1,7 @@
 /**
  * Vercel Edge Middleware - block AI crawlers and common scraper user-agents.
  */
-const ALLOWED_BOTS = [/Googlebot/i, /Bingbot/i, /DuckDuckBot/i, /Applebot(?!-Extended)/i];
+const ALLOWED_BOTS = [/Googlebot/i, /Googlebot-Image/i, /Bingbot/i, /DuckDuckBot/i, /Applebot(?!-Extended)/i];
 
 const BLOCKED_UA = [
   /GPTBot/i, /ChatGPT-User/i, /ClaudeBot/i, /Claude-Web/i, /anthropic-ai/i,
@@ -17,7 +17,7 @@ const BLOCKED_UA = [
 ];
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.png).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon\\.png|favicon\\.ico).*)'],
 };
 
 function isBlockedUA(ua) {
