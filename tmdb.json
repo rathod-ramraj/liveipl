@@ -33,8 +33,33 @@
       "tvPattern": "https://vidlink.pro/tv/{tmdbId}/{season}/{episode}?primaryColor=FF0000&secondaryColor=a2a2a2&iconColor=eefdec&icons=default&player=default&title=true&poster=true&autoplay=true&nextbutton=false"
     },
     {
-      "name": "vidfast",
+      "name": "vidzee",
       "label": "Main 5",
+      "imdbSupported": false,
+      "tmdbSupported": true,
+      "moviePattern": "https://player.vidzee.wtf/embed/movie/{tmdbId}",
+      "tvPattern": "https://player.vidzee.wtf/embed/tv/{tmdbId}/{season}/{episode}"
+    },
+    {
+      "name": "vidzee_v2",
+      "label": "Main 6",
+      "imdbSupported": false,
+      "tmdbSupported": true,
+      "moviePattern": "https://player.vidzee.wtf/v2/embed/movie/{tmdbId}",
+      "tvPattern": "https://player.vidzee.wtf/v2/embed/tv/{tmdbId}/{season}/{episode}"
+    },
+    {
+      "name": "vidy",
+      "label": "Main 7",
+      "imdbSupported": false,
+      "tmdbSupported": true,
+      "moviePattern": "https://www.vidy.st/movie/{tmdbId}",
+      "tvPattern": "https://www.vidy.st/tv/{tmdbId}/{season}/{episode}",
+      "animePattern": "https://www.vidy.st/anime/{anilistId}/{episode}"
+    },
+    {
+      "name": "vidfast",
+      "label": "Main 8",
       "imdbSupported": true,
       "tmdbSupported": true,
       "moviePattern": "https://vidfast.pro/movie/{tmdbId}?autoPlay=true",
@@ -42,7 +67,7 @@
     },
     {
       "name": "111movies",
-      "label": "Main 6",
+      "label": "Main 9",
       "imdbSupported": true,
       "tmdbSupported": true,
       "moviePattern": "https://111movies.net/movie/{tmdbId}",
@@ -50,7 +75,7 @@
     },
     {
       "name": "vidcore",
-      "label": "Main 7",
+      "label": "Main 10",
       "imdbSupported": true,
       "tmdbSupported": true,
       "moviePattern": "https://vidcore.net/movie/{tmdbId}?autoPlay=true&theme={hex}",
@@ -58,7 +83,7 @@
     },
     {
       "name": "vidnest",
-      "label": "Main 8",
+      "label": "Main 11",
       "imdbSupported": false,
       "tmdbSupported": true,
       "moviePattern": "https://vidnest.fun/movie/{tmdbId}",
