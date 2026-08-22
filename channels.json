@@ -66,11 +66,20 @@
     },
     {
       "id": "cricbuzz",
-      "name": "Cricbuzz",
+      "name": "Cricbuzz 1",
       "subtitle": "Cricbuzz Live",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://1freecdn.xyz/hembedplayer/csstream1/1/960/540",
+      "active": true
+    },
+    {
+      "id": "cricbuzz2",
+      "name": "Cricbuzz 2",
+      "subtitle": "Cricbuzz Live",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://1freecdn.xyz/hembedplayer/csstream4/1/960/540",
       "active": true
     },
         {
