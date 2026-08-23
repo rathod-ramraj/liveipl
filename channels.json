@@ -84,11 +84,20 @@
     },
         {
       "id": "willow",
-      "name": "",
+      "name": "willow",
       "subtitle": "Willow Live",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://dlhd.st/stream/stream-346.php",
+      "active": true
+    },
+    {
+      "id": "willow2",
+      "name": "willow 2",
+      "subtitle": "Willow Live",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://allrounder3-0.pages.dev/cricket/willow",
       "active": true
     },
     {
