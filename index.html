@@ -190,39 +190,48 @@
       });
     }
 
-    function fetchCineArenaMatches() {
-      var directUrl = 'https://livematches.cinearena08.workers.dev/?key=cinearena_live_2024';
-      var proxies = [
-        directUrl,
-        'https://api.allorigins.win/get?url=' + encodeURIComponent(directUrl),
-        'https://corsproxy.io/?' + encodeURIComponent(directUrl),
-        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(directUrl)
-      ];
-
-      function tryProxy(idx) {
-        if (idx >= proxies.length) return Promise.resolve({});
-        var url = proxies[idx];
-        return fetchWithTimeout(url, 3500)
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
-            var data = d;
-            if (d && d.contents) {
-              try { data = typeof d.contents === 'string' ? JSON.parse(d.contents) : d.contents; } catch (_) { }
-            }
-            if (data && typeof data === 'object' && !data.error && Object.keys(data).length > 0) {
-              return data;
-            }
-            return tryProxy(idx + 1);
-          })
-          .catch(function () {
-            return tryProxy(idx + 1);
-          });
-      }
-
-      return tryProxy(0);
+    function fetchCricketMatches() {
+      return fetchWithTimeout('/api/cricket', 3500)
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d && d.success && Array.isArray(d.matches)) return d.matches;
+          if (Array.isArray(d)) return d;
+          return null;
+        })
+        .catch(function () {
+          return fetchWithTimeout('https://ondemand.st/papi/matches/all', 3500)
+            .then(function (r) { return r.json(); })
+            .then(function (matches) {
+              if (!Array.isArray(matches)) return null;
+              return matches.filter(function (m) {
+                var cat = (m.category || '').toLowerCase();
+                var lgn = (m.league || '').toLowerCase();
+                var ttl = (m.title || '').toLowerCase();
+                return cat === 'cricket' || lgn.indexOf('cricket') !== -1 || ttl.indexOf('cricket') !== -1;
+              }).map(function (m) {
+                var streams = [];
+                if (m.embedUrl) streams.push({ id: m.id, name: m.title || 'Main Stream', iframe: m.embedUrl });
+                if (m.substreams && Array.isArray(m.substreams)) {
+                  m.substreams.forEach(function (sub) {
+                    if (sub.iframe) streams.push({ id: sub.id || (m.id + '-' + sub.name), name: sub.name || 'Stream', iframe: sub.iframe });
+                  });
+                }
+                return {
+                  id: m.id,
+                  title: m.title,
+                  league: m.league || 'Cricket',
+                  status: m.status || 'live',
+                  poster: m.poster || '',
+                  teams: m.teams || {},
+                  streams: streams
+                };
+              });
+            })
+            .catch(function () { return null; });
+        });
     }
 
-    window._cineFetch = fetchCineArenaMatches();
+    window._cricketFetch = fetchCricketMatches();
     window._chFetch = fetchWithTimeout('https://allrounderid2.pages.dev/id.json', 3500)
       .then(function (r) { return r.json(); })
       .catch(function () { return {}; });
@@ -3965,24 +3974,22 @@
       'prime-eng': 'prime_eng',
     };
 
-    function renderLiveMatches(cineData) {
+    function renderLiveMatches(cricketMatches) {
       var liveGridEl = document.getElementById('liveMatchesGrid');
       var liveSecEl = document.getElementById('liveMatchesSection');
       var liveDivEl = document.getElementById('liveMatchesDivider');
       var dirGridEl = document.getElementById('streamDirectoryGrid');
 
-      if (!cineData || typeof cineData !== 'object' || cineData.error) return;
-      var matchKeys = Object.keys(cineData);
-      if (matchKeys.length === 0 || !liveGridEl || !liveSecEl) return;
+      if (!Array.isArray(cricketMatches) || cricketMatches.length === 0 || !liveGridEl || !liveSecEl) return;
+      window._latestCricketMatches = cricketMatches;
 
       liveGridEl.innerHTML = '';
       liveSecEl.style.display = '';
       if (dirGridEl) dirGridEl.classList.add('has-matches');
       if (liveDivEl) liveDivEl.style.display = '';
 
-      matchKeys.forEach(function (matchTitle, mIdx) {
-        var items = cineData[matchTitle];
-        if (!Array.isArray(items)) return;
+      cricketMatches.forEach(function (match, mIdx) {
+        if (!match || !match.title || !Array.isArray(match.streams) || match.streams.length === 0) return;
 
         var card = document.createElement('div');
         card.className = 'match-card';
@@ -3992,11 +3999,11 @@
 
         var cardTitle = document.createElement('div');
         cardTitle.className = 'match-card-title';
-        cardTitle.textContent = matchTitle;
+        cardTitle.textContent = match.title;
 
         var cardBadge = document.createElement('div');
         cardBadge.className = 'match-card-badge';
-        cardBadge.textContent = 'LIVE';
+        cardBadge.textContent = (match.status || 'LIVE').toUpperCase();
 
         cardHeader.appendChild(cardTitle);
         cardHeader.appendChild(cardBadge);
@@ -4004,19 +4011,19 @@
         var streamsContainer = document.createElement('div');
         streamsContainer.className = 'match-card-streams';
 
-        items.forEach(function (item, iIdx) {
-          if (item && item.url && item.channel_name && !/time\s*:/i.test(item.channel_name)) {
-            var cleanName = item.channel_name.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim();
-            var cid = 'cine_dyn_' + mIdx + '_' + iIdx;
+        match.streams.forEach(function (stream, sIdx) {
+          if (stream && stream.iframe) {
+            var cleanName = stream.name || ('Stream ' + (sIdx + 1));
+            var cid = 'cricket_dyn_' + (match.id || mIdx) + '_' + sIdx;
 
             ALLOWED.add(cid);
-            META[cid] = { name: cleanName || 'Live Stream', sub: matchTitle };
+            META[cid] = { name: cleanName, sub: match.title };
 
             var chObj = {
               id: cid,
-              name: cleanName || 'Live Stream',
+              name: cleanName,
               type: 'iframe',
-              iframeSrc: item.url
+              iframeSrc: stream.iframe
             };
             var exists = false;
             for (var cIdx = 0; cIdx < channels.length; cIdx++) {
@@ -4029,9 +4036,16 @@
             btn.className = 'ch-btn match-stream-btn';
             btn.dataset.id = cid;
             btn.setAttribute('aria-pressed', 'false');
-            btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + (cleanName || 'Stream ' + (iIdx + 1)) + '</span>';
+            btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + cleanName + '</span>';
             btn.addEventListener('click', function () {
+              var chExists = false;
+              for (var k = 0; k < channels.length; k++) {
+                if (channels[k].id === cid) { chExists = true; channels[k] = chObj; break; }
+              }
+              if (!chExists) channels.push(chObj);
+
               switchChannel(cid);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             }, { passive: true });
             streamsContainer.appendChild(btn);
           }
@@ -4045,8 +4059,8 @@
       });
     }
 
-    if (window._cineFetch) {
-      window._cineFetch.then(renderLiveMatches).catch(function () { });
+    if (window._cricketFetch) {
+      window._cricketFetch.then(renderLiveMatches).catch(function () { });
     }
 
     Promise.all([window._chFetch, window._channelsJsonFetch]).then(function (results) {
@@ -4102,6 +4116,9 @@
       }
 
       channels = sortChannels(normalized);
+      if (window._latestCricketMatches) {
+        renderLiveMatches(window._latestCricketMatches);
+      }
 
       if (channels.length > 0) {
         renderChannelGrid(channels);
@@ -4120,6 +4137,9 @@
         { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
       ];
       channels = sortChannels(fallback);
+      if (window._latestCricketMatches) {
+        renderLiveMatches(window._latestCricketMatches);
+      }
       renderChannelGrid(channels);
       if (!cur) switchChannel('eng', true);
     });

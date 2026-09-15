@@ -1,16 +1,14 @@
-const activeSessions = new Map();
-const INACTIVE_TIMEOUT_MS = 45000; // 45 seconds TTL
+const fallbackMap = new Map();
+const FALLBACK_TTL_MS = 45000;
 
-function cleanupExpired(now) {
-  for (const [hash, lastSeen] of activeSessions.entries()) {
-    if (now - lastSeen > INACTIVE_TIMEOUT_MS) {
-      activeSessions.delete(hash);
-    }
+function cleanupFallback(now) {
+  for (const [key, time] of fallbackMap.entries()) {
+    if (now - time > FALLBACK_TTL_MS) fallbackMap.delete(key);
   }
 }
 
 export async function onRequest(context) {
-  const { request } = context;
+  const { request, env } = context;
   const url = new URL(request.url);
   let action = url.searchParams.get('action');
   let sid = url.searchParams.get('sid') || '';
@@ -39,34 +37,54 @@ export async function onRequest(context) {
   }
 
   try {
-    const rawIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || '127.0.0.1';
-
-    const dateKey = new Date().toISOString().slice(0, 10);
-    const salt = `playup_salt_${dateKey}`;
-    const encoder = new TextEncoder();
-    const data = encoder.encode(`${rawIp}_${sid}_${salt}`);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const sessionHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
-
+    const kv = env ? env.LIVE_USERS_KV : null;
     const now = Date.now();
 
-    if (action === 'leave') {
-      activeSessions.delete(sessionHash);
-    } else {
-      activeSessions.set(sessionHash, now);
+    if (kv) {
+      const currentKey = sid ? 'session:' + sid : null;
+
+      if (currentKey) {
+        if (action === 'leave') {
+          await kv.delete(currentKey);
+        } else {
+          await kv.put(currentKey, String(now), { expirationTtl: 60 });
+        }
+      }
+
+      const list = await kv.list({ prefix: 'session:' });
+      const keys = list && Array.isArray(list.keys) ? list.keys.map(k => k.name) : [];
+      let activeCount = keys.length;
+
+      if (currentKey) {
+        const hasCurrent = keys.includes(currentKey);
+        if (action === 'leave' && hasCurrent) {
+          activeCount = Math.max(0, activeCount - 1);
+        } else if (action !== 'leave' && !hasCurrent) {
+          activeCount = activeCount + 1;
+        }
+      }
+
+      return new Response(JSON.stringify({ activeUsers: activeCount }), {
+        status: 200,
+        headers
+      });
     }
 
-    cleanupExpired(now);
+    if (sid) {
+      if (action === 'leave') {
+        fallbackMap.delete(sid);
+      } else {
+        fallbackMap.set(sid, now);
+      }
+    }
+    cleanupFallback(now);
 
-    const activeCount = Math.max(1, activeSessions.size);
-
-    return new Response(JSON.stringify({ activeUsers: activeCount }), {
+    return new Response(JSON.stringify({ activeUsers: fallbackMap.size }), {
       status: 200,
       headers
     });
   } catch (err) {
-    return new Response(JSON.stringify({ activeUsers: Math.max(1, activeSessions.size) }), {
+    return new Response(JSON.stringify({ activeUsers: 0 }), {
       status: 200,
       headers
     });

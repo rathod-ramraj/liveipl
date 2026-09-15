@@ -1,6 +1,6 @@
 /**
- * Live Users Counter Client - High-performance, cross-device multi-tab deduplicated heartbeat client.
- * Supports active mobile & desktop sessions, 15s heartbeat, leader election, and 45s server TTL.
+ * Live Users Counter Client - Persistent global presence client.
+ * Registers unique session ID on page load, sends 15s heartbeats, and sends leave signal on unload.
  */
 (function (global) {
   'use strict';
@@ -11,7 +11,7 @@
   var STORAGE_KEY_COUNT = 'playup_live_count';
   var STORAGE_KEY_LEADER = 'playup_leader_tab';
   var STORAGE_KEY_LEADER_TIME = 'playup_leader_time';
-  var STORAGE_KEY_DEVICE_SID = 'playup_device_sid';
+  var SESSION_KEY_SID = 'playup_session_sid';
 
   var timerId = null;
   var lastCount = 0;
@@ -21,10 +21,10 @@
   function getSessionId() {
     var sid = null;
     try {
-      sid = localStorage.getItem(STORAGE_KEY_DEVICE_SID);
+      sid = sessionStorage.getItem(SESSION_KEY_SID);
       if (!sid) {
-        sid = 'd_' + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-        localStorage.setItem(STORAGE_KEY_DEVICE_SID, sid);
+        sid = 's_' + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+        sessionStorage.setItem(SESSION_KEY_SID, sid);
       }
     } catch (_) {
       sid = TAB_ID;
@@ -33,12 +33,12 @@
   }
 
   function formatCount(num) {
-    if (!num || isNaN(num) || num <= 0) return '1 Online';
+    if (typeof num !== 'number' || isNaN(num) || num < 0) num = 0;
     return (num >= 1000 ? (num / 1000).toFixed(1) + 'k' : num.toLocaleString()) + ' Online';
   }
 
   function updateBadges(count) {
-    if (!count || count <= 0) count = 1;
+    if (typeof count !== 'number' || isNaN(count)) count = 0;
     lastCount = count;
     var formatted = formatCount(count);
 
@@ -96,7 +96,7 @@
 
     if (!checkIsLeader()) {
       var cached = parseInt(localStorage.getItem(STORAGE_KEY_COUNT) || '0', 10);
-      if (cached > 0) updateBadges(cached);
+      if (!isNaN(cached)) updateBadges(cached);
       return;
     }
 
@@ -115,24 +115,7 @@
         }
       })
       .catch(function () {
-        if (url.indexOf(API_URL) === 0) {
-          fetch('https://playup.vercel.app/api/live-users?sid=' + encodeURIComponent(sid), {
-            method: 'GET',
-            headers: { 'Cache-Control': 'no-cache' },
-            credentials: 'omit',
-          })
-            .then(function (res) { return res.json(); })
-            .then(function (data) {
-              if (data && typeof data.activeUsers === 'number') {
-                broadcastCount(data.activeUsers);
-              }
-            })
-            .catch(function () {
-              if (lastCount > 0) updateBadges(lastCount);
-            });
-        } else if (lastCount > 0) {
-          updateBadges(lastCount);
-        }
+        if (lastCount >= 0) updateBadges(lastCount);
       });
   }
 
@@ -142,7 +125,7 @@
         if (e.data && e.data.type === 'COUNT_UPDATE' && typeof e.data.count === 'number') {
           updateBadges(e.data.count);
         } else if (e.data && e.data.type === 'LEADER_LEFT') {
-          setTimeout(function () { sendHeartbeat(); }, 300);
+          setTimeout(function () { sendHeartbeat(); }, 200);
         }
       };
     }
@@ -150,7 +133,7 @@
     window.addEventListener('storage', function (e) {
       if (e.key === STORAGE_KEY_COUNT && e.newValue) {
         var count = parseInt(e.newValue, 10);
-        if (count > 0) updateBadges(count);
+        if (!isNaN(count)) updateBadges(count);
       }
     });
 
