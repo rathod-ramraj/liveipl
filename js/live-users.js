@@ -65,16 +65,19 @@
     var url = API_URL;
     if (action === 'leave') {
       url += '?action=leave';
+      var payload = JSON.stringify({ action: 'leave' });
       if (navigator.sendBeacon) {
-        navigator.sendBeacon(url);
-        return;
+        try {
+          var blob = new Blob([payload], { type: 'application/json' });
+          navigator.sendBeacon(url, blob);
+          return;
+        } catch (_) { }
       }
-      fetch(url, { method: 'GET', keepalive: true, credentials: 'omit' }).catch(function () { });
+      fetch(url, { method: 'POST', body: payload, keepalive: true, credentials: 'omit' }).catch(function () { });
       return;
     }
 
     if (!checkIsLeader()) {
-      // Non-leader tab: display cached count
       var cached = parseInt(localStorage.getItem(STORAGE_KEY_COUNT) || '0', 10);
       if (cached > 0) updateBadges(cached);
       return;
@@ -85,14 +88,34 @@
       headers: { 'Cache-Control': 'no-cache' },
       credentials: 'omit',
     })
-      .then(function (res) { return res.json(); })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
       .then(function (data) {
         if (data && typeof data.activeUsers === 'number') {
           broadcastCount(data.activeUsers);
         }
       })
       .catch(function () {
-        if (lastCount > 0) updateBadges(lastCount);
+        if (url === API_URL) {
+          fetch('https://playup.vercel.app/api/live-users', {
+            method: 'GET',
+            headers: { 'Cache-Control': 'no-cache' },
+            credentials: 'omit',
+          })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+              if (data && typeof data.activeUsers === 'number') {
+                broadcastCount(data.activeUsers);
+              }
+            })
+            .catch(function () {
+              if (lastCount > 0) updateBadges(lastCount);
+            });
+        } else if (lastCount > 0) {
+          updateBadges(lastCount);
+        }
       });
   }
 
@@ -101,6 +124,8 @@
       bc.onmessage = function (e) {
         if (e.data && e.data.type === 'COUNT_UPDATE' && typeof e.data.count === 'number') {
           updateBadges(e.data.count);
+        } else if (e.data && e.data.type === 'LEADER_LEFT') {
+          setTimeout(function () { sendHeartbeat(); }, 300);
         }
       };
     }
@@ -112,17 +137,22 @@
       }
     });
 
-    // Send leave signal on tab close/unload if leader
     window.addEventListener('pagehide', function () {
+      sendHeartbeat('leave');
       if (isLeader) {
-        sendHeartbeat('leave');
         localStorage.removeItem(STORAGE_KEY_LEADER);
+        localStorage.removeItem(STORAGE_KEY_LEADER_TIME);
+        if (bc) {
+          try { bc.postMessage({ type: 'LEADER_LEFT' }); } catch (_) { }
+        }
       }
     });
 
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible') {
         sendHeartbeat();
+      } else if (document.visibilityState === 'hidden') {
+        sendHeartbeat('leave');
       }
     });
   }

@@ -88,12 +88,12 @@
       "subtitle": "Willow Live",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://dlhd.st/stream/stream-346.php",
+      "streamUrl": "https://embedindia.st/embed/247-willow",
       "active": true
     },
     {
       "id": "willow2",
-      "name": "willow 2",
+      "name": "Willow 2",
       "subtitle": "Willow Live",
       "category": "Live Channel",
       "type": "iframe",
