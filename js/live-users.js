@@ -1,6 +1,6 @@
 /**
- * Live Users Counter Client - High-performance, multi-tab deduplicated heartbeat client.
- * Uses 15s heartbeat, BroadcastChannel/localStorage tab coordination, and sendBeacon on unload.
+ * Live Users Counter Client - High-performance, cross-device multi-tab deduplicated heartbeat client.
+ * Supports active mobile & desktop sessions, 15s heartbeat, leader election, and 45s server TTL.
  */
 (function (global) {
   'use strict';
@@ -11,11 +11,26 @@
   var STORAGE_KEY_COUNT = 'playup_live_count';
   var STORAGE_KEY_LEADER = 'playup_leader_tab';
   var STORAGE_KEY_LEADER_TIME = 'playup_leader_time';
+  var STORAGE_KEY_DEVICE_SID = 'playup_device_sid';
 
   var timerId = null;
   var lastCount = 0;
   var isLeader = false;
   var bc = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('playup_live_users') : null;
+
+  function getSessionId() {
+    var sid = null;
+    try {
+      sid = localStorage.getItem(STORAGE_KEY_DEVICE_SID);
+      if (!sid) {
+        sid = 'd_' + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+        localStorage.setItem(STORAGE_KEY_DEVICE_SID, sid);
+      }
+    } catch (_) {
+      sid = TAB_ID;
+    }
+    return sid;
+  }
 
   function formatCount(num) {
     if (!num || isNaN(num) || num <= 0) return '1 Online';
@@ -62,10 +77,12 @@
   }
 
   function sendHeartbeat(action) {
-    var url = API_URL;
+    var sid = getSessionId();
+    var url = API_URL + '?sid=' + encodeURIComponent(sid);
+
     if (action === 'leave') {
-      url += '?action=leave';
-      var payload = JSON.stringify({ action: 'leave' });
+      url += '&action=leave';
+      var payload = JSON.stringify({ action: 'leave', sid: sid });
       if (navigator.sendBeacon) {
         try {
           var blob = new Blob([payload], { type: 'application/json' });
@@ -98,8 +115,8 @@
         }
       })
       .catch(function () {
-        if (url === API_URL) {
-          fetch('https://playup.vercel.app/api/live-users', {
+        if (url.indexOf(API_URL) === 0) {
+          fetch('https://playup.vercel.app/api/live-users?sid=' + encodeURIComponent(sid), {
             method: 'GET',
             headers: { 'Cache-Control': 'no-cache' },
             credentials: 'omit',
@@ -138,8 +155,8 @@
     });
 
     window.addEventListener('pagehide', function () {
-      sendHeartbeat('leave');
       if (isLeader) {
+        sendHeartbeat('leave');
         localStorage.removeItem(STORAGE_KEY_LEADER);
         localStorage.removeItem(STORAGE_KEY_LEADER_TIME);
         if (bc) {
@@ -151,8 +168,6 @@
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible') {
         sendHeartbeat();
-      } else if (document.visibilityState === 'hidden') {
-        sendHeartbeat('leave');
       }
     });
   }

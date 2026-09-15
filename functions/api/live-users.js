@@ -1,5 +1,5 @@
 const activeSessions = new Map();
-const INACTIVE_TIMEOUT_MS = 25000;
+const INACTIVE_TIMEOUT_MS = 45000; // 45 seconds TTL
 
 function cleanupExpired(now) {
   for (const [hash, lastSeen] of activeSessions.entries()) {
@@ -13,13 +13,15 @@ export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
   let action = url.searchParams.get('action');
+  let sid = url.searchParams.get('sid') || '';
 
-  if (!action && request.method === 'POST') {
+  if (request.method === 'POST') {
     try {
       const text = await request.text();
       if (text) {
         const body = JSON.parse(text);
-        action = body.action;
+        if (!action && body.action) action = body.action;
+        if (!sid && body.sid) sid = body.sid;
       }
     } catch (_) {}
   }
@@ -42,17 +44,17 @@ export async function onRequest(context) {
     const dateKey = new Date().toISOString().slice(0, 10);
     const salt = `playup_salt_${dateKey}`;
     const encoder = new TextEncoder();
-    const data = encoder.encode(`${rawIp}_${salt}`);
+    const data = encoder.encode(`${rawIp}_${sid}_${salt}`);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const ipHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+    const sessionHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
 
     const now = Date.now();
 
     if (action === 'leave') {
-      activeSessions.delete(ipHash);
+      activeSessions.delete(sessionHash);
     } else {
-      activeSessions.set(ipHash, now);
+      activeSessions.set(sessionHash, now);
     }
 
     cleanupExpired(now);

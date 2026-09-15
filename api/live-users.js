@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
 const activeSessions = new Map();
-const INACTIVE_TIMEOUT_MS = 25000;
+const INACTIVE_TIMEOUT_MS = 45000; // 45 seconds TTL
 
 function getClientIp(req) {
   const cfIp = req.headers['cf-connecting-ip'];
@@ -18,10 +18,10 @@ function getClientIp(req) {
   return req.socket?.remoteAddress || '127.0.0.1';
 }
 
-function hashIp(ip) {
+function hashSession(ip, sid) {
   const dateKey = new Date().toISOString().slice(0, 10);
   const salt = process.env.SESSION_SALT || `playup_salt_${dateKey}`;
-  return crypto.createHash('sha256').update(`${ip}_${salt}`).digest('hex').substring(0, 16);
+  return crypto.createHash('sha256').update(`${ip}_${sid}_${salt}`).digest('hex').substring(0, 16);
 }
 
 function cleanupExpired(now) {
@@ -45,21 +45,28 @@ export default function handler(req, res) {
   try {
     const now = Date.now();
     const rawIp = getClientIp(req);
-    const ipHash = hashIp(rawIp);
-
     let action = req.query?.action;
-    if (!action && req.body) {
+    let sid = req.query?.sid || '';
+
+    if (req.body) {
       if (typeof req.body === 'string') {
-        try { action = JSON.parse(req.body).action; } catch (_) {}
-      } else if (req.body.action) {
-        action = req.body.action;
+        try {
+          const parsed = JSON.parse(req.body);
+          if (!action && parsed.action) action = parsed.action;
+          if (!sid && parsed.sid) sid = parsed.sid;
+        } catch (_) {}
+      } else {
+        if (!action && req.body.action) action = req.body.action;
+        if (!sid && req.body.sid) sid = req.body.sid;
       }
     }
 
+    const sessionHash = hashSession(rawIp, sid);
+
     if (action === 'leave') {
-      activeSessions.delete(ipHash);
+      activeSessions.delete(sessionHash);
     } else {
-      activeSessions.set(ipHash, now);
+      activeSessions.set(sessionHash, now);
     }
 
     cleanupExpired(now);
