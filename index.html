@@ -3170,8 +3170,8 @@
 
     var ALLOWED = new Set([
       'eng', 'main2', /* 'starhindi','star_hindi','hindi', */ 'zee', /* 'crichd','star','sonyliv',
-  'star_tamil','star1tel', */ 'willowsports', 'main3', 'fifa_hindi', 'willow_cricbuzz', 'skysports_cricket', 'willow', 'fc1', 'hindi_mobile', 'sony_ten_eng', 'skysports', 'willow_ios', /* 'willow2','skynz','kayohin','fox501',
-  'tnt1','tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
+  'star_tamil','star1tel', */ 'willowsports', 'main3', 'fifa_hindi', 'willow_cricbuzz', 'skysports_cricket', 'willow', 'fc1', 'hindi_mobile', 'sony_ten_eng', 'skysports', 'willow_ios', 'tnt1', 'tnt sports 1', /* 'willow2','skynz','kayohin','fox501',
+  'tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
     ]);
 
     var SITE_TITLE = 'PlayUp | Live Cricket, Movies & Series';
@@ -3255,6 +3255,7 @@
 
     function cleanChannelName(name) {
       if (!name) return name;
+      if (/tnt\s*sports/i.test(name)) return name;
       return name
         .replace(/\bHD\s+1\b/gi, 'HD')
         .replace(/\b1\s+HD\b/gi, 'HD')
@@ -3972,6 +3973,11 @@
       'willow-sports': 'willowsports',
       'willowextra': 'willowsports',
       'prime-eng': 'prime_eng',
+      'tnt sports 1': 'tnt1',
+      'tnt_sports_1': 'tnt1',
+      'tnt-sports-1': 'tnt1',
+      'tntsports1': 'tnt1',
+      'tnt 1': 'tnt1',
     };
 
     function renderLiveMatches(cricketMatches) {
@@ -4073,13 +4079,24 @@
       if (jsonList.length > 0) {
         jsonList.forEach(function (c) {
           if (c && c.id && c.active !== false) {
-            ALLOWED.add(c.id);
-            META[c.id] = {
+            var rawId = String(c.id).trim();
+            var lowerId = rawId.toLowerCase();
+            var canonId = aliasMap[lowerId] || lowerId;
+
+            ALLOWED.add(rawId);
+            ALLOWED.add(lowerId);
+            ALLOWED.add(canonId);
+
+            var metaObj = {
               name: c.name || c.id,
               sub: c.subtitle || c.category || 'Live Channel'
             };
+            META[rawId] = metaObj;
+            META[lowerId] = metaObj;
+            META[canonId] = metaObj;
+
             localChannels.push({
-              id: c.id,
+              id: canonId,
               name: c.name || c.id,
               type: c.type || 'iframe',
               iframeSrc: c.streamUrl || c.iframeSrc,
