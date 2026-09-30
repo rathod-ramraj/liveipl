@@ -47,6 +47,16 @@
       "active": true
     },
     {
+      "id": "TNT SPORTS 1",
+      "name": "TNT SPORTS 1",
+      "subtitle": "TNT SPORTS 1",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://allrounder3-0.pages.dev/cricket/tnt",
+      "active": true
+
+    },
+    {
       "id": "willowsports",
       "name": "Main 6",
       "subtitle": "Main 6",

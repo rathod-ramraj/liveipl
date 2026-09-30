@@ -1,33 +1,38 @@
 /**
- * Live Users Counter Client - Persistent global presence client.
- * Registers unique session ID on page load, sends 15s heartbeats, and sends leave signal on unload.
+ * Live Users Counter Client - Unique browser session presence tracking.
+ * Uses persistent browser session ID, multi-tab sync, and periodic heartbeats.
  */
 (function (global) {
   'use strict';
 
-  var HEARTBEAT_INTERVAL = 15000; // 15 seconds
+  var HEARTBEAT_INTERVAL = 12000; // 12 seconds
   var API_URL = '/api/live-users';
   var TAB_ID = 'tab_' + Math.random().toString(36).substring(2, 9);
+  var STORAGE_KEY_SID = 'playup_browser_sid';
+  var STORAGE_KEY_LAST_SEEN = 'playup_browser_last_seen';
   var STORAGE_KEY_COUNT = 'playup_live_count';
   var STORAGE_KEY_LEADER = 'playup_leader_tab';
   var STORAGE_KEY_LEADER_TIME = 'playup_leader_time';
-  var SESSION_KEY_SID = 'playup_session_sid';
+  var SESSION_TTL = 30 * 60 * 1000; // 30 minutes inactivity resets session ID
 
   var timerId = null;
   var lastCount = 0;
   var isLeader = false;
   var bc = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('playup_live_users') : null;
 
-  function getSessionId() {
+  function getBrowserSessionId() {
+    var now = Date.now();
     var sid = null;
     try {
-      sid = sessionStorage.getItem(SESSION_KEY_SID);
-      if (!sid) {
-        sid = 's_' + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-        sessionStorage.setItem(SESSION_KEY_SID, sid);
+      var lastSeen = parseInt(localStorage.getItem(STORAGE_KEY_LAST_SEEN) || '0', 10);
+      sid = localStorage.getItem(STORAGE_KEY_SID);
+      if (!sid || isNaN(lastSeen) || (now - lastSeen > SESSION_TTL)) {
+        sid = 's_' + Math.random().toString(36).substring(2, 11) + now.toString(36);
+        localStorage.setItem(STORAGE_KEY_SID, sid);
       }
+      localStorage.setItem(STORAGE_KEY_LAST_SEEN, String(now));
     } catch (_) {
-      sid = TAB_ID;
+      sid = 's_' + Math.random().toString(36).substring(2, 11) + now.toString(36);
     }
     return sid;
   }
@@ -66,7 +71,7 @@
     var currentLeader = localStorage.getItem(STORAGE_KEY_LEADER);
     var leaderTime = parseInt(localStorage.getItem(STORAGE_KEY_LEADER_TIME) || '0', 10);
 
-    if (!currentLeader || currentLeader === TAB_ID || (now - leaderTime > 20000)) {
+    if (!currentLeader || currentLeader === TAB_ID || (now - leaderTime > 16000)) {
       localStorage.setItem(STORAGE_KEY_LEADER, TAB_ID);
       localStorage.setItem(STORAGE_KEY_LEADER_TIME, String(now));
       isLeader = true;
@@ -77,7 +82,7 @@
   }
 
   function sendHeartbeat(action) {
-    var sid = getSessionId();
+    var sid = getBrowserSessionId();
     var url = API_URL + '?sid=' + encodeURIComponent(sid);
 
     if (action === 'leave') {
@@ -139,7 +144,6 @@
 
     window.addEventListener('pagehide', function () {
       if (isLeader) {
-        sendHeartbeat('leave');
         localStorage.removeItem(STORAGE_KEY_LEADER);
         localStorage.removeItem(STORAGE_KEY_LEADER_TIME);
         if (bc) {
@@ -168,5 +172,6 @@
   global.LiveUsersCounter = {
     update: updateBadges,
     ping: sendHeartbeat,
+    getSid: getBrowserSessionId
   };
 })(window);

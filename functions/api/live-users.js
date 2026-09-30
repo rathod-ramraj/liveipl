@@ -1,16 +1,9 @@
-const fallbackMap = new Map();
-const FALLBACK_TTL_MS = 45000;
-
-function cleanupFallback(now) {
-  for (const [key, time] of fallbackMap.entries()) {
-    if (now - time > FALLBACK_TTL_MS) fallbackMap.delete(key);
-  }
-}
+const SESSION_TIMEOUT_MS = 30000; // 30 seconds global inactivity timeout
 
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
-  let action = url.searchParams.get('action');
+  let action = url.searchParams.get('action') || '';
   let sid = url.searchParams.get('sid') || '';
 
   if (request.method === 'POST') {
@@ -37,54 +30,53 @@ export async function onRequest(context) {
   }
 
   try {
-    const kv = env ? env.LIVE_USERS_KV : null;
+    const db = env ? env.playup_db : null;
     const now = Date.now();
+    const cutoff = now - SESSION_TIMEOUT_MS;
 
-    if (kv) {
-      const currentKey = sid ? 'session:' + sid : null;
+    let cleanSid = '';
+    if (typeof sid === 'string') {
+      const trimmed = sid.trim();
+      if (trimmed.length >= 8 && trimmed.length <= 128) {
+        cleanSid = trimmed;
+      }
+    }
 
-      if (currentKey) {
+    if (db) {
+      const statements = [];
+
+      if (cleanSid) {
         if (action === 'leave') {
-          await kv.delete(currentKey);
-        } else {
-          await kv.put(currentKey, String(now), { expirationTtl: 60 });
+          statements.push(db.prepare('DELETE FROM live_sessions WHERE sid = ?').bind(cleanSid));
+        } else if (action !== 'read') {
+          statements.push(
+            db.prepare(
+              'INSERT INTO live_sessions (sid, last_seen) VALUES (?, ?) ON CONFLICT(sid) DO UPDATE SET last_seen = excluded.last_seen'
+            ).bind(cleanSid, now)
+          );
         }
       }
 
-      const list = await kv.list({ prefix: 'session:' });
-      const keys = list && Array.isArray(list.keys) ? list.keys.map(k => k.name) : [];
-      let activeCount = keys.length;
+      statements.push(db.prepare('DELETE FROM live_sessions WHERE last_seen <= ?').bind(cutoff));
+      statements.push(db.prepare('SELECT COUNT(*) AS activeCount FROM live_sessions WHERE last_seen > ?').bind(cutoff));
 
-      if (currentKey) {
-        const hasCurrent = keys.includes(currentKey);
-        if (action === 'leave' && hasCurrent) {
-          activeCount = Math.max(0, activeCount - 1);
-        } else if (action !== 'leave' && !hasCurrent) {
-          activeCount = activeCount + 1;
-        }
-      }
+      const results = await db.batch(statements);
+      const lastResult = results[results.length - 1];
+      const countRow = lastResult && lastResult.results && lastResult.results[0];
+      const activeUsers = countRow ? Math.max(0, Number(countRow.activeCount) || 0) : 0;
 
-      return new Response(JSON.stringify({ activeUsers: activeCount }), {
+      return new Response(JSON.stringify({ activeUsers }), {
         status: 200,
         headers
       });
     }
 
-    if (sid) {
-      if (action === 'leave') {
-        fallbackMap.delete(sid);
-      } else {
-        fallbackMap.set(sid, now);
-      }
-    }
-    cleanupFallback(now);
-
-    return new Response(JSON.stringify({ activeUsers: fallbackMap.size }), {
+    return new Response(JSON.stringify({ activeUsers: 0 }), {
       status: 200,
       headers
     });
   } catch (err) {
-    return new Response(JSON.stringify({ activeUsers: 0 }), {
+    return new Response(JSON.stringify({ activeUsers: 0, error: err.message }), {
       status: 200,
       headers
     });
