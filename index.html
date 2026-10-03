@@ -232,9 +232,6 @@
     }
 
     window._cricketFetch = fetchCricketMatches();
-    window._chFetch = fetchWithTimeout('https://allrounderid2.pages.dev/id.json', 3500)
-      .then(function (r) { return r.json(); })
-      .catch(function () { return {}; });
     window._channelsJsonFetch = fetchWithTimeout('./channels.json', 3500)
       .then(function (r) { return r.json(); })
       .catch(function () { return null; });
@@ -2816,41 +2813,76 @@
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
               </svg><span class="ch-btn-label">Main 2</span></button>
-            <button type="button" class="ch-btn" data-id="willowsports" aria-pressed="false"
-              onclick="switchChannel('willowsports')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15"
+            <button type="button" class="ch-btn" data-id="sony1" aria-pressed="false"
+              onclick="switchChannel('sony1')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15"
                 height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" aria-hidden="true">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
               </svg><span class="ch-btn-label">Main 3</span></button>
-            <button type="button" class="ch-btn" data-id="main3" aria-pressed="false"
-              onclick="switchChannel('main3')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15"
+            <button type="button" class="ch-btn" data-id="sony3" aria-pressed="false"
+              onclick="switchChannel('sony3')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15"
                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 aria-hidden="true">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
               </svg><span class="ch-btn-label">Main 4</span></button>
-            <button type="button" class="ch-btn" data-id="fifa_hindi" aria-pressed="false"
-              onclick="switchChannel('fifa_hindi')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15"
+            <button type="button" class="ch-btn" data-id="main5" aria-pressed="false"
+              onclick="switchChannel('main5')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15"
                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 aria-hidden="true">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
               </svg><span class="ch-btn-label">Main 5</span></button>
-            <button type="button" class="ch-btn" data-id="skysports_cricket" aria-pressed="false"
-              onclick="switchChannel('skysports_cricket')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15"
+            <button type="button" class="ch-btn" data-id="fox1hd" aria-pressed="false"
+              onclick="switchChannel('fox1hd')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15"
                 height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" aria-hidden="true">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-              </svg><span class="ch-btn-label">Sky Sports Cricket</span></button>
+              </svg><span class="ch-btn-label">Fox 501 HD</span></button>
+            <button type="button" class="ch-btn" data-id="fox2hd" aria-pressed="false"
+              onclick="switchChannel('fox2hd')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15"
+                height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg><span class="ch-btn-label">Fox 501 HD 2</span></button>
+            <button type="button" class="ch-btn" data-id="cricbuzz" aria-pressed="false"
+              onclick="switchChannel('cricbuzz')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15"
+                height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg><span class="ch-btn-label">Cricbuzz 1</span></button>
+            <button type="button" class="ch-btn" data-id="cricbuzz2" aria-pressed="false"
+              onclick="switchChannel('cricbuzz2')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15"
+                height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg><span class="ch-btn-label">Cricbuzz 2</span></button>
             <button type="button" class="ch-btn" data-id="willow" aria-pressed="false"
               onclick="switchChannel('willow')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15"
                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 aria-hidden="true">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-              </svg><span class="ch-btn-label">Willow</span></button>
+              </svg><span class="ch-btn-label">willow</span></button>
+            <button type="button" class="ch-btn" data-id="willow2" aria-pressed="false"
+              onclick="switchChannel('willow2')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg><span class="ch-btn-label">Willow 2</span></button>
+            <button type="button" class="ch-btn" data-id="willow3" aria-pressed="false"
+              onclick="switchChannel('willow3')"><svg class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg><span class="ch-btn-label">Willow 3</span></button>
             <button type="button" class="ch-btn" data-id="zee" aria-pressed="false" onclick="switchChannel('zee')"><svg
                 class="ch-link-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -3169,9 +3201,7 @@
     var lowLatMode = true;   // toggled by L key - fed into LiveStreamConfig.buildHlsConfig
 
     var ALLOWED = new Set([
-      'eng', 'main2', /* 'starhindi','star_hindi','hindi', */ 'zee', /* 'crichd','star','sonyliv',
-  'star_tamil','star1tel', */ 'willowsports', 'main3', 'fifa_hindi', 'willow_cricbuzz', 'skysports_cricket', 'willow', 'fc1', 'hindi_mobile', 'sony_ten_eng', 'skysports', 'willow_ios', 'tnt1', 'tnt sports 1', /* 'willow2','skynz','kayohin','fox501',
-  'tnt4','tnt2','star2eng','star2hindi','star1eng','star1hindi','prime_eng','shamshad','sliv1','sliv3', 'willow_cricket' */
+      'eng', 'main2', 'sony1', 'sony3', 'main5', 'fox1hd', 'fox2hd', 'cricbuzz', 'cricbuzz2', 'willow', 'willow2', 'willow3', 'zee', 'tnt1', 'tnt sports 1'
     ]);
 
     var SITE_TITLE = 'PlayUp | Live Cricket, Movies & Series';
@@ -3256,6 +3286,7 @@
     function cleanChannelName(name) {
       if (!name) return name;
       if (/tnt\s*sports/i.test(name)) return name;
+      if (/fox\s*501/i.test(name)) return name;
       return name
         .replace(/\bHD\s+1\b/gi, 'HD')
         .replace(/\b1\s+HD\b/gi, 'HD')
@@ -3490,7 +3521,7 @@
     function isMatchChannel(ch) {
       if (!ch || !ch.id) return false;
       var id = ch.id.toString().toLowerCase();
-      if (id.indexOf('cine_dyn_') === 0) return true;
+      if (id.indexOf('cine_dyn_') === 0 || id.indexOf('cricket_dyn_') === 0) return true;
       var excluded = ['hindi_mobile', 'fc1', 'willow_cricbuzz', 'sony_ten_eng', 'skysports', 'willow_ios'];
       return excluded.indexOf(id) !== -1;
     }
@@ -4069,10 +4100,7 @@
       window._cricketFetch.then(renderLiveMatches).catch(function () { });
     }
 
-    Promise.all([window._chFetch, window._channelsJsonFetch]).then(function (results) {
-      var res = results[0] || {};
-      var channelsJsonData = results[1] || {};
-      var raw = (res && res.iframes) || [];
+    window._channelsJsonFetch.then(function (channelsJsonData) {
       var jsonList = (channelsJsonData && Array.isArray(channelsJsonData.channels)) ? channelsJsonData.channels : [];
 
       var localChannels = [];
@@ -4106,28 +4134,31 @@
         });
       } else {
         localChannels = [
-          { id: 'main2', name: 'Main 2', type: 'iframe', iframeSrc: 'https://cineios.pages.dev/hls/?url=https://fuck-you.kasin-tv.com/fc/proxy.php/https://allinonereborn2.online/fctest/playlists/match_143352/english.m3u8' },
-          { id: 'willowsports', name: 'Main 3', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
-          { id: 'main3', name: 'Main 4', type: 'iframe', iframeSrc: 'https://allrounder2-0.pages.dev/fox' },
-          { id: 'fifa_hindi', name: 'Main 5', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
-          { id: 'willow', name: 'Willow', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=willowusa' },
-          { id: 'willow_cricbuzz', name: 'Willow Cricbuzz', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/willow-cricbuzz' },
-          { id: 'skysports_cricket', name: 'Sky Sports Cricket', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=skyscric' },
-          { id: 'fc1', name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/fancode/fc1/fc2/' },
+          { id: 'eng', name: 'Main 1', type: 'iframe', iframeSrc: 'https://allrounder3-0.pages.dev/eng' },
+          { id: 'main2', name: 'Main 2', type: 'iframe', iframeSrc: 'https://allrounder3-0.pages.dev/cricket/sony-3' },
+          { id: 'sony1', name: 'Main 3', type: 'iframe', iframeSrc: 'https://matcheslinkz.pages.dev/sony-1' },
+          { id: 'sony3', name: 'Main 4', type: 'iframe', iframeSrc: 'https://matcheslinkz.pages.dev/sony-3' },
+          { id: 'main5', name: 'Main 5', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/admin-willow-cricket/1' },
+          { id: 'fox1hd', name: 'Fox 501 HD', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/ppv-fox-cricket/1' },
+          { id: 'fox2hd', name: 'Fox 501 HD 2', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/ppv-fox-cricket/2' },
+          { id: 'cricbuzz', name: 'Cricbuzz 1', type: 'iframe', iframeSrc: 'https://1freecdn.xyz/hembedplayer/csstream1/1/960/540' },
+          { id: 'cricbuzz2', name: 'Cricbuzz 2', type: 'iframe', iframeSrc: 'https://1freecdn.xyz/hembedplayer/csstream4/1/960/540' },
+          { id: 'willow', name: 'willow', type: 'iframe', iframeSrc: 'https://embedindia.st/embed/247-willow' },
+          { id: 'willow2', name: 'Willow 2', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/admin-willow-cricket/4' },
+          { id: 'willow3', name: 'Willow 3', type: 'iframe', iframeSrc: 'https://allrounder3-0.pages.dev/cricket/willow' },
           { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
         ];
       }
 
-      var allRaw = localChannels.concat(raw);
       var seen = new Set();
       var normalized = [];
 
-      for (var i = 0; i < allRaw.length; i++) {
-        var item = allRaw[i];
+      for (var i = 0; i < localChannels.length; i++) {
+        var item = localChannels[i];
         var idRaw = (item.id || '').toString();
         var key = idRaw.toLowerCase();
         var canon = aliasMap[key] || key;
-        if (!ALLOWED.has(canon) || seen.has(canon)) continue;
+        if (seen.has(canon)) continue;
         seen.add(canon);
         normalized.push(Object.assign({}, item, { id: canon }));
       }
@@ -4144,13 +4175,18 @@
     }).catch(function (err) {
       console.error('Channel fetch error:', err);
       var fallback = [
-        { id: 'main2', name: 'Main 2', type: 'iframe', iframeSrc: 'https://cineios.pages.dev/hls/?url=https://fuck-you.kasin-tv.com/fc/proxy.php/https://allinonereborn2.online/fctest/playlists/match_143352/english.m3u8' },
-        { id: 'willowsports', name: 'Main 3', type: 'iframe', iframeSrc: 'https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8' },
-        { id: 'main3', name: 'Main 4', type: 'iframe', iframeSrc: 'https://allrounder2-0.pages.dev/fox' },
-        { id: 'fifa_hindi', name: 'Main 5', type: 'iframe', iframeSrc: 'https://fifa-world-cup-live.pages.dev/hindi' },
-        { id: 'willow_cricbuzz', name: 'Willow Cricbuzz', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/willow-cricbuzz' },
-        { id: 'skysports_cricket', name: 'Sky Sports Cricket', type: 'iframe', iframeSrc: 'https://tv4wab.wapka.site/?app=crichd&id=skyscric' },
-        { id: 'fc1', name: 'FanCode FC1', type: 'iframe', iframeSrc: 'https://cinecrichd.pages.dev/fancode/fc1/fc2/' },
+        { id: 'eng', name: 'Main 1', type: 'iframe', iframeSrc: 'https://allrounder3-0.pages.dev/eng' },
+        { id: 'main2', name: 'Main 2', type: 'iframe', iframeSrc: 'https://allrounder3-0.pages.dev/cricket/sony-3' },
+        { id: 'sony1', name: 'Main 3', type: 'iframe', iframeSrc: 'https://matcheslinkz.pages.dev/sony-1' },
+        { id: 'sony3', name: 'Main 4', type: 'iframe', iframeSrc: 'https://matcheslinkz.pages.dev/sony-3' },
+        { id: 'main5', name: 'Main 5', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/admin-willow-cricket/1' },
+        { id: 'fox1hd', name: 'Fox 501 HD', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/ppv-fox-cricket/1' },
+        { id: 'fox2hd', name: 'Fox 501 HD 2', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/ppv-fox-cricket/2' },
+        { id: 'cricbuzz', name: 'Cricbuzz 1', type: 'iframe', iframeSrc: 'https://1freecdn.xyz/hembedplayer/csstream1/1/960/540' },
+        { id: 'cricbuzz2', name: 'Cricbuzz 2', type: 'iframe', iframeSrc: 'https://1freecdn.xyz/hembedplayer/csstream4/1/960/540' },
+        { id: 'willow', name: 'willow', type: 'iframe', iframeSrc: 'https://embedindia.st/embed/247-willow' },
+        { id: 'willow2', name: 'Willow 2', type: 'iframe', iframeSrc: 'https://embed.st/embed/admin/admin-willow-cricket/4' },
+        { id: 'willow3', name: 'Willow 3', type: 'iframe', iframeSrc: 'https://allrounder3-0.pages.dev/cricket/willow' },
         { id: 'zee', name: 'Zee Cinema', type: 'iframe', iframeSrc: 'https://zee-seven.vercel.app/' }
       ];
       channels = sortChannels(fallback);
