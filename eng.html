@@ -6,16 +6,39 @@
   <meta name="referrer" content="no-referrer">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
   <meta name="author" content="sayan">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shaka-player@4.16.2/dist/controls.css">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    html,body{width:100%;height:100%;background:#0a0a0a;overflow:hidden;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
-    #player-container{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center}
-    video{width:100%;height:100%;object-fit:contain;background:#000}
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{
+      width:100%;height:100%;background:#0a0a0a;overflow:hidden;
+      font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      touch-action:manipulation;
+      -webkit-text-size-adjust:100%;
+    }
+    #player-container{
+      position:fixed;inset:0;width:100%;height:100%;background:#000;
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+    }
+    .shaka-video-container{
+      position:absolute!important;inset:0!important;
+      width:100%!important;height:100%!important;
+      background-color:#000!important;
+    }
+    video{
+      width:100%!important;height:100%!important;
+      object-fit:contain;background:#000;
+    }
+    video.mode-fill{object-fit:fill!important}
+    video.mode-cover{object-fit:cover!important}
+
+    /* subtle status badge */
     #status{
-      position:fixed;top:max(16px,env(safe-area-inset-top));right:16px;z-index:9997;
-      display:flex;align-items:center;gap:7px;padding:6px 15px 6px 11px;
+      position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:9997;
+      display:flex;align-items:center;gap:7px;padding:6px 14px 6px 10px;
       background:rgba(10,10,10,.88);border:1px solid rgba(255,255,255,.07);
       font-size:11.5px;font-weight:500;letter-spacing:.2px;border-radius:24px;
       pointer-events:none;opacity:0;transition:opacity .25s ease,transform .25s ease;
@@ -29,20 +52,36 @@
     #status.warn .st-dot{background:#fb923c;animation:dot-pulse 1s ease-in-out infinite}
     #status.err .st-dot{background:#f87171}
     @keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.55)}}
-    .sp-fit-btn{background:transparent!important;border:none!important;cursor:pointer!important;padding:0 7px!important;min-width:auto!important;opacity:.75;display:flex;align-items:center;justify-content:center;height:100%;transition:opacity .15s;color:#fff!important}
+
+    /* custom fit button */
+    .sp-fit-btn{
+      background:transparent!important;border:none!important;cursor:pointer!important;
+      padding:0 7px!important;min-width:32px!important;opacity:.75;
+      display:flex;align-items:center;justify-content:center;height:100%;
+      transition:opacity .15s;color:#fff!important;touch-action:manipulation;
+    }
     .sp-fit-btn:hover{opacity:1}
-    .fit-pill{font-size:10px;font-weight:700;letter-spacing:.4px;padding:3px 7px;border-radius:4px;line-height:1;border:1.5px solid rgba(255,255,255,.28);color:rgba(255,255,255,.8);pointer-events:none;white-space:nowrap;transition:border-color .2s,color .2s}
+    .fit-pill{
+      font-size:10px;font-weight:700;letter-spacing:.4px;padding:3px 7px;
+      border-radius:4px;line-height:1;border:1.5px solid rgba(255,255,255,.28);
+      color:rgba(255,255,255,.8);pointer-events:none;white-space:nowrap;
+      transition:border-color .2s,color .2s;
+    }
     .sp-fit-btn:hover .fit-pill{border-color:rgba(255,255,255,.55);color:#fff}
     .sp-fit-btn.mode-fill .fit-pill{border-color:#38bdf8;color:#38bdf8}
     .sp-fit-btn.mode-cover .fit-pill{border-color:#a78bfa;color:#a78bfa}
     .shaka-controls-container button{color:#fff!important}
-    .shaka-video-container{background-color:#000!important}
-    @media(max-width:380px){.fit-pill{font-size:9px;padding:2px 5px}}
+    .shaka-controls-button-panel > * { touch-action:manipulation }
+
+    @media(max-width:380px){
+      .fit-pill{font-size:9px;padding:2px 5px}
+      .sp-fit-btn{min-width:28px!important;padding:0 4px!important}
+    }
   </style>
 </head>
 <body>
   <div id="player-container">
-    <video id="video" autoplay muted playsinline preload="metadata"></video>
+    <video id="video" autoplay muted playsinline webkit-playsinline x5-playsinline preload="auto"></video>
   </div>
   <div id="status"><span class="st-dot"></span><span id="statusText">Live</span></div>
   <div id="sf-sign" style="position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none" aria-hidden="true">sayan</div>
@@ -58,7 +97,7 @@
     var COOKIE_API_URL = "https://allrounder2-0.pages.dev/api/sony-3.json";
 
     var CONFIG = {
-      // Updated to Star Sports 1 HD (channel ID 301981)
+      // Star Sports 1 HD
       streamUrl: "https://jiotvpllive.cdn.jio.com/bpk-tv/Star_Sports_HD1_BTS/WDVLive/index.mpd",
       keys: [
         "45825561f4ef516691a9e16d1d35dd1d:3951fe7fbf4b0b33e6246fc401f76797",
@@ -73,6 +112,13 @@
     var container  = document.getElementById("player-container");
     var statusEl   = document.getElementById("status");
     var statusText = document.getElementById("statusText");
+
+    // Enforce mobile-safe video attributes
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
 
     var statusTimer = null;
 
@@ -110,16 +156,15 @@
     // ----- Fetch cookie from external API -----
     async function fetchCookieFromApi() {
       try {
-        setStatus("Fetching cookieÿ", "warn", 0);
+        setStatus("Fetching cookie…", "warn", 0);
         const resp = await fetch(COOKIE_API_URL, {
           cache: "no-store",
           headers: { "Accept": "application/json" }
         });
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
         const data = await resp.json();
         const cookie = (data.cookie || "").trim();
         if (!cookie) throw new Error("No cookie field in response");
-        console.log("[cookie] fetched:", cookie.slice(0, 40) + "ÿ");
         return cookie;
       } catch (err) {
         console.error("[cookie] fetch failed:", err);
@@ -138,15 +183,16 @@
       var fitIdx = 0;
 
       var fitBtn = document.createElement("button");
+      fitBtn.type = "button";
       fitBtn.className = "sp-fit-btn";
       fitBtn.title = "Video Fit: " + FIT_LABELS.contain;
       fitBtn.setAttribute("aria-label", "Cycle Video Fit Mode");
-      fitBtn.innerHTML = '<span class="fit-pill">ÿ</span>';
+      fitBtn.innerHTML = '<span class="fit-pill">—</span>';
 
       if (anchor) panel.insertBefore(fitBtn, anchor);
       else panel.appendChild(fitBtn);
 
-      var currentRatio = "ÿ";
+      var currentRatio = "—";
 
       function applyFit(i) {
         fitIdx = i;
@@ -166,14 +212,29 @@
         applyFit((fitIdx + 1) % FITS.length);
       });
 
+      // Reset fit on exiting fullscreen (desktop + iOS)
       ["fullscreenchange", "webkitfullscreenchange"].forEach(function(ev) {
         document.addEventListener(ev, function() {
           if (!(document.fullscreenElement || document.webkitFullscreenElement)) applyFit(0);
         });
       });
+      videoEl.addEventListener("webkitendfullscreen", function() {
+        applyFit(0);
+      });
+
+      // iPhone fallback for Shaka fullscreen button
+      if (anchor) {
+        anchor.addEventListener("click", function() {
+          if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (videoEl.webkitEnterFullscreen && !document.fullscreenEnabled && !document.webkitFullscreenEnabled) {
+              videoEl.webkitEnterFullscreen();
+            }
+          }
+        }, { capture: true });
+      }
 
       function ratioLabel(w, h) {
-        if (!w || !h) return "ÿ";
+        if (!w || !h) return "—";
         function gcd(a, b) { return b ? gcd(b, a % b) : a; }
         var g = gcd(w, h) || 1, rw = w/g, rh = h/g;
         var named = { "16:9": 16/9, "4:3": 4/3, "21:9": 21/9, "1:1": 1, "9:16": 9/16, "3:2": 3/2, "5:4": 5/4, "2:1": 2 };
@@ -221,7 +282,7 @@
       }
 
       // ---- 1. Fetch cookie from API ----
-      let cookieValue;
+      var cookieValue;
       try {
         cookieValue = await fetchCookieFromApi();
       } catch (e) {
@@ -253,7 +314,7 @@
       var injectCount = 0;
       (function tryInject() {
         if (injectFitButton(container, video)) return;
-        if (++injectCount < 5) setTimeout(tryInject, 150);
+        if (++injectCount < 8) setTimeout(tryInject, 150);
       })();
 
       var clearKeys = buildClearKeys(CONFIG.keys);
@@ -269,8 +330,8 @@
         manifest: { defaultPresentationDelay: 5 },
         streaming: {
           lowLatencyMode: true,
-          bufferingGoal: 10,
-          rebufferingGoal: 2,
+          bufferingGoal: 15,
+          rebufferingGoal: 3,
           safeSeekOffset: 5
         }
       });
@@ -290,24 +351,45 @@
       });
 
       try {
-        setStatus("Loadingÿ", "warn", 0);
+        setStatus("Loading…", "warn", 0);
         await player.load(CONFIG.streamUrl);
         setStatus("Live", "live", 4000);
-        video.play().catch(function() {});
+        var playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(function(err) {
+            console.warn("Autoplay restricted:", err);
+            setStatus("Tap to play", "warn", 0);
+          });
+        }
       } catch (e) {
+        console.error("Player load error:", e);
         setStatus("Error loading stream", "err", 0);
       }
 
-      video.addEventListener("play", function() {
-        video.muted = false;
-      });
+      // Safe mobile user interaction unmuting
+      var userHasInteracted = false;
+      function onUserInteraction() {
+        if (!userHasInteracted) {
+          userHasInteracted = true;
+          video.muted = false;
+        }
+        if (video.paused) {
+          video.play().catch(function() {});
+        }
+        if (statusEl && statusText.textContent === "Tap to play") {
+          setStatus("Live", "live", 2000);
+        }
+      }
 
-      function unmuteOnce() { video.muted = false; }
-      container.addEventListener("pointerdown", unmuteOnce, { capture: true, once: true });
-      container.addEventListener("click",       unmuteOnce, { capture: true, once: true });
+      container.addEventListener("pointerdown", onUserInteraction, { capture: true });
+      container.addEventListener("touchstart", onUserInteraction, { capture: true, passive: true });
+      container.addEventListener("click", onUserInteraction, { capture: true });
 
       player.addEventListener("error", function(ev) {
         var err = ev.detail;
+        if (err && err.severity === shaka.util.Error.Severity.RECOVERABLE) {
+          try { player.retryStreaming(); return; } catch(_) {}
+        }
         setStatus("Stream error: " + (err && err.code ? err.code : ""), "err", 5000);
       });
 

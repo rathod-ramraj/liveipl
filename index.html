@@ -1059,7 +1059,7 @@
     }
 
     .player-ratio.is-iframe-active {
-      contain: strict;
+      contain: layout style;
     }
 
     .player-ratio iframe,
@@ -1070,12 +1070,14 @@
       width: 100%;
       height: 100%;
       border: none;
+      -webkit-overflow-scrolling: touch;
     }
 
     .player-ratio iframe.live-iframe {
       z-index: 2;
       background: #050507;
-      contain: strict;
+      contain: layout style;
+      touch-action: manipulation;
     }
 
     .player-ratio video {
@@ -3152,7 +3154,8 @@
     </div>
     <div class="wbid-frame-wrap">
       <iframe id="wbid-iframe" title="Watch by ID player" loading="eager"
-        allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen
+        allow="autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; accelerometer *; gyroscope *; clipboard-write *"
+        allowfullscreen webkitallowfullscreen mozallowfullscreen playsinline webkit-playsinline
         referrerpolicy="no-referrer-when-downgrade"></iframe>
       <div class="wbid-loading" id="wbid-loading" aria-live="polite"><span></span></div>
       <button type="button" id="wbid-next-ep" hidden aria-label="Play next episode">

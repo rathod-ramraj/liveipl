@@ -83,8 +83,16 @@
     iframe.className = 'live-iframe';
     iframe.title = 'Live stream player';
     iframe.loading = 'eager';
-    iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
-    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute(
+      'allow',
+      'autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; accelerometer *; gyroscope *; clipboard-write *'
+    );
+    iframe.setAttribute('allowfullscreen', 'true');
+    iframe.setAttribute('webkitallowfullscreen', 'true');
+    iframe.setAttribute('mozallowfullscreen', 'true');
+    iframe.setAttribute('playsinline', 'true');
+    iframe.setAttribute('webkit-playsinline', 'true');
+    iframe.setAttribute('allowtransparency', 'true');
     iframe.referrerPolicy = 'no-referrer-when-downgrade';
     iframe.setAttribute('importance', 'high');
     return iframe;
