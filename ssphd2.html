@@ -296,8 +296,8 @@
         addBigPlayButton: true,
         controlPanelElements: [
           "play_pause",
-          "mute",
           "time_and_duration",
+          "mute",
           "spacer",
           "quality",
           "picture_in_picture",
@@ -324,13 +324,22 @@
         return;
       }
 
+      // Stable live DASH configuration:
+      // lowLatencyMode is false to allow smooth buffering and clean pause/resume
       player.configure({
         drm: { clearKeys: clearKeys },
-        manifest: { defaultPresentationDelay: 5 },
+        manifest: {
+          defaultPresentationDelay: 6,
+          dash: {
+            autoCorrectDrift: true
+          }
+        },
         streaming: {
-          lowLatencyMode: true,
+          lowLatencyMode: false,
           bufferingGoal: 15,
-          rebufferingGoal: 3,
+          rebufferingGoal: 2,
+          bufferBehind: 30,
+          jumpLargeGaps: true,
           safeSeekOffset: 5
         }
       });
@@ -346,6 +355,19 @@
             request.uris[0].indexOf("__hdnea__") === -1) {
           var sep = request.uris[0].indexOf("?") === -1 ? "?" : "&";
           request.uris[0] += sep + "__hdnea__=" + urlCookie;
+        }
+      });
+
+      // Auto-refresh cookie if 403 occurs during playback or after long pause
+      player.getNetworkingEngine().registerResponseFilter(async function(type, response) {
+        if (response.status === 403) {
+          try {
+            var freshCookie = await fetchCookieFromApi();
+            if (freshCookie) {
+              cookieValue = freshCookie;
+              player.retryStreaming();
+            }
+          } catch (_) {}
         }
       });
 
@@ -365,28 +387,50 @@
         setStatus("Error loading stream", "err", 0);
       }
 
-      // Safe mobile user interaction unmuting
-      var userHasInteracted = false;
-      function onUserInteraction() {
-        if (!userHasInteracted) {
-          userHasInteracted = true;
-          video.muted = false;
-        }
-        if (video.paused) {
+      // Non-intrusive initial unmuting on first user gesture
+      function unmuteOnGesture() {
+        video.muted = false;
+        if (statusText && statusText.textContent === "Tap to play") {
           video.play().catch(function() {});
-        }
-        if (statusEl && statusText.textContent === "Tap to play") {
           setStatus("Live", "live", 2000);
         }
+        window.removeEventListener("click", unmuteOnGesture);
+        window.removeEventListener("touchend", unmuteOnGesture);
       }
+      window.addEventListener("click", unmuteOnGesture, { once: true });
+      window.addEventListener("touchend", unmuteOnGesture, { once: true, passive: true });
 
-      container.addEventListener("pointerdown", onUserInteraction, { capture: true });
-      container.addEventListener("touchstart", onUserInteraction, { capture: true, passive: true });
-      container.addEventListener("click", onUserInteraction, { capture: true });
+      // Clean pause & resume lifecycle (no aborting seeks during play transition)
+      video.addEventListener("pause", function() {
+        setStatus("Paused", "warn", 0);
+      });
+
+      video.addEventListener("playing", function() {
+        setStatus("Live", "live", 3000);
+        // If the stream was paused so long that the paused timestamp expired from server DVR window:
+        if (player && player.isLive()) {
+          try {
+            var range = player.seekRange();
+            if (range && range.start && video.currentTime < range.start) {
+              player.goToLive();
+            }
+          } catch (_) {}
+        }
+      });
+
+      video.addEventListener("waiting", function() {
+        if (!video.paused) {
+          setStatus("Buffering…", "warn", 0);
+        }
+      });
 
       player.addEventListener("error", function(ev) {
         var err = ev.detail;
+        console.error("Shaka error:", err);
         if (err && err.severity === shaka.util.Error.Severity.RECOVERABLE) {
+          try { player.retryStreaming(); return; } catch(_) {}
+        }
+        if (err && (err.code === 3016 || err.code === 3015)) {
           try { player.retryStreaming(); return; } catch(_) {}
         }
         setStatus("Stream error: " + (err && err.code ? err.code : ""), "err", 5000);
