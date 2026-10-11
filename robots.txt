@@ -34,4 +34,4 @@ Disallow: /
 User-agent: CCBot
 Disallow: /
 
-Sitemap: https://playup.vercel.app/sitemap.xml
+Sitemap: https://playupp.pages.dev/sitemap.xml
