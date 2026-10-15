@@ -133,7 +133,7 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://zee-seven.vercel.app/",
-      "active": true
+      "active": false
     }
   ],
   "usageRules": {
