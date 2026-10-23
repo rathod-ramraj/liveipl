@@ -2,7 +2,7 @@
   "channels": [
     {
       "id": "eng",
-      "name": "Main 1",
+      "name": "Star Sports HD Eng",
       "subtitle": "Main 1",
       "category": "Live Channel",
       "type": "iframe",
@@ -11,7 +11,7 @@
     },
     {
       "id": "main2",
-      "name": "Main 2",
+      "name": "Star Sports HD Hindi",
       "subtitle": "Main 2",
       "category": "Live Channel",
       "type": "iframe",
@@ -20,25 +20,25 @@
     },
     {
       "id": "sony1",
-      "name": "Main 3",
+      "name": "Sony Liv Eng",
       "subtitle": "Main 3",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://matcheslinkz.pages.dev/sony-1",
+      "streamUrl": "https://playupp.pages.dev/sonyLivEng",
       "active": true
     },
     {
       "id": "sony3",
-      "name": "Main 4",
+      "name": "Sony Liv Hindi",
       "subtitle": "Main 4",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://matcheslinkz.pages.dev/sony-3",
+      "streamUrl": "https://playupp.pages.dev/sonyLivHin",
       "active": true
     },
     {
       "id": "main5",
-      "name": "Main 5",
+      "name": "Willow Live",
       "subtitle": "Main 5",
       "category": "Live Channel",
       "type": "iframe",
@@ -101,7 +101,7 @@
     },
     {
       "id": "willow",
-      "name": "willow",
+      "name": "Willow",
       "subtitle": "Willow Live",
       "category": "Live Channel",
       "type": "iframe",
