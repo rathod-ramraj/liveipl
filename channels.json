@@ -2,7 +2,7 @@
   "channels": [
     {
       "id": "eng",
-      "name": "Star Sports HD Eng",
+      "name": "Star Sports HD English",
       "subtitle": "Main 1",
       "category": "Live Channel",
       "type": "iframe",
@@ -20,7 +20,7 @@
     },
     {
       "id": "sony1",
-      "name": "Sony Liv Eng",
+      "name": "Sony Liv English",
       "subtitle": "Main 3",
       "category": "Live Channel",
       "type": "iframe",
