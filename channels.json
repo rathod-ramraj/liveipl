@@ -37,6 +37,15 @@
       "active": true
     },
     {
+      "id": "sonytel",
+      "name": "Sony Liv Telugu",
+      "subtitle": "Sony Telugu",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://playupp.pages.dev/sonyLivTel",
+      "active": true
+    },
+    {
       "id" : "willowLive",
       "name": "Willow Live",
       "subtitle": "Willow Live",
