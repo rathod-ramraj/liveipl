@@ -37,8 +37,17 @@
       "active": true
     },
     {
-      "id": "main5",
+      "id" : "willowLive",
       "name": "Willow Live",
+      "subtitle": "Willow Live",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://trend48.st/event/willow-cricket",
+      "active": true
+    },
+    {
+      "id": "main5",
+      "name": "Willow Live 2",
       "subtitle": "Main 5",
       "category": "Live Channel",
       "type": "iframe",
@@ -87,7 +96,8 @@
       "subtitle": "Cricbuzz Live",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://1freecdn.xyz/hembedplayer/csstream1/1/960/540",
+      "streamUrl": "https://freecdn.st/hembedplayer/csstream1/1/960/540",
+      
       "active": true
     },
     {
@@ -96,8 +106,18 @@
       "subtitle": "Cricbuzz Live",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://1freecdn.xyz/hembedplayer/csstream4/1/960/540",
-      "active": true
+      "streamUrl": "https://freecdn.xyz/hembedplayer/csstream4/2/960/540",
+      "active": false
+    },
+    {
+      
+      "id": "TNT Sports",
+      "name": "TNT Sports 3",
+      "subtitle": "Cricbuzz Live",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://t-flix.top/tolive/play.php?id=682adcaf6df79",
+      "active": false
     },
     {
       "id": "willow",
