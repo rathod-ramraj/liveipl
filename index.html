@@ -475,7 +475,6 @@
     html.perf-streaming .player-card,
     html.perf-streaming .ch-btn,
     html.perf-streaming .feat-card,
-    html.perf-streaming #buf-overlay.show,
     html.perf-streaming .glass-card,
     html.perf-streaming .glass-mock,
     html.perf-iframe-active nav,
@@ -959,21 +958,20 @@
     .ch-icon {
       width: 34px;
       height: 34px;
-      background: linear-gradient(135deg, #ff4d6d, #c93cff);
-      border-radius: var(--r-sm);
+      border-radius: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 0 14px rgba(255, 77, 109, 0.3);
       overflow: hidden;
     }
 
     .ch-icon img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      border-radius: var(--r-sm);
+      object-fit: contain;
+      border-radius: 100%;
+      display: block;
     }
 
     .ch-name {
@@ -1103,7 +1101,34 @@
       height: 100vh !important;
       max-width: 100vw;
       max-height: 100vh;
-      background: #000;
+      background: #121214 !important;
+    }
+
+    ::backdrop {
+      background: #121214 !important;
+    }
+
+    /* Fullscreen dark gray state */
+    html.is-fullscreen,
+    html.is-fullscreen body,
+    html:has(:fullscreen),
+    html:has(:fullscreen) body,
+    html:has(:-webkit-full-screen),
+    html:has(:-webkit-full-screen) body {
+      background-color: #121214 !important;
+      background-image: none !important;
+    }
+
+    html.is-fullscreen #sg-global-bg,
+    html:has(:fullscreen) #sg-global-bg,
+    html:has(:-webkit-full-screen) #sg-global-bg {
+      opacity: 0 !important;
+    }
+
+    html.is-fullscreen .player-card,
+    html:has(:fullscreen) .player-card,
+    html:has(:-webkit-full-screen) .player-card {
+      background: #121214 !important;
     }
 
     .player-ratio:fullscreen iframe,
@@ -1114,6 +1139,7 @@
       inset: 0 !important;
       width: 100% !important;
       height: 100% !important;
+      background: #121214 !important;
     }
 
     .wbid-frame-wrap:fullscreen,
@@ -1147,36 +1173,7 @@
       animation: spin .75s linear infinite;
     }
 
-    /* Buffer overlay */
-    #buf-overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 5;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: rgba(6, 5, 10, 0.55);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .28s ease;
-    }
 
-    #buf-overlay.show {
-      opacity: 1;
-      pointer-events: none;
-    }
-
-    #buf-overlay span {
-      font-size: 12px;
-      color: rgba(255, 255, 255, .5);
-      letter-spacing: .3px;
-    }
 
     /* Keyboard toast */
     #ks-toast {
@@ -1804,12 +1801,12 @@
       .ch-icon {
         width: 26px;
         height: 26px;
-        border-radius: 7px;
+        border-radius: 100%;
         box-shadow: none;
       }
 
       .ch-icon img {
-        border-radius: 7px;
+        border-radius: 100%;
       }
 
       .ch-name-row {
@@ -2675,7 +2672,7 @@
     <div class="nav-menu">
       <a href="#channels" class="nav-link nav-hide-mobile">Channels</a>
       <button type="button" id="wbid-nav-btn" class="nav-link nav-link-btn">Watch by ID</button>
-      <a href="#player" class="nav-link nav-cta">Watch Now</a>
+      <a href="./matches.html" class="nav-link nav-cta">Live Matches</a>
     </div>
   </nav>
 
@@ -2759,10 +2756,7 @@
           <span style="font-size:13px;color:var(--text-2);max-width:280px;text-align:center;line-height:1.5">Select a
             channel below to start watching</span>
         </div>
-        <div id="buf-overlay">
-          <div class="spinner"></div>
-          <span>Buffering…</span>
-        </div>
+
         <button type="button" id="playerFsExit" class="player-fs-exit" aria-label="Exit full screen">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
             stroke-linecap="round" aria-hidden="true">
@@ -3188,7 +3182,7 @@
     var elGrid = document.getElementById('chGrid');
     var elPlayer = document.getElementById('player');
     var elDtBlock = document.getElementById('dt-block');
-    var elBufOv = document.getElementById('buf-overlay');
+    var elBufOv = null;
     var elToast = document.getElementById('ks-toast');
     var elPh = document.getElementById('playerPh');
 
@@ -3548,8 +3542,8 @@
     // ════════════════════════════════════════════════════
     //  BUFFER OVERLAY
     // ════════════════════════════════════════════════════
-    function showBuffer() { if (elBufOv) elBufOv.classList.add('show'); }
-    function hideBuffer() { if (elBufOv) elBufOv.classList.remove('show'); }
+    function showBuffer() {}
+    function hideBuffer() {}
 
     function setPlayerPhMessage(msg, showSpinner) {
       if (!elPh) return;
@@ -3827,7 +3821,10 @@
         return;
       }
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        requestNativeFullscreen(elRatio).catch(function () { });
+        document.documentElement.classList.add('is-fullscreen');
+        requestNativeFullscreen(elRatio).catch(function () {
+          document.documentElement.classList.remove('is-fullscreen');
+        });
       } else {
         exitNativeFullscreen();
       }
@@ -3836,6 +3833,7 @@
     function onFullscreenChange() {
       if (fsSyncing) return;
       var active = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      document.documentElement.classList.toggle('is-fullscreen', active);
       if (!active && mobilePlayerFs) exitMobilePlayerFs();
       if (active && window.PerfController) PerfController.setStreaming(true);
     }

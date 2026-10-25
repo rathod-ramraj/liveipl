@@ -2,6 +2,10 @@
   "name": "playup",
   "version": "2.1.2",
   "scripts": {
+    "dev": "wrangler pages dev .",
     "deploy": "npx wrangler pages deploy . --project-name=playupp --branch=main"
+  },
+  "devDependencies": {
+    "wrangler": "^4.152.0"
   }
 }
