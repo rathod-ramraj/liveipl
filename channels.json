@@ -1,27 +1,9 @@
 {
   "channels": [
     {
-      "id": "eng",
-      "name": "Star Sports HD English",
-      "subtitle": "Main 1",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://playupp.pages.dev/eng",
-      "active": true
-    },
-    {
-      "id": "main2",
-      "name": "Star Sports HD Hindi",
-      "subtitle": "Main 2",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://playupp.pages.dev/eng",
-      "active": true
-    },
-    {
       "id": "sony1",
       "name": "Sony Liv English",
-      "subtitle": "Main 3",
+      "subtitle": "Sony Liv English",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://playupp.pages.dev/sonyLivEng",
@@ -30,7 +12,7 @@
     {
       "id": "sony3",
       "name": "Sony Liv Hindi",
-      "subtitle": "Main 4",
+      "subtitle": "Sony Liv Hindi",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://playupp.pages.dev/sonyLivHin",
@@ -39,10 +21,28 @@
     {
       "id": "sonytel",
       "name": "Sony Liv Telugu",
-      "subtitle": "Sony Telugu",
+      "subtitle": "Sony Liv Telugu",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://playupp.pages.dev/sonyLivtel",
+      "active": true
+    },
+    {
+      "id": "eng",
+      "name": "Star Sports HD English",
+      "subtitle": "Star Sports HD English",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://playupp.pages.dev/eng",
+      "active": true
+    },
+    {
+      "id": "main2",
+      "name": "Star Sports HD Hindi",
+      "subtitle": "Star Sports HD Hindi",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://playupp.pages.dev/ssphd2",
       "active": true
     },
     {
@@ -57,7 +57,7 @@
     {
       "id": "main5",
       "name": "Willow Live 2",
-      "subtitle": "Main 5",
+      "subtitle": "Willow Live 2",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://embed.st/embed/admin/admin-willow-cricket/1",
@@ -122,7 +122,7 @@
       
       "id": "TNT Sports",
       "name": "TNT Sports 3",
-      "subtitle": "Cricbuzz Live",
+      "subtitle": "TNT Sports 3",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://t-flix.top/tolive/play.php?id=682adcaf6df79",
