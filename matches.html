@@ -11,17 +11,33 @@
 
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
   <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PlayUp">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- ShapeGrid background and performance controller -->
   <script src="./ShapeGrid.js" defer></script>
   <script src="./js/perf-controller.js" defer></script>
   <script src="./js/live-users.js" defer></script>
+  <script src="./js/pwa-installer.js" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').catch(function () { });
+      });
+    }
+  </script>
 
   <!-- mux.js for TS segment transmuxing in HLS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mux.js/6.0.1/mux.min.js"></script>
@@ -1100,6 +1116,7 @@
     <div class="nav-menu">
       <a href="./#channels" class="nav-link nav-hide-mobile">Channels</a>
       <a href="./#wbid" class="nav-link nav-link-btn" id="wbid-nav-btn">Watch by ID</a>
+      <button type="button" class="nav-link nav-link-btn pwa-install-btn" style="display:none;" title="Install App">Install App</button>
       <a href="./matches" class="nav-link nav-cta active">Live Matches</a>
     </div>
   </nav>

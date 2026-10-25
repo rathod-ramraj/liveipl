@@ -31,9 +31,17 @@
   <!-- Favicon for Google Search & Browsers -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
   <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PlayUp">
 
   <!-- JSON-LD Structured Data for Google Search -->
   <script type="application/ld+json">
@@ -254,6 +262,7 @@
   <script src="./js/perf-controller.js" defer></script>
   <script src="./js/cricket-updates.js" defer></script>
   <script src="./js/watch-by-id.js" defer></script>
+  <script src="./js/pwa-installer.js" defer></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -2672,6 +2681,7 @@
     <div class="nav-menu">
       <a href="#channels" class="nav-link nav-hide-mobile">Channels</a>
       <button type="button" id="wbid-nav-btn" class="nav-link nav-link-btn">Watch by ID</button>
+      <button type="button" class="nav-link nav-link-btn pwa-install-btn" style="display:none;" title="Install App">Install App</button>
       <a href="./matches" class="nav-link nav-cta">Live Matches</a>
     </div>
   </nav>

@@ -2,7 +2,7 @@
 
 var CACHE = 'playup-v4';
 var HLS_CACHE = 'playup-hls-segments-v1';
-var PRECACHE = ['/', '/matches', '/favicon.png', '/robots.txt', '/sitemap.xml'];
+var PRECACHE = ['/', '/matches', '/manifest.json', '/icon-192.png', '/icon-512.png', '/favicon.png', '/robots.txt', '/sitemap.xml'];
 
 function isHlsMediaUrl(url) {
   try {
