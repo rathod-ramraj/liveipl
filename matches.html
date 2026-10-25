@@ -36,7 +36,7 @@
       --surface-2: rgba(255, 255, 255, 0.04);
       --glass-border: rgba(38, 35, 53, 0.55);
       --glass-border-2: rgba(38, 35, 53, 0.35);
-      --highlight: #ff4d6d;
+      --highlight: #ff0000;
       --text-1: #ffffff;
       --text-2: rgba(255, 255, 255, 0.65);
       --text-3: rgba(255, 255, 255, 0.35);
@@ -69,7 +69,7 @@
       background-color: var(--bg);
       background-image: 
         radial-gradient(ellipse 90% 60% at 50% -15%, rgba(130, 40, 160, 0.18) 0%, transparent 70%),
-        radial-gradient(circle at 10% 20%, rgba(255, 77, 109, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 10% 20%, rgba(255, 0, 0, 0.1) 0%, transparent 40%),
         radial-gradient(circle at 90% 30%, rgba(201, 60, 255, 0.1) 0%, transparent 40%);
       background-attachment: fixed;
     }
@@ -261,9 +261,9 @@
       font-weight: 700;
       letter-spacing: .75px;
       text-transform: uppercase;
-      color: #ff6b81;
-      background: rgba(255, 77, 109, 0.14);
-      border: 1px solid rgba(255, 77, 109, 0.35);
+      color: #ff0000;
+      background: rgba(255, 0, 0, 0.14);
+      border: 1px solid rgba(255, 0, 0, 0.35);
       padding: 5px 12px;
       border-radius: var(--r-pill);
       margin-left: 6px;
@@ -283,9 +283,9 @@
       font-weight: 700;
       letter-spacing: 0.8px;
       text-transform: uppercase;
-      color: #ff6b81;
-      background: rgba(255, 77, 109, 0.12);
-      border: 1px solid rgba(255, 77, 109, 0.3);
+      color: #ff0000;
+      background: rgba(255, 0, 0, 0.12);
+      border: 1px solid rgba(255, 0, 0, 0.3);
       padding: 3px 10px;
       border-radius: var(--r-pill);
     }
@@ -293,7 +293,7 @@
     .live-dot {
       width: 6px;
       height: 6px;
-      background: #ff4d6d;
+      background: #ff0000;
       border-radius: 50%;
       animation: livepulse 1.8s ease-in-out infinite;
     }
@@ -663,8 +663,8 @@
       transition: border-color 0.2s, color 0.2s;
     }
     .sp-fit-btn:hover .fit-pill {
-      border-color: #ff4d6d;
-      color: #ff4d6d;
+      border-color: #ff0000;
+      color: #ff0000;
     }
 
     .shaka-controls-container button { color: #fff !important; }
@@ -748,9 +748,9 @@
 
     .ch-btn.active {
       color: var(--text-1);
-      border-color: rgba(255, 77, 109, 0.55);
-      background: rgba(255, 77, 109, 0.12);
-      box-shadow: 0 0 0 1px rgba(255, 77, 109, 0.28), 0 4px 16px rgba(255, 77, 109, 0.2);
+      border-color: rgba(255, 0, 0, 0.55);
+      background: rgba(255, 0, 0, 0.12);
+      box-shadow: 0 0 0 1px rgba(255, 0, 0, 0.28), 0 4px 16px rgba(255, 0, 0, 0.2);
     }
 
     .tag-badge {
@@ -764,7 +764,7 @@
     }
 
     .ch-btn.active .tag-badge {
-      background: rgba(255, 77, 109, 0.35);
+      background: rgba(255, 0, 0, 0.35);
       color: #fff;
     }
 
@@ -832,14 +832,14 @@
 
     .match-card:hover {
       transform: translateY(-2px);
-      border-color: rgba(255, 77, 109, 0.45);
-      box-shadow: 0 8px 30px rgba(255, 77, 109, 0.15);
+      border-color: rgba(255, 0, 0, 0.45);
+      box-shadow: 0 8px 30px rgba(255, 0, 0, 0.15);
     }
 
     .match-card.is-selected {
       border-color: var(--highlight);
-      background: rgba(255, 77, 109, 0.06);
-      box-shadow: 0 0 0 1px var(--highlight), 0 8px 30px rgba(255, 77, 109, 0.2);
+      background: rgba(255, 0, 0, 0.06);
+      box-shadow: 0 0 0 1px var(--highlight), 0 8px 30px rgba(255, 0, 0, 0.2);
     }
 
     .match-card-header {
@@ -860,9 +860,9 @@
     }
 
     .match-card-badge {
-      background: rgba(255, 77, 109, 0.2);
+      background: rgba(255, 0, 0, 0.2);
       color: var(--highlight);
-      border: 1px solid rgba(255, 77, 109, 0.4);
+      border: 1px solid rgba(255, 0, 0, 0.4);
       padding: 3px 9px;
       border-radius: var(--r-pill);
       font-size: 11px;
@@ -959,13 +959,13 @@
 
     .match-stream-btn:hover {
       background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 77, 109, 0.45);
+      border-color: rgba(255, 0, 0, 0.45);
       color: var(--text-1);
       transform: translateY(-1px);
     }
 
     .match-stream-btn.is-active {
-      background: rgba(255, 77, 109, 0.18);
+      background: rgba(255, 0, 0, 0.18);
       border-color: var(--highlight);
       color: #fff;
     }
@@ -1308,7 +1308,7 @@
           seekBarColors: {
             base: "rgba(255,255,255,0.2)",
             buffered: "rgba(255,255,255,0.45)",
-            played: "#ff4d6d"
+            played: "#ff0000"
           }
         });
 
@@ -1411,7 +1411,7 @@
             shape: "square",
             backgroundColor: "#121019",
             borderColor: "#262335",
-            hoverFillColor: "rgba(255, 77, 109, 0.18)",
+            hoverFillColor: "rgba(255, 0, 0, 0.18)",
             hoverTrailAmount: window.PerfController && PerfController.isMobile() ? 0 : 3,
             vignetteEdge: "rgba(5, 3, 14, 0.44)"
           });
