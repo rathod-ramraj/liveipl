@@ -47,10 +47,10 @@
       color:#c0c0c0;
     }
     #status.show{opacity:1;transform:translateY(0)}
-    .st-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block;background:#60a5fa}
-    #status.live .st-dot{background:#22d3a0;animation:dot-pulse 2s ease-in-out infinite}
+    .st-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block;background:#ff0000}
+    #status.live .st-dot{background:#ff0000;animation:dot-pulse 2s ease-in-out infinite}
     #status.warn .st-dot{background:#fb923c;animation:dot-pulse 1s ease-in-out infinite}
-    #status.err .st-dot{background:#f87171}
+    #status.err .st-dot{background:#ff0000}
     @keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.55)}}
 
     /* custom fit button */
@@ -68,8 +68,8 @@
       transition:border-color .2s,color .2s;
     }
     .sp-fit-btn:hover .fit-pill{border-color:rgba(255,255,255,.55);color:#fff}
-    .sp-fit-btn.mode-fill .fit-pill{border-color:#38bdf8;color:#38bdf8}
-    .sp-fit-btn.mode-cover .fit-pill{border-color:#a78bfa;color:#a78bfa}
+    .sp-fit-btn.mode-fill .fit-pill{border-color:#ff0000;color:#ff0000}
+    .sp-fit-btn.mode-cover .fit-pill{border-color:#ff0000;color:#ff0000}
     .shaka-controls-container button{color:#fff!important}
     .shaka-controls-button-panel > * { touch-action:manipulation }
 
@@ -307,7 +307,7 @@
         seekBarColors: {
           base: "#828282",
           buffered: "#ffc336",
-          played: "#1fc7ff"
+          played: "#ff0000"
         }
       });
 
