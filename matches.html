@@ -1107,6 +1107,73 @@
         padding: 6px 12px !important;
         font-size: 13px !important;
       }
+      .hero-strip {
+        padding: 98px 16px 16px;
+      }
+      .s-title {
+        font-size: 24px;
+      }
+      .player-wrap {
+        padding: 96px 12px 32px;
+      }
+      .player-card {
+        border-radius: 14px;
+      }
+      .player-bar {
+        padding: 10px 14px;
+      }
+      .ch-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 100%;
+      }
+      .ch-name {
+        font-size: 13px;
+        line-height: 1.2;
+      }
+      .ch-meta {
+        display: none;
+      }
+      .player-live-badge {
+        display: none;
+      }
+      .player-actions {
+        gap: 3px;
+        padding: 3px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+      }
+      .player-reload-btn,
+      .player-fs-btn {
+        padding: 0 !important;
+        font-size: 0;
+        min-width: 30px;
+        min-height: 30px;
+        width: 30px;
+        height: 30px;
+        justify-content: center;
+        border: none !important;
+        background: transparent !important;
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.75);
+      }
+      .player-reload-btn:active,
+      .player-fs-btn:active {
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+      .player-reload-btn .reload-label {
+        display: none;
+      }
+      .player-fs-btn {
+        display: inline-flex !important;
+      }
+      .section {
+        padding: 24px 14px 48px;
+      }
+      .match-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 640px) {
@@ -1218,74 +1285,6 @@
       to {
         opacity: 1;
         transform: translateY(0) scale(1);
-      }
-    }
-      .hero-strip {
-        padding: 98px 16px 16px;
-      }
-      .s-title {
-        font-size: 24px;
-      }
-      .player-wrap {
-        padding: 96px 12px 32px;
-      }
-      .player-card {
-        border-radius: 14px;
-      }
-      .player-bar {
-        padding: 10px 14px;
-      }
-      .ch-icon {
-        width: 28px;
-        height: 28px;
-        border-radius: 100%;
-      }
-      .ch-name {
-        font-size: 13px;
-        line-height: 1.2;
-      }
-      .ch-meta {
-        display: none;
-      }
-      .player-live-badge {
-        display: none;
-      }
-      .player-actions {
-        gap: 3px;
-        padding: 3px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 10px;
-      }
-      .player-reload-btn,
-      .player-fs-btn {
-        padding: 0 !important;
-        font-size: 0;
-        min-width: 30px;
-        min-height: 30px;
-        width: 30px;
-        height: 30px;
-        justify-content: center;
-        border: none !important;
-        background: transparent !important;
-        border-radius: 8px;
-        color: rgba(255, 255, 255, 0.75);
-      }
-      .player-reload-btn:active,
-      .player-fs-btn:active {
-        background: rgba(255, 255, 255, 0.1) !important;
-      }
-      .player-reload-btn .reload-label {
-        display: none;
-      }
-      .player-fs-btn {
-        display: inline-flex !important;
-      }
-      .section {
-        padding: 24px 14px 48px;
-      }
-      .match-grid {
-        grid-template-columns: 1fr;
       }
     }
   </style>
