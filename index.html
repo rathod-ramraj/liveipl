@@ -4026,17 +4026,33 @@
       var liveDivEl = document.getElementById('liveMatchesDivider');
       var dirGridEl = document.getElementById('streamDirectoryGrid');
 
-      if (!Array.isArray(cricketMatches) || cricketMatches.length === 0 || !liveGridEl || !liveSecEl) return;
+      function hideLiveSection() {
+        if (liveSecEl) liveSecEl.style.display = 'none';
+        if (liveGridEl) liveGridEl.innerHTML = '';
+        if (liveDivEl) liveDivEl.style.display = 'none';
+        if (dirGridEl) dirGridEl.classList.remove('has-matches');
+      }
+
+      if (!Array.isArray(cricketMatches) || cricketMatches.length === 0 || !liveGridEl || !liveSecEl) {
+        hideLiveSection();
+        return;
+      }
       window._latestCricketMatches = cricketMatches;
 
+      var validMatches = cricketMatches.filter(function (match) {
+        return match && match.title && Array.isArray(match.streams) && match.streams.some(function (stream) {
+          return stream && stream.iframe;
+        });
+      });
+
+      if (validMatches.length === 0) {
+        hideLiveSection();
+        return;
+      }
+
       liveGridEl.innerHTML = '';
-      liveSecEl.style.display = '';
-      if (dirGridEl) dirGridEl.classList.add('has-matches');
-      if (liveDivEl) liveDivEl.style.display = '';
 
-      cricketMatches.forEach(function (match, mIdx) {
-        if (!match || !match.title || !Array.isArray(match.streams) || match.streams.length === 0) return;
-
+      validMatches.forEach(function (match, mIdx) {
         var card = document.createElement('div');
         card.className = 'match-card';
 
@@ -4103,6 +4119,14 @@
           liveGridEl.appendChild(card);
         }
       });
+
+      if (liveGridEl.children.length > 0) {
+        liveSecEl.style.display = '';
+        if (dirGridEl) dirGridEl.classList.add('has-matches');
+        if (liveDivEl) liveDivEl.style.display = '';
+      } else {
+        hideLiveSection();
+      }
     }
 
     if (window._cricketFetch) {
