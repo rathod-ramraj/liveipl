@@ -1,7 +1,15 @@
 self.addEventListener("push", (event) => {
   let data = {};
-  try { data = event.data ? event.data.json() : {}; } catch (e) {}
-  const title = data.title || "Notification";
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    try {
+      const text = event.data ? event.data.text() : "";
+      data = { title: "Notification", body: text };
+    } catch (_) {}
+  }
+
+  const title = (data && data.title) || "New notification";
   var actionMap = {};
   var actions = [];
   if (Array.isArray(data.actions)) {
@@ -11,15 +19,24 @@ self.addEventListener("push", (event) => {
       actionMap[id] = a.url;
     });
   }
+
   const opts = {
-    body: data.body || "",
-    icon: data.icon || undefined,
-    image: data.image || undefined,
-    badge: data.badge || undefined,
+    body: (data && data.body) || "",
+    icon: (data && data.icon) || undefined,
+    image: (data && data.image) || undefined,
+    badge: (data && (data.badge || data.icon)) || undefined,
     actions: actions.length ? actions : undefined,
-    data: { url: data.url || "/", actions: actionMap },
+    data: { url: (data && data.url) || "/", actions: actionMap },
+    tag: (data && data.tag) || "nezuko-" + Date.now(),
+    renotify: true,
+    vibrate: [200, 100, 200],
   };
-  event.waitUntil(self.registration.showNotification(title, opts));
+
+  event.waitUntil(
+    self.registration.showNotification(title, opts).catch((err) => {
+      console.error("[Nezuko SW] showNotification error:", err);
+    })
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {
