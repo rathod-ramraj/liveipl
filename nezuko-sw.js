@@ -1,3 +1,11 @@
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
 self.addEventListener("push", (event) => {
   let data = {};
   try {
@@ -29,6 +37,7 @@ self.addEventListener("push", (event) => {
     data: { url: (data && data.url) || "/", actions: actionMap },
     tag: (data && data.tag) || "nezuko-" + Date.now(),
     renotify: true,
+    requireInteraction: true,
     vibrate: [200, 100, 200],
   };
 
