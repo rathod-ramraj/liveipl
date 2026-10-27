@@ -1,7 +1,7 @@
 {
   "channels": [
     {
-      "id": "sony1",
+      "id": "sonyeng",
       "name": "Sony Liv English",
       "subtitle": "Sony Liv English",
       "category": "Live Channel",
@@ -10,7 +10,7 @@
       "active": true
     },
     {
-      "id": "sony3",
+      "id": "sonyhin",
       "name": "Sony Liv Hindi",
       "subtitle": "Sony Liv Hindi",
       "category": "Live Channel",
@@ -28,7 +28,7 @@
       "active": true
     },
     {
-      "id": "eng",
+      "id": "sspeng",
       "name": "Star Sports HD English",
       "subtitle": "Star Sports HD English",
       "category": "Live Channel",
@@ -37,7 +37,7 @@
       "active": true
     },
     {
-      "id": "main2",
+      "id": "ssphindi",
       "name": "Star Sports HD Hindi",
       "subtitle": "Star Sports HD Hindi",
       "category": "Live Channel",
@@ -100,8 +100,8 @@
       "active": true
     },
     {
-      "id": "cricbuzz",
-      "name": "Cricbuzz 1",
+      "id": "cricbuzzthedaddy",
+      "name": "Cricbuzz",
       "subtitle": "Cricbuzz Live",
       "category": "Live Channel",
       "type": "iframe",
@@ -119,11 +119,20 @@
     },
     {
       "id": "TNT Sports",
-      "name": "TNT Sports 1",
+      "name": "TNT Sports",
       "subtitle": "TNT Sports 1",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://thedaddy.pk/stream/stream-31.php",
+      "active": true
+    },
+    {
+      "id": "TNTsportsallrounder",
+      "name": "TNT Sports 1",
+      "subtitle": "TNT Sports",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://allrounder2-0.pages.dev/cricket/tnt",
       "active": true
     },
     {

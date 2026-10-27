@@ -660,6 +660,16 @@
       background-color: #000;
     }
 
+    .player-embed {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+      z-index: 1;
+    }
+
     :fullscreen,
     :-webkit-full-screen {
       background: #2c2d33 !important;
@@ -1444,6 +1454,7 @@
       "use strict";
 
       const API_URL = "https://all-sports.freedekholive-577.workers.dev/cricket.json";
+      const FALLBACK_API_URL = "/api/cricket";
 
       let allMatches = [];
       let currentMatch = null;
@@ -1640,22 +1651,42 @@
         } catch (_) {}
       }
 
-      // Fetch match schedule from API
+      // Fetch match schedule from API with fallback
       async function fetchMatches(isManual) {
+        let loaded = false;
         try {
           const res = await fetch(API_URL, { cache: "no-store" });
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          const data = await res.json();
-          allMatches = Array.isArray(data) ? data : [];
-          renderMatchesGrid();
-        } catch (err) {
-          console.error("Failed to fetch matches:", err);
-          if (!allMatches.length) {
-            document.getElementById("matchesGrid").innerHTML = `
-              <div style="grid-column: 1/-1; padding: 32px; text-align: center; color: var(--text-2);">
-                Failed to load live matches. Please check your network connection.
-              </div>`;
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              allMatches = data;
+              loaded = true;
+            }
           }
+        } catch (_) {}
+
+        if (!loaded) {
+          try {
+            const fbRes = await fetch(FALLBACK_API_URL, { cache: "no-store" });
+            if (fbRes.ok) {
+              const fbData = await fbRes.json();
+              if (Array.isArray(fbData) && fbData.length > 0) {
+                allMatches = fbData;
+                loaded = true;
+              }
+            }
+          } catch (fbErr) {
+            console.error("Failed to fetch matches from fallback:", fbErr);
+          }
+        }
+
+        if (loaded) {
+          renderMatchesGrid();
+        } else if (!allMatches.length) {
+          document.getElementById("matchesGrid").innerHTML = `
+            <div style="grid-column: 1/-1; padding: 32px; text-align: center; color: var(--text-2);">
+              Failed to load live matches. Please check your network connection.
+            </div>`;
         }
       }
 
@@ -1788,7 +1819,7 @@
         loadStream(idx);
       };
 
-      // Load specific stream into Shaka Player
+      // Load specific stream into Shaka Player or embed iframe
       async function loadStream(index) {
         if (!currentMatch || !currentMatch.dashStreams || !currentMatch.dashStreams[index]) return;
         currentStreamIndex = index;
@@ -1798,6 +1829,39 @@
 
         const stream = currentMatch.dashStreams[index];
         const url = stream.url;
+        const isEmbed = stream.type === "embed" || (!url.includes(".mpd") && !url.includes(".m3u8") && (url.includes("player.php") || url.includes("/watch/") || url.includes("embed") || url.includes("trend48")));
+
+        let existingIframe = container.querySelector(".player-embed");
+
+        if (isEmbed) {
+          try {
+            if (player) {
+              await player.unload();
+            }
+          } catch (_) {}
+          video.style.display = "none";
+          if (!existingIframe) {
+            existingIframe = document.createElement("iframe");
+            existingIframe.className = "player-embed";
+            existingIframe.setAttribute("allowfullscreen", "true");
+            existingIframe.setAttribute("webkitallowfullscreen", "true");
+            existingIframe.setAttribute("mozallowfullscreen", "true");
+            existingIframe.setAttribute("allow", "autoplay; encrypted-media; fullscreen; picture-in-picture");
+            existingIframe.setAttribute("frameborder", "0");
+            existingIframe.setAttribute("referrerpolicy", "no-referrer");
+            container.appendChild(existingIframe);
+          }
+          existingIframe.style.display = "block";
+          existingIframe.src = url;
+          if (window.PerfController) PerfController.setStreaming(true);
+          return;
+        }
+
+        if (existingIframe) {
+          existingIframe.style.display = "none";
+          existingIframe.src = "";
+        }
+        video.style.display = "block";
 
         player.configure({
           drm: { clearKeys: {} },
