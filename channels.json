@@ -46,12 +46,21 @@
       "active": true
     },
     {
-      "id" : "willowLive",
+      "id": "willowAllrounder",
+      "name": "Willow",
+      "subtitle": "Willow Live",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://allrounder3-0.pages.dev/cricket/willow",
+      "active": true
+    },
+    {
+      "id": "willowLive",
       "name": "Willow Live",
       "subtitle": "Willow Live",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://trend48.st/event/willow-cricket",
+      "streamUrl": "https://trend48.st/live-tv?ch=willow-usa",
       "active": true
     },
     {
@@ -60,7 +69,25 @@
       "subtitle": "Willow Live 2",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://embed.st/embed/admin/admin-willow-cricket/1",
+      "streamUrl": "https://taifood-blog.asia/embed/247-willow",
+      "active": true
+    },
+    {
+      "id": "willowdaddysite",
+      "name": "Willow Live 3",
+      "subtitle": "Willow Live",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://thedaddy.pk/stream/stream-346.php",
+      "active": true
+    },
+    {
+      "id": "willowsports",
+      "name": "willow Sports",
+      "subtitle": "willow Sports",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8",
       "active": true
     },
     {
@@ -69,35 +96,17 @@
       "subtitle": "Fox 501 HD",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://embed.st/embed/admin/ppv-fox-cricket/1",
+      "streamUrl": "https://taifood-blog.asia/embed/247-fox-cricket",
       "active": true
     },
     {
-      "id": "fox2hd",
-      "name": "Fox 501 HD 2",
-      "subtitle": "Fox 501 HD 2",
+      "id": "cricbuzz",
+      "name": "Cricbuzz 1",
+      "subtitle": "Cricbuzz Live",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://embed.st/embed/admin/ppv-fox-cricket/2",
+      "streamUrl": "https://thedaddy.pk/stream/stream-370.php",
       "active": true
-    },
-    {
-      "id": "willowsports",
-      "name": "Main 6",
-      "subtitle": "Main 6",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8",
-      "active": false
-    },
-    {
-      "id": "embed-st",
-      "name": "Main 7",
-      "subtitle": "Main 7",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://embed.st/embed/admin/admin-willow-cricket/3",
-      "active": false
     },
     {
       "id": "cricbuzz",
@@ -106,27 +115,16 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://freecdn.st/hembedplayer/csstream1/1/960/540",
-      
       "active": true
     },
     {
-      "id": "cricbuzz2",
-      "name": "Cricbuzz 2",
-      "subtitle": "Cricbuzz Live",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://freecdn.xyz/hembedplayer/csstream4/2/960/540",
-      "active": false
-    },
-    {
-      
       "id": "TNT Sports",
-      "name": "TNT Sports 3",
-      "subtitle": "TNT Sports 3",
+      "name": "TNT Sports 1",
+      "subtitle": "TNT Sports 1",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://t-flix.top/tolive/play.php?id=682adcaf6df79",
-      "active": false
+      "streamUrl": "https://thedaddy.pk/stream/stream-31.php",
+      "active": true
     },
     {
       "id": "willow",
@@ -135,7 +133,7 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://embedindia.st/embed/247-willow",
-      "active": true
+      "active": false
     },
     {
       "id": "willow2",
@@ -144,16 +142,7 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://embed.st/embed/admin/admin-willow-cricket/4",
-      "active": true
-    },
-    {
-      "id": "willow3",
-      "name": "Willow 3",
-      "subtitle": "Willow Live",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://allrounder3-0.pages.dev/cricket/willow",
-      "active": true
+      "active": false
     },
     {
       "id": "zee",
