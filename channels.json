@@ -46,6 +46,15 @@
       "active": true
     },
     {
+      "id": "willowPlayup",
+      "name": "Willow Live",
+      "subtitle": "Willow",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://playupp.pages.dev/cricket/willow",
+      "active": true
+    },
+    {
       "id": "willowAllrounder",
       "name": "Willow",
       "subtitle": "Willow Live",
@@ -73,15 +82,6 @@
       "active": true
     },
     {
-      "id": "willowdaddysite",
-      "name": "Willow Live 3",
-      "subtitle": "Willow Live",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://thedaddy.pk/stream/stream-346.php",
-      "active": true
-    },
-    {
       "id": "willowsports",
       "name": "willow Sports",
       "subtitle": "willow Sports",
@@ -106,7 +106,7 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://thedaddy.pk/stream/stream-370.php",
-      "active": true
+      "active": false
     },
     {
       "id": "cricbuzz",
@@ -115,15 +115,6 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://freecdn.st/hembedplayer/csstream1/1/960/540",
-      "active": true
-    },
-    {
-      "id": "TNT Sports",
-      "name": "TNT Sports",
-      "subtitle": "TNT Sports 1",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://thedaddy.pk/stream/stream-31.php",
       "active": true
     },
     {
