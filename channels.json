@@ -6,7 +6,7 @@
       "subtitle": "Sony Liv English",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://playupp.pages.dev/sonyLivEng",
+      "streamUrl": "https://playupp.pages.dev/cricket/sonyLivEng",
       "active": true
     },
     {
@@ -15,7 +15,7 @@
       "subtitle": "Sony Liv Hindi",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://playupp.pages.dev/sonyLivHin",
+      "streamUrl": "https://playupp.pages.dev/cricket/sonyLivHin",
       "active": true
     },
     {
@@ -24,7 +24,7 @@
       "subtitle": "Sony Liv Telugu",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://playupp.pages.dev/sonyLivtel",
+      "streamUrl": "https://playupp.pages.dev/cricket/sonyLivtel",
       "active": true
     },
     {

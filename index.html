@@ -240,6 +240,9 @@
     }
 
     window._cricketFetch = fetchCricketMatches();
+    window._sportsJsonFetch = fetchWithTimeout('https://sonujson-v6.pages.dev/Data/sports.json', 4000)
+      .then(function (r) { return r.json(); })
+      .catch(function () { return null; });
     window._channelsJsonFetch = fetchWithTimeout('./channels.json', 3500)
       .then(function (r) { return r.json(); })
       .catch(function () { return null; });
@@ -2840,11 +2843,17 @@
       align-items: start;
     }
 
-    .stream-directory-grid.has-matches {
-      grid-template-columns: 1fr 1.1fr;
+    .stream-directory-grid.has-sports {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .stream-directory-grid.has-sports.has-matches {
+      grid-template-columns: 1fr 1fr 1fr;
     }
 
     @media (max-width: 992px) {
+      .stream-directory-grid.has-sports,
+      .stream-directory-grid.has-sports.has-matches,
       .stream-directory-grid.has-matches {
         grid-template-columns: 1fr;
         gap: 36px;
@@ -3109,6 +3118,22 @@
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
               </svg><span class="ch-btn-label">Zee Cinema</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDE OF LIVE CHANNELS: Sports HD Channels from sports.json -->
+      <div class="stream-col" id="sportsChannelsCol">
+        <div class="s-label">Sports Channels</div>
+        <div class="s-title">Star &amp; Sony Sports</div>
+        <div class="s-desc">Live cricket, football &amp; multi-language sports broadcast streams.</div>
+        <div class="match-card" style="margin-top:20px">
+          <div class="match-card-header">
+            <div class="match-card-title">Sports HD Feeds</div>
+            <div class="match-card-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;border-color:rgba(34,211,160,0.3)">HD LIVE</div>
+          </div>
+          <div class="ch-grid" id="sportsChGrid">
+            <div style="padding:16px;color:var(--text-3);font-size:13px;grid-column:1/-1;text-align:center">Loading sports channels...</div>
           </div>
         </div>
       </div>
@@ -3887,6 +3912,8 @@
       elMeta.textContent = m.sub + ' · HD Live';
       if (!skipScroll) {
         updatePageTitle(ch);
+        var pEl = document.getElementById('player');
+        if (pEl) pEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
         setHomePageTitle();
       }
@@ -4362,7 +4389,8 @@
               if (!chExists) channels.push(chObj);
 
               switchChannel(cid);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              var pEl = document.getElementById('player');
+              if (pEl) pEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, { passive: true });
             streamsContainer.appendChild(btn);
           }
@@ -4382,6 +4410,125 @@
       } else {
         hideLiveSection();
       }
+    }
+
+    function renderSportsChannels(data) {
+      var sportsGridEl = document.getElementById('sportsChGrid');
+      var sportsColEl = document.getElementById('sportsChannelsCol');
+      var dirGridEl = document.getElementById('streamDirectoryGrid');
+      if (!sportsGridEl || !sportsColEl) return;
+
+      var chList = (data && Array.isArray(data.channels)) ? data.channels : [];
+      if (chList.length === 0) {
+        sportsColEl.style.display = 'none';
+        if (dirGridEl) dirGridEl.classList.remove('has-sports');
+        return;
+      }
+
+      if (dirGridEl) dirGridEl.classList.add('has-sports');
+      sportsColEl.style.display = '';
+
+      function buildSportsBtn(ch, isActive) {
+        var sid = 'sports_' + String(ch.id).toLowerCase();
+        var streamIframeUrl = '/cricket/test.html?id=' + encodeURIComponent(ch.id);
+
+        var chObj = {
+          id: sid,
+          name: ch.name || ch.id,
+          type: 'iframe',
+          iframeSrc: streamIframeUrl,
+          category: 'Sports HD'
+        };
+
+        ALLOWED.add(sid);
+        META[sid] = {
+          name: ch.name || ch.id,
+          sub: isActive !== false ? 'Sports HD Live' : 'Offline / Inactive'
+        };
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ch-btn' + (isActive === false ? ' ch-offline' : '');
+        btn.dataset.id = sid;
+        btn.setAttribute('aria-pressed', 'false');
+        if (isActive === false) {
+          btn.style.opacity = '0.55';
+        }
+        btn.innerHTML = CH_LINK_ICON + '<span class="ch-btn-label">' + (ch.name || ch.id) + '</span>';
+
+        btn.addEventListener('click', function () {
+          var exists = false;
+          for (var i = 0; i < channels.length; i++) {
+            if (channels[i].id === sid) { exists = true; channels[i] = chObj; break; }
+          }
+          if (!exists) channels.push(chObj);
+
+          switchChannel(sid);
+          var pEl = document.getElementById('player');
+          if (pEl) pEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, { passive: true });
+
+        return btn;
+      }
+
+      // Initial fast render
+      var initialFrag = document.createDocumentFragment();
+      chList.forEach(function (ch) {
+        if (!ch || !ch.id) return;
+        initialFrag.appendChild(buildSportsBtn(ch, true));
+      });
+      sportsGridEl.innerHTML = '';
+      sportsGridEl.appendChild(initialFrag);
+
+      // Probe channel health in parallel and re-sort (active on top, inactive at bottom)
+      var probes = chList.map(function (ch) {
+        if (!ch || !ch.stream_url) return Promise.resolve({ ch: ch, active: false });
+        var cookie = ch.cookie && ch.cookie.startsWith('__hdnea__=') ? ch.cookie.slice(10) : (ch.cookie || '');
+        var probeUrl = ch.stream_url + (ch.stream_url.indexOf('?') !== -1 ? '&' : '?') + '__hdnea__=' + cookie;
+        var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        var tid = setTimeout(function () { if (ctrl) ctrl.abort(); }, 2500);
+
+        return fetch(probeUrl, { method: 'HEAD', mode: 'cors', signal: ctrl ? ctrl.signal : undefined })
+          .then(function (res) {
+            clearTimeout(tid);
+            return { ch: ch, active: res.ok };
+          })
+          .catch(function () {
+            clearTimeout(tid);
+            return { ch: ch, active: false };
+          });
+      });
+
+      Promise.all(probes).then(function (results) {
+        var activeItems = [];
+        var inactiveItems = [];
+
+        results.forEach(function (item) {
+          if (!item.ch || !item.ch.id) return;
+          if (item.active) activeItems.push(item.ch);
+          else inactiveItems.push(item.ch);
+        });
+
+        var sorted = activeItems.concat(inactiveItems);
+        var sortedFrag = document.createDocumentFragment();
+
+        activeItems.forEach(function (ch) {
+          sortedFrag.appendChild(buildSportsBtn(ch, true));
+        });
+        inactiveItems.forEach(function (ch) {
+          sortedFrag.appendChild(buildSportsBtn(ch, false));
+        });
+
+        sportsGridEl.innerHTML = '';
+        sportsGridEl.appendChild(sortedFrag);
+      }).catch(function () { });
+    }
+
+    if (window._sportsJsonFetch) {
+      window._sportsJsonFetch.then(renderSportsChannels).catch(function () {
+        var el = document.getElementById('sportsChannelsCol');
+        if (el) el.style.display = 'none';
+      });
     }
 
     if (window._cricketFetch) {
