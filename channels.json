@@ -33,7 +33,7 @@
       "subtitle": "Star Sports HD English",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://playupp.pages.dev/eng",
+      "streamUrl": "https://sonucdn-v5.pages.dev/star?id=E1HD",
       "active": true
     },
     {
@@ -42,7 +42,7 @@
       "subtitle": "Star Sports HD Hindi",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://playupp.pages.dev/ssphd2",
+      "streamUrl": "https://sonucdn-v5.pages.dev/star?id=H1HD",
       "active": true
     },
     {
