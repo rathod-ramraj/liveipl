@@ -215,7 +215,7 @@ video.mode-cover{object-fit:cover}
 <div id="status"></div>
 
 <div id="pc">
-  <video id="v" playsinline webkit-playsinline preload="none" muted x5-video-player-type="h5" x5-video-player-fullscreen="true"></video>
+  <video id="v" autoplay playsinline webkit-playsinline preload="auto" muted x5-video-player-type="h5" x5-video-player-fullscreen="true"></video>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/5.2.0/shaka-player.ui.min.js"></script>
@@ -611,10 +611,17 @@ async function startPlayer(){
     }, delay);
   }
 
-  function unmuteOnce(){ $vid.muted = false; }
+  function unmuteOnce(){
+    if($vid && $vid.muted){
+      $vid.muted = false;
+    }
+  }
   $pc.addEventListener("pointerdown", unmuteOnce, {capture:true,once:true});
   $pc.addEventListener("click", unmuteOnce, {capture:true,once:true});
   $pc.addEventListener("keydown", unmuteOnce, {capture:true,once:true});
+  window.addEventListener("pointerdown", unmuteOnce, {capture:true,once:true});
+  window.addEventListener("click", unmuteOnce, {capture:true,once:true});
+  window.addEventListener("touchstart", unmuteOnce, {capture:true,once:true});
 
   function onSeeking(){
     seekState.active = true;
@@ -713,7 +720,12 @@ async function startPlayer(){
     toast("Loading " + currentCh.name + " · Please Wait", "warn", 0);
     await player.load(url);
     hideOverlay();
-    toast("Ready · Tap Play To Start", "ok", 5000);
+    try{
+      await $vid.play();
+      toast("Live · " + currentCh.name, "live", 3500);
+    }catch(_){
+      toast("Tap To Play / Unmute", "ok", 4000);
+    }
   }catch(_){
     hideOverlay();
     toast("Connection Error · Retrying Now", "warn", 0);
