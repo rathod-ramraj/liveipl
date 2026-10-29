@@ -12,7 +12,22 @@
     *{margin:0;padding:0;box-sizing:border-box}
     html,body{width:100%;height:100%;background:#0a0a0a;overflow:hidden;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
     #player-container{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center}
+    #player-container, .shaka-video-container, .shaka-controls-container, video {
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
     video{width:100%;height:100%;object-fit:contain;background:#000}
+    #brightness-dimmer {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1;
+      transition: opacity .05s linear;
+    }
     /* subtle status badge (inspired by second design) */
     #status{
       position:fixed;top:max(16px,env(safe-area-inset-top));right:16px;z-index:9997;
@@ -40,12 +55,67 @@
     .shaka-controls-container button{color:#fff!important}
     .shaka-video-container{background-color:#000!important}
     @media(max-width:380px){.fit-pill{font-size:9px;padding:2px 5px}}
+
+    /* Hotstar-style Gesture Indicators */
+    .gesture-overlay{position:absolute;inset:0;pointer-events:none;z-index:9998;overflow:hidden}
+    .gesture-pill{
+      position:absolute;top:50%;transform:translateY(-50%) scale(0.92);
+      display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+      width:46px;height:180px;padding:14px 8px;
+      background:rgba(12,12,15,.82);border:1px solid rgba(255,255,255,.14);
+      border-radius:26px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+      box-shadow:0 8px 32px rgba(0,0,0,.6);color:#fff;
+      pointer-events:none;opacity:0;
+      transition:opacity .2s ease,transform .2s cubic-bezier(.16,1,.3,1)
+    }
+    .gesture-pill.show{opacity:1;transform:translateY(-50%) scale(1)}
+    .gesture-pill.left{left:28px}
+    .gesture-pill.right{right:28px}
+    .gesture-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+    .gesture-bar-track{position:relative;width:5px;flex:1;margin:10px 0;background:rgba(255,255,255,.2);border-radius:999px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+    .gesture-bar-fill{width:100%;height:100%;background:#ff0000;border-radius:999px;transition:height .05s linear}
+    .gesture-text{font-size:11px;font-weight:700;letter-spacing:.3px;color:#fff;font-variant-numeric:tabular-nums;flex-shrink:0;text-align:center}
+    @media(max-width:480px){
+      .gesture-pill{width:40px;height:156px;padding:12px 6px;border-radius:22px}
+      .gesture-pill.left{left:14px}
+      .gesture-pill.right{right:14px}
+      .gesture-icon{width:18px;height:18px}
+      .gesture-text{font-size:10px}
+    }
   </style>
 </head>
 <body>
 
 <div id="player-container">
+  <div id="brightness-dimmer"></div>
   <video id="video" autoplay muted playsinline preload="metadata"></video>
+  <div id="gesture-overlay" class="gesture-overlay">
+    <div id="gesture-indicator-left" class="gesture-pill left">
+      <div class="gesture-icon" id="gesture-icon-left">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+        </svg>
+      </div>
+      <div class="gesture-bar-track">
+        <div class="gesture-bar-fill" id="gesture-fill-left" style="height:100%"></div>
+      </div>
+      <div class="gesture-text" id="gesture-text-left">100%</div>
+    </div>
+    <div id="gesture-indicator-right" class="gesture-pill right">
+      <div class="gesture-icon" id="gesture-icon-right">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
+      </div>
+      <div class="gesture-bar-track">
+        <div class="gesture-bar-fill" id="gesture-fill-right" style="height:100%"></div>
+      </div>
+      <div class="gesture-text" id="gesture-text-right">100%</div>
+    </div>
+  </div>
 </div>
 
 <!-- status badge (optional but neat) -->
@@ -69,6 +139,244 @@
   const container = document.getElementById("player-container");
   const statusEl = document.getElementById("status");
   const statusText = document.getElementById("statusText");
+
+  // Gesture indicators
+  const dimmerEl = document.getElementById("brightness-dimmer");
+  const leftPill = document.getElementById("gesture-indicator-left");
+  const leftFill = document.getElementById("gesture-fill-left");
+  const leftText = document.getElementById("gesture-text-left");
+
+  const rightPill = document.getElementById("gesture-indicator-right");
+  const rightFill = document.getElementById("gesture-fill-right");
+  const rightText = document.getElementById("gesture-text-right");
+  const rightIcon = document.getElementById("gesture-icon-right");
+
+  const VOL_HIGH_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+  const VOL_LOW_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+  const VOL_MUTE_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+
+  let currentBrightness = 100;
+  let currentVolume = 100;
+  let activeGesture = null;
+  let hideLeftTimer = null;
+  let hideRightTimer = null;
+
+  function showIndicator(side) {
+    const el = side === "left" ? leftPill : rightPill;
+    if (!el) return;
+    el.classList.add("show");
+    if (side === "left" && hideLeftTimer) {
+      clearTimeout(hideLeftTimer);
+      hideLeftTimer = null;
+    }
+    if (side === "right" && hideRightTimer) {
+      clearTimeout(hideRightTimer);
+      hideRightTimer = null;
+    }
+  }
+
+  function scheduleHideIndicator(side) {
+    const timer = setTimeout(function() {
+      const el = side === "left" ? leftPill : rightPill;
+      if (el) el.classList.remove("show");
+    }, 700);
+    if (side === "left") hideLeftTimer = timer;
+    else hideRightTimer = timer;
+  }
+
+  function setBrightness(val) {
+    currentBrightness = Math.min(100, Math.max(0, val));
+    if (dimmerEl) {
+      dimmerEl.style.opacity = (((100 - currentBrightness) / 100) * 0.88).toFixed(3);
+    }
+    const filterVal = Math.max(0.1, currentBrightness / 100);
+    video.style.filter = "brightness(" + filterVal + ")";
+    if (leftFill) leftFill.style.height = currentBrightness + "%";
+    if (leftText) leftText.textContent = currentBrightness + "%";
+    showIndicator("left");
+  }
+
+  function setVolume(val) {
+    currentVolume = Math.min(100, Math.max(0, val));
+    video.volume = currentVolume / 100;
+    if (currentVolume > 0 && video.muted) {
+      video.muted = false;
+    } else if (currentVolume === 0 && !video.muted) {
+      video.muted = true;
+    }
+    if (rightFill) rightFill.style.height = currentVolume + "%";
+    if (rightText) rightText.textContent = currentVolume + "%";
+    if (rightIcon) {
+      if (currentVolume === 0 || video.muted) {
+        rightIcon.innerHTML = VOL_MUTE_ICON;
+      } else if (currentVolume < 50) {
+        rightIcon.innerHTML = VOL_LOW_ICON;
+      } else {
+        rightIcon.innerHTML = VOL_HIGH_ICON;
+      }
+    }
+    showIndicator("right");
+  }
+
+  video.addEventListener("volumechange", function() {
+    if (!activeGesture) {
+      currentVolume = video.muted ? 0 : Math.round(video.volume * 100);
+      if (rightFill) rightFill.style.height = currentVolume + "%";
+      if (rightText) rightText.textContent = currentVolume + "%";
+      if (rightIcon) {
+        if (currentVolume === 0 || video.muted) {
+          rightIcon.innerHTML = VOL_MUTE_ICON;
+        } else if (currentVolume < 50) {
+          rightIcon.innerHTML = VOL_LOW_ICON;
+        } else {
+          rightIcon.innerHTML = VOL_HIGH_ICON;
+        }
+      }
+    }
+  });
+
+  function initSwipeGestures() {
+    const videoContainer = container.querySelector(".shaka-video-container") || container;
+
+    // Ensure dimmer and gesture-overlay are inside videoContainer so they persist in fullscreen
+    const dimmer = document.getElementById("brightness-dimmer");
+    const overlay = document.getElementById("gesture-overlay");
+    if (videoContainer !== container) {
+      if (dimmer && dimmer.parentNode !== videoContainer) videoContainer.appendChild(dimmer);
+      if (overlay && overlay.parentNode !== videoContainer) videoContainer.appendChild(overlay);
+    }
+
+    let startX = 0;
+    let startY = 0;
+    let startVal = 0;
+    let isTracking = false;
+    let wasSwiping = false;
+
+    function shouldIgnore(target) {
+      return !!(target && (
+        target.closest(".shaka-bottom-controls, .shaka-controls-button-panel, .shaka-overflow-menu, .shaka-play-button-container, .sp-fit-btn, #status, button, input")
+      ));
+    }
+
+    function handleMove(clientY) {
+      const rect = videoContainer.getBoundingClientRect();
+      const travel = Math.min(Math.max(rect.height * 0.55, 180), 320);
+      const deltaY = clientY - startY;
+      const diff = (-deltaY / travel) * 100;
+      const newVal = Math.min(100, Math.max(0, Math.round(startVal + diff)));
+      if (activeGesture === "brightness") {
+        setBrightness(newVal);
+      } else if (activeGesture === "volume") {
+        setVolume(newVal);
+      }
+    }
+
+    // Touch events for mobile
+    videoContainer.addEventListener("touchstart", function(e) {
+      if (e.touches.length !== 1) { isTracking = false; return; }
+      if (shouldIgnore(e.target)) return;
+
+      const touch = e.touches[0];
+      const rect = videoContainer.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+
+      startX = touch.clientX;
+      startY = touch.clientY;
+      activeGesture = null;
+      isTracking = true;
+
+      const isLeft = x < rect.width / 2;
+      startVal = isLeft ? currentBrightness : currentVolume;
+    }, { passive: true });
+
+    videoContainer.addEventListener("touchmove", function(e) {
+      if (!isTracking || e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - startX;
+      const deltaY = touch.clientY - startY;
+
+      if (!activeGesture) {
+        if (Math.abs(deltaY) > 8 && Math.abs(deltaY) > Math.abs(deltaX)) {
+          const rect = videoContainer.getBoundingClientRect();
+          const x = touch.clientX - rect.left;
+          activeGesture = (x < rect.width / 2) ? "brightness" : "volume";
+        } else if (Math.abs(deltaX) > 10) {
+          isTracking = false;
+          return;
+        }
+      }
+
+      if (activeGesture) {
+        if (e.cancelable) e.preventDefault();
+        handleMove(touch.clientY);
+      }
+    }, { passive: false });
+
+    function endTouch() {
+      if (activeGesture) {
+        wasSwiping = true;
+        setTimeout(function() { wasSwiping = false; }, 320);
+        scheduleHideIndicator(activeGesture === "brightness" ? "left" : "right");
+        activeGesture = null;
+      }
+      isTracking = false;
+    }
+
+    videoContainer.addEventListener("touchend", endTouch, { passive: true });
+    videoContainer.addEventListener("touchcancel", endTouch, { passive: true });
+
+    // Block accidental click on release after swipe
+    videoContainer.addEventListener("click", function(e) {
+      if (wasSwiping) {
+        e.stopPropagation();
+        e.preventDefault();
+        wasSwiping = false;
+      }
+    }, true);
+
+    // Mouse drag support for desktop simulation
+    let isMouseDown = false;
+    videoContainer.addEventListener("mousedown", function(e) {
+      if (e.button !== 0 || shouldIgnore(e.target)) return;
+      isMouseDown = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      activeGesture = null;
+      const rect = videoContainer.getBoundingClientRect();
+      const isLeft = (e.clientX - rect.left) < rect.width / 2;
+      startVal = isLeft ? currentBrightness : currentVolume;
+    });
+
+    window.addEventListener("mousemove", function(e) {
+      if (!isMouseDown) return;
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+      if (!activeGesture) {
+        if (Math.abs(deltaY) > 8 && Math.abs(deltaY) > Math.abs(deltaX)) {
+          const rect = videoContainer.getBoundingClientRect();
+          activeGesture = ((startX - rect.left) < rect.width / 2) ? "brightness" : "volume";
+        } else if (Math.abs(deltaX) > 10) {
+          isMouseDown = false;
+          return;
+        }
+      }
+      if (activeGesture) {
+        handleMove(e.clientY);
+      }
+    });
+
+    window.addEventListener("mouseup", function() {
+      if (isMouseDown) {
+        isMouseDown = false;
+        if (activeGesture) {
+          wasSwiping = true;
+          setTimeout(function() { wasSwiping = false; }, 320);
+          scheduleHideIndicator(activeGesture === "brightness" ? "left" : "right");
+          activeGesture = null;
+        }
+      }
+    });
+  }
 
   let statusTimer = null;
 
@@ -209,6 +517,9 @@
       if (injectFitButton(container, video)) return;
       if (++injectCount < 5) setTimeout(tryInject, 150);
     })();
+
+    // Initialize Hotstar-style swipe gestures
+    initSwipeGestures();
 
     // Player config (first code)
     player.configure({
