@@ -10,8 +10,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Willow Cricket HD Live</title>
-<link rel="dns-prefetch" href="//dash-ott.bia-cf.live.pv-cdn.net">
-<link rel="preconnect" href="https://dash-ott.bia-cf.live.pv-cdn.net" crossorigin>
+<link rel="dns-prefetch" href="//abfjk4haaaaaaaamkitc5445rybm6.bia-cf.live.pv-cdn.net">
+<link rel="preconnect" href="https://abfjk4haaaaaaaamkitc5445rybm6.bia-cf.live.pv-cdn.net" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/5.2.0/controls.min.css">
 <style>
 :root{
@@ -88,6 +88,66 @@ video.mode-cover{object-fit:cover}
   0%,100%{opacity:1;transform:scale(1)}
   50%{opacity:.28;transform:scale(.52)}
 }
+
+/* Channel Switcher Header Overlay */
+#ch-strip{
+  position:fixed;
+  top:max(12px, env(safe-area-inset-top, 12px));
+  left:50%;
+  transform:translateX(-50%);
+  z-index:9996;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 6px;
+  background:rgba(12,12,14,0.78);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:9999px;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);
+  transition:opacity 0.25s ease, transform 0.25s ease;
+  user-select:none;
+}
+.ch-tab{
+  padding:6px 14px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0.3px;
+  color:#94a3b8;
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:9999px;
+  cursor:pointer;
+  transition:all 0.18s ease;
+  white-space:nowrap;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  -webkit-tap-highlight-color:transparent;
+}
+.ch-tab:hover{
+  color:#f8fafc;
+  background:rgba(255,255,255,0.06);
+}
+.ch-tab.active{
+  color:#fff;
+  background:rgba(255,255,255,0.14);
+  border-color:rgba(255,255,255,0.24);
+  box-shadow:0 1px 6px rgba(0,0,0,0.3);
+}
+.ch-tab-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#22d3a0;
+  display:none;
+}
+.ch-tab.active .ch-tab-dot{
+  display:inline-block;
+  animation:dot-pulse 2s ease-in-out infinite;
+}
+
 .sp-btn{
   background:transparent!important;border:none!important;
   cursor:pointer!important;padding:0 8px!important;
@@ -117,6 +177,7 @@ video.mode-cover{object-fit:cover}
 @media(max-width:380px){
   .fit-pill{font-size:9px;padding:2px 5px}
   .sp-btn{padding:0 5px!important}
+  .ch-tab{padding:5px 10px;font-size:10px}
 }
 </style>
 </head>
@@ -138,6 +199,19 @@ video.mode-cover{object-fit:cover}
   <p id="loadMsg" hidden>Loading</p>
 </div>
 
+<!-- Willow Channel Switcher Pills -->
+<div id="ch-strip" role="tablist" aria-label="Select Willow Channel">
+  <button type="button" class="ch-tab active" data-index="0" role="tab" aria-selected="true">
+    <span class="ch-tab-dot"></span>Willow 1
+  </button>
+  <button type="button" class="ch-tab" data-index="1" role="tab" aria-selected="false">
+    <span class="ch-tab-dot"></span>Willow 2
+  </button>
+  <button type="button" class="ch-tab" data-index="2" role="tab" aria-selected="false">
+    <span class="ch-tab-dot"></span>Willow 3
+  </button>
+</div>
+
 <div id="status"></div>
 
 <div id="pc">
@@ -149,13 +223,29 @@ video.mode-cover{object-fit:cover}
 (function(){
 "use strict";
 
-var STREAM_CONFIG = {
-  name: "Willow Cricket HD",
-  manifest: "https://dash-ott.bia-cf.live.pv-cdn.net/pdx-nitro/live/clients/dash/enc/ti197fooyt/out/v1/91ff24abd6924aa0b1d821320c6ccadf/cenc.mpd",
-  drmKeys: {
-    "c426546fa9890b75bd446f2cc988c7f6": "9b5ea5567d5f4d5aad8123df11dfb24e"
+var WILLOW_CHANNELS = [
+  {
+    name: "Willow 1",
+    manifest: "https://abfjk4haaaaaaaamkitc5445rybm6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/r6vs6zdomz/out/v1/d34a7d179f4f49f2b2f08ec490165d8b/cenc.mpd",
+    drmKeys: {
+      "81cceef47300d899003a2dd4f80a0ec4": "0db92cc3f3a7b1c97af4aaef56d641ef"
+    }
+  },
+  {
+    name: "Willow 2",
+    manifest: "https://abfjk4haaaaaaaamkitc5445rybm6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/mv8bhgey8i/out/v1/46e42bfd066b481c8bb856dfe5c2dc85/cenc.mpd",
+    drmKeys: {
+      "cad7365855ea0ac0653144882a46e9a6": "0ee40359b01264cce5aac3140096c927"
+    }
+  },
+  {
+    name: "Willow 3",
+    manifest: "https://abfjk4haaaaaaaamkitc5445rybm6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/6qhfwsk4zo/out/v1/0a7bd0ff80a74315834174393f370523/cenc.mpd",
+    drmKeys: {
+      "ba4284442c87f52ddeaa95c65d236805": "56f0808d1f1fbfc0703b384081f1d340"
+    }
   }
-};
+];
 
 var $overlay = document.getElementById("overlay");
 var $loadMsg = document.getElementById("loadMsg");
@@ -163,6 +253,9 @@ var $status  = document.getElementById("status");
 var $pc      = document.getElementById("pc");
 var $vid     = document.getElementById("v");
 var _stTmr   = null;
+
+var player = null;
+var currentChannelIndex = 0;
 
 function getTier(){
   var mem   = navigator.deviceMemory || 4;
@@ -299,12 +392,66 @@ function injectControls(container, vid){
   return true;
 }
 
+function updateChannelTabs(idx){
+  var tabs = document.querySelectorAll(".ch-tab");
+  tabs.forEach(function(tab, i){
+    var active = i === idx;
+    tab.classList.toggle("active", active);
+    tab.setAttribute("aria-selected", active ? "true" : "false");
+  });
+}
+
+function initChannelTabs(){
+  var tabs = document.querySelectorAll(".ch-tab");
+  tabs.forEach(function(tab){
+    tab.addEventListener("click", function(){
+      var idx = parseInt(tab.dataset.index, 10);
+      if(idx !== currentChannelIndex && WILLOW_CHANNELS[idx]){
+        switchChannel(idx);
+      }
+    });
+  });
+}
+
+async function switchChannel(idx){
+  currentChannelIndex = idx;
+  updateChannelTabs(idx);
+  var ch = WILLOW_CHANNELS[idx];
+  document.title = ch.name + " HD Live";
+
+  toast("Loading " + ch.name, "warn", 2500);
+  try{
+    if(player){
+      player.configure("drm.clearKeys", ch.drmKeys);
+      await player.load(ch.manifest);
+      await $vid.play().catch(function(){});
+      toast("Playing " + ch.name, "live", 3500);
+    }
+  }catch(err){
+    console.error("Failed to load channel:", err);
+    toast(shakaErrStr(err), "err", 5000);
+  }
+}
+
 async function startPlayer(){
   $pc.style.display = "flex";
+  initChannelTabs();
+
+  // Check URL query param e.g. ?ch=2 or ?channel=3
+  var params = new URLSearchParams(window.location.search);
+  var chParam = params.get("ch") || params.get("channel") || params.get("id");
+  if(chParam){
+    var pIdx = parseInt(chParam, 10);
+    if(pIdx >= 1 && pIdx <= WILLOW_CHANNELS.length){
+      currentChannelIndex = pIdx - 1;
+    }
+  }
+  updateChannelTabs(currentChannelIndex);
+
   shaka.polyfill.installAll();
   if(!shaka.Player.isBrowserSupported()){ errMsg("Browser Not Supported."); return; }
 
-  var player = new shaka.Player();
+  player = new shaka.Player();
   await player.attach($vid);
 
   new shaka.ui.Overlay(player, $pc, $vid).configure({
@@ -326,8 +473,9 @@ async function startPlayer(){
     if(++_injectCount < 5) setTimeout(tryInject, 150);
   })();
 
-  var url     = STREAM_CONFIG.manifest;
-  var drmKeys = STREAM_CONFIG.drmKeys;
+  var currentCh = WILLOW_CHANNELS[currentChannelIndex];
+  var url     = currentCh.manifest;
+  var drmKeys = currentCh.drmKeys;
 
   var restrictionsRelaxed = false;
   var thermalApplied      = false;
@@ -357,7 +505,7 @@ async function startPlayer(){
     return {
       preferredAudioLanguage: '',
       preferredAudioCodecs: ['mp4a.40.2','mp4a.40.5','ac-3','ec-3','opus','flac'],
-      drm:{ clearKeys: drmKeys },
+      drm:{ clearKeys: WILLOW_CHANNELS[currentChannelIndex].drmKeys },
       manifest:{
         defaultPresentationDelay:4,
         ignoreTextStreamFailures:true,
@@ -511,8 +659,9 @@ async function startPlayer(){
     clearStallTimer();
     toast(resumeAt !== null ? "Reconnecting Replay · Attempt " + retries + " Of 5" : "Reconnecting · Attempt " + retries + " Of 5", "warn", 0);
     try{
-      player.configure(buildCfg());
-      await player.load(url, resumeAt === null ? undefined : resumeAt);
+      var activeCh = WILLOW_CHANNELS[currentChannelIndex];
+      player.configure("drm.clearKeys", activeCh.drmKeys);
+      await player.load(activeCh.manifest, resumeAt === null ? undefined : resumeAt);
       var restored = resumeAt === null ? false : restoreDvrPosition(resumeAt);
       await $vid.play().catch(function(){});
       retries = 0;
@@ -537,7 +686,7 @@ async function startPlayer(){
       refreshing = true;
       player.configure(buildCfg());
       toast("Adjusting Stream Quality", "warn", 2000);
-      player.load(url, recoveryPoint === null ? undefined : recoveryPoint)
+      player.load(WILLOW_CHANNELS[currentChannelIndex].manifest, recoveryPoint === null ? undefined : recoveryPoint)
         .then(function(){
           if(recoveryPoint !== null) restoreDvrPosition(recoveryPoint);
           return $vid.play();
@@ -561,7 +710,7 @@ async function startPlayer(){
 
   try{
     setMsg("Loading Stream");
-    toast("Loading Stream · Please Wait", "warn", 0);
+    toast("Loading " + currentCh.name + " · Please Wait", "warn", 0);
     await player.load(url);
     hideOverlay();
     toast("Ready · Tap Play To Start", "ok", 5000);
