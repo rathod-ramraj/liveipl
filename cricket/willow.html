@@ -50,9 +50,51 @@ html,body{
   position:fixed;inset:0;background:#000;display:flex;
   align-items:center;justify-content:center;touch-action:manipulation
 }
+#pc, .shaka-video-container, .shaka-controls-container, video {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+#brightness-dimmer {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity .05s linear;
+}
 video{width:100%;height:100%;object-fit:contain;background:#000}
 video.mode-fill{object-fit:fill}
 video.mode-cover{object-fit:cover}
+
+/* Hotstar-style Gesture Indicators */
+.gesture-overlay{position:absolute;inset:0;pointer-events:none;z-index:9998;overflow:hidden}
+.gesture-pill{
+  position:absolute;top:50%;transform:translateY(-50%) scale(0.92);
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  width:46px;height:180px;padding:14px 8px;
+  background:rgba(12,12,15,.82);border:1px solid rgba(255,255,255,.14);
+  border-radius:26px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:0 8px 32px rgba(0,0,0,.6);color:#fff;
+  pointer-events:none;opacity:0;
+  transition:opacity .2s ease,transform .2s cubic-bezier(.16,1,.3,1)
+}
+.gesture-pill.show{opacity:1;transform:translateY(-50%) scale(1)}
+.gesture-pill.left{left:28px}
+.gesture-pill.right{right:28px}
+.gesture-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.gesture-bar-track{position:relative;width:5px;flex:1;margin:10px 0;background:rgba(255,255,255,.2);border-radius:999px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.gesture-bar-fill{width:100%;height:100%;background:#147cf5;border-radius:999px;transition:height .05s linear}
+.gesture-text{font-size:11px;font-weight:700;letter-spacing:.3px;color:#fff;font-variant-numeric:tabular-nums;flex-shrink:0;text-align:center}
+@media(max-width:480px){
+  .gesture-pill{width:40px;height:156px;padding:12px 6px;border-radius:22px}
+  .gesture-pill.left{left:14px}
+  .gesture-pill.right{right:14px}
+  .gesture-icon{width:18px;height:18px}
+  .gesture-text{font-size:10px}
+}
 #status{
   position:fixed;
   bottom:calc(66px + env(safe-area-inset-bottom,0px));
@@ -215,7 +257,35 @@ video.mode-cover{object-fit:cover}
 <div id="status"></div>
 
 <div id="pc">
+  <div id="brightness-dimmer"></div>
   <video id="v" autoplay playsinline webkit-playsinline preload="auto" muted x5-video-player-type="h5" x5-video-player-fullscreen="true"></video>
+  <div id="gesture-overlay" class="gesture-overlay">
+    <div id="gesture-indicator-left" class="gesture-pill left">
+      <div class="gesture-icon" id="gesture-icon-left">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+        </svg>
+      </div>
+      <div class="gesture-bar-track">
+        <div class="gesture-bar-fill" id="gesture-fill-left" style="height:100%"></div>
+      </div>
+      <div class="gesture-text" id="gesture-text-left">100%</div>
+    </div>
+    <div id="gesture-indicator-right" class="gesture-pill right">
+      <div class="gesture-icon" id="gesture-icon-right">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
+      </div>
+      <div class="gesture-bar-track">
+        <div class="gesture-bar-fill" id="gesture-fill-right" style="height:100%"></div>
+      </div>
+      <div class="gesture-text" id="gesture-text-right">100%</div>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/5.2.0/shaka-player.ui.min.js"></script>
@@ -392,6 +462,22 @@ function injectControls(container, vid){
   return true;
 }
 
+var WILLOW_API = "https://sonujson-v5.pages.dev/Data/willow.json";
+var WILLOW_API_FALLBACK = "https://sonujson-v3.pages.dev/Data/willow.json";
+
+function parseDrmKey(keyStr){
+  var out = {};
+  if(!keyStr || typeof keyStr !== "string") return out;
+  var pairs = keyStr.split(",");
+  pairs.forEach(function(pair){
+    var parts = pair.trim().split(":");
+    if(parts.length >= 2){
+      out[parts[0].trim().toLowerCase()] = parts[1].trim().toLowerCase();
+    }
+  });
+  return out;
+}
+
 function updateChannelTabs(idx){
   var tabs = document.querySelectorAll(".ch-tab");
   tabs.forEach(function(tab, i){
@@ -401,15 +487,29 @@ function updateChannelTabs(idx){
   });
 }
 
-function initChannelTabs(){
-  var tabs = document.querySelectorAll(".ch-tab");
-  tabs.forEach(function(tab){
-    tab.addEventListener("click", function(){
-      var idx = parseInt(tab.dataset.index, 10);
-      if(idx !== currentChannelIndex && WILLOW_CHANNELS[idx]){
-        switchChannel(idx);
+function renderChannelTabs(chList, activeIdx){
+  var strip = document.getElementById("ch-strip");
+  if(!strip) return;
+  strip.innerHTML = "";
+  if(!chList || chList.length <= 1){
+    strip.style.display = "none";
+    return;
+  }
+  strip.style.display = "flex";
+  chList.forEach(function(ch, i){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ch-tab" + (i === activeIdx ? " active" : "");
+    btn.dataset.index = i;
+    btn.setAttribute("role", "tab");
+    btn.setAttribute("aria-selected", i === activeIdx ? "true" : "false");
+    btn.innerHTML = '<span class="ch-tab-dot"></span>' + (ch.name || ("Server " + (i + 1)));
+    btn.addEventListener("click", function(){
+      if(i !== currentChannelIndex && WILLOW_CHANNELS[i]){
+        switchChannel(i);
       }
     });
+    strip.appendChild(btn);
   });
 }
 
@@ -435,18 +535,76 @@ async function switchChannel(idx){
 
 async function startPlayer(){
   $pc.style.display = "flex";
-  initChannelTabs();
 
-  // Check URL query param e.g. ?ch=2 or ?channel=3
+  // Check URL query params: id (match ID), mpd (direct stream), key (DRM key), title, s/server/ch
   var params = new URLSearchParams(window.location.search);
-  var chParam = params.get("ch") || params.get("channel") || params.get("id");
-  if(chParam){
-    var pIdx = parseInt(chParam, 10);
-    if(pIdx >= 1 && pIdx <= WILLOW_CHANNELS.length){
+  var matchId = params.get("id") || params.get("match");
+  var mpdParam = params.get("mpd") || params.get("stream");
+  var keyParam = params.get("key");
+  var titleParam = params.get("title") || params.get("name");
+  var sParam = params.get("s") || params.get("server") || params.get("ch") || params.get("channel");
+
+  if(mpdParam){
+    WILLOW_CHANNELS = [{
+      name: titleParam || "Main Stream",
+      manifest: mpdParam,
+      drmKeys: keyParam ? parseDrmKey(keyParam) : {}
+    }];
+    if(titleParam) document.title = titleParam + " HD Live";
+  } else if(matchId){
+    try{
+      setMsg("Loading Match Details");
+      var matchData = null;
+      try{
+        var r = await fetch(WILLOW_API, { cache: "no-store" });
+        if(r.ok) matchData = await r.json();
+      }catch(_){}
+      if(!matchData){
+        try{
+          var r2 = await fetch(WILLOW_API_FALLBACK, { cache: "no-store" });
+          if(r2.ok) matchData = await r2.json();
+        }catch(_){}
+      }
+      if(matchData && Array.isArray(matchData.Matches)){
+        var match = matchData.Matches.find(function(m){ return m && String(m.id) === String(matchId); });
+        if(match && match.CnpTV && typeof match.CnpTV === "object"){
+          var drm = parseDrmKey(match.drm_key);
+          var servers = [];
+          var sKeys = Object.keys(match.CnpTV);
+          sKeys.forEach(function(k, idx){
+            var sUrl = match.CnpTV[k];
+            if(sUrl && typeof sUrl === "string"){
+              var label = "Server " + (idx + 1);
+              if(k.indexOf("cloudfront") !== -1) label += " (CF)";
+              else if(k.indexOf("fastly") !== -1) label += " (Fastly)";
+              else if(k.indexOf("amazon") !== -1) label += " (AWS)";
+              else if(k.indexOf("akamai") !== -1) label += " (Akamai)";
+              servers.push({
+                name: label,
+                manifest: sUrl,
+                drmKeys: drm
+              });
+            }
+          });
+          if(servers.length > 0){
+            WILLOW_CHANNELS = servers;
+            if(match.event_name) document.title = match.event_name + " HD Live";
+          }
+        }
+      }
+    }catch(e){
+      console.warn("Could not load match from willow.json:", e);
+    }
+  }
+
+  if(sParam){
+    var pIdx = parseInt(sParam, 10);
+    if(!isNaN(pIdx) && pIdx >= 1 && pIdx <= WILLOW_CHANNELS.length){
       currentChannelIndex = pIdx - 1;
     }
   }
-  updateChannelTabs(currentChannelIndex);
+
+  renderChannelTabs(WILLOW_CHANNELS, currentChannelIndex);
 
   shaka.polyfill.installAll();
   if(!shaka.Player.isBrowserSupported()){ errMsg("Browser Not Supported."); return; }
@@ -472,6 +630,188 @@ async function startPlayer(){
     if(injectControls($pc, $vid)) return;
     if(++_injectCount < 5) setTimeout(tryInject, 150);
   })();
+
+  // Gesture controls
+  var dimmerEl = document.getElementById("brightness-dimmer");
+  var leftPill = document.getElementById("gesture-indicator-left");
+  var leftFill = document.getElementById("gesture-fill-left");
+  var leftText = document.getElementById("gesture-text-left");
+
+  var rightPill = document.getElementById("gesture-indicator-right");
+  var rightFill = document.getElementById("gesture-fill-right");
+  var rightText = document.getElementById("gesture-text-right");
+  var rightIcon = document.getElementById("gesture-icon-right");
+
+  var VOL_HIGH_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+  var VOL_LOW_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+  var VOL_MUTE_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+
+  var currentBrightness = 100;
+  var currentVolume = 100;
+  var activeGesture = null;
+  var hideLeftTimer = null;
+  var hideRightTimer = null;
+
+  function showIndicator(side) {
+    var el = side === "left" ? leftPill : rightPill;
+    if (!el) return;
+    el.classList.add("show");
+    if (side === "left" && hideLeftTimer) {
+      clearTimeout(hideLeftTimer);
+      hideLeftTimer = null;
+    }
+    if (side === "right" && hideRightTimer) {
+      clearTimeout(hideRightTimer);
+      hideRightTimer = null;
+    }
+  }
+
+  function scheduleHideIndicator(side) {
+    var timer = setTimeout(function() {
+      var el = side === "left" ? leftPill : rightPill;
+      if (el) el.classList.remove("show");
+    }, 700);
+    if (side === "left") hideLeftTimer = timer;
+    else hideRightTimer = timer;
+  }
+
+  function setBrightness(val) {
+    currentBrightness = Math.min(100, Math.max(0, val));
+    if (dimmerEl) {
+      dimmerEl.style.opacity = (((100 - currentBrightness) / 100) * 0.88).toFixed(3);
+    }
+    var filterVal = Math.max(0.1, currentBrightness / 100);
+    $vid.style.filter = "brightness(" + filterVal + ")";
+    if (leftFill) leftFill.style.height = currentBrightness + "%";
+    if (leftText) leftText.textContent = currentBrightness + "%";
+    showIndicator("left");
+  }
+
+  function setVolume(val) {
+    currentVolume = Math.min(100, Math.max(0, val));
+    $vid.volume = currentVolume / 100;
+    if (currentVolume > 0 && $vid.muted) {
+      $vid.muted = false;
+    } else if (currentVolume === 0 && !$vid.muted) {
+      $vid.muted = true;
+    }
+    if (rightFill) rightFill.style.height = currentVolume + "%";
+    if (rightText) rightText.textContent = currentVolume + "%";
+    if (rightIcon) {
+      if (currentVolume === 0 || $vid.muted) {
+        rightIcon.innerHTML = VOL_MUTE_ICON;
+      } else if (currentVolume < 50) {
+        rightIcon.innerHTML = VOL_LOW_ICON;
+      } else {
+        rightIcon.innerHTML = VOL_HIGH_ICON;
+      }
+    }
+    showIndicator("right");
+  }
+
+  $vid.addEventListener("volumechange", function() {
+    if (!activeGesture) {
+      currentVolume = $vid.muted ? 0 : Math.round($vid.volume * 100);
+      if (rightFill) rightFill.style.height = currentVolume + "%";
+      if (rightText) rightText.textContent = currentVolume + "%";
+      if (rightIcon) {
+        if (currentVolume === 0 || $vid.muted) {
+          rightIcon.innerHTML = VOL_MUTE_ICON;
+        } else if (currentVolume < 50) {
+          rightIcon.innerHTML = VOL_LOW_ICON;
+        } else {
+          rightIcon.innerHTML = VOL_HIGH_ICON;
+        }
+      }
+    }
+  });
+
+  function initSwipeGestures() {
+    var videoContainer = $pc.querySelector(".shaka-video-container") || $pc;
+    var dimmer = document.getElementById("brightness-dimmer");
+    var overlay = document.getElementById("gesture-overlay");
+    if (videoContainer !== $pc) {
+      if (dimmer && dimmer.parentNode !== videoContainer) videoContainer.appendChild(dimmer);
+      if (overlay && overlay.parentNode !== videoContainer) videoContainer.appendChild(overlay);
+    }
+
+    var startX = 0, startY = 0, startVal = 0;
+    var isTracking = false, wasSwiping = false;
+
+    function shouldIgnore(target) {
+      return !!(target && (
+        target.closest(".shaka-bottom-controls, .shaka-controls-button-panel, .shaka-overflow-menu, .shaka-play-button-container, .sp-btn, #ch-strip, #status, button, input")
+      ));
+    }
+
+    function handleMove(clientY) {
+      var rect = videoContainer.getBoundingClientRect();
+      var travel = Math.min(Math.max(rect.height * 0.55, 180), 320);
+      var deltaY = clientY - startY;
+      var diff = (-deltaY / travel) * 100;
+      var newVal = Math.min(100, Math.max(0, Math.round(startVal + diff)));
+      if (activeGesture === "brightness") setBrightness(newVal);
+      else if (activeGesture === "volume") setVolume(newVal);
+    }
+
+    videoContainer.addEventListener("touchstart", function(e) {
+      if (e.touches.length !== 1) { isTracking = false; return; }
+      if (shouldIgnore(e.target)) return;
+      var touch = e.touches[0];
+      var rect = videoContainer.getBoundingClientRect();
+      var x = touch.clientX - rect.left;
+      startX = touch.clientX;
+      startY = touch.clientY;
+      activeGesture = null;
+      isTracking = true;
+      var isLeft = x < rect.width / 2;
+      startVal = isLeft ? currentBrightness : currentVolume;
+    }, { passive: true });
+
+    videoContainer.addEventListener("touchmove", function(e) {
+      if (!isTracking || e.touches.length !== 1) return;
+      var touch = e.touches[0];
+      var deltaX = touch.clientX - startX;
+      var deltaY = touch.clientY - startY;
+      if (!activeGesture) {
+        if (Math.abs(deltaY) > 8 && Math.abs(deltaY) > Math.abs(deltaX)) {
+          var rect = videoContainer.getBoundingClientRect();
+          var x = touch.clientX - rect.left;
+          activeGesture = (x < rect.width / 2) ? "brightness" : "volume";
+        } else if (Math.abs(deltaX) > 10) {
+          isTracking = false;
+          return;
+        }
+      }
+      if (activeGesture) {
+        if (e.cancelable) e.preventDefault();
+        handleMove(touch.clientY);
+      }
+    }, { passive: false });
+
+    function endTouch() {
+      if (activeGesture) {
+        wasSwiping = true;
+        setTimeout(function() { wasSwiping = false; }, 320);
+        scheduleHideIndicator(activeGesture === "brightness" ? "left" : "right");
+        activeGesture = null;
+      }
+      isTracking = false;
+    }
+
+    videoContainer.addEventListener("touchend", endTouch, { passive: true });
+    videoContainer.addEventListener("touchcancel", endTouch, { passive: true });
+
+    videoContainer.addEventListener("click", function(e) {
+      if (wasSwiping) {
+        e.stopPropagation();
+        e.preventDefault();
+        wasSwiping = false;
+      }
+    }, true);
+  }
+
+  initSwipeGestures();
 
   var currentCh = WILLOW_CHANNELS[currentChannelIndex];
   var url     = currentCh.manifest;

@@ -69,6 +69,7 @@
       "query-input": "required name=search_term_string"
     }
   }
+  </script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -244,6 +245,13 @@
     window._sportsJsonFetch = fetchWithTimeout('https://sonujson-v6.pages.dev/Data/sports.json', 4000)
       .then(function (r) { return r.json(); })
       .catch(function () { return null; });
+    window._willowJsonFetch = fetchWithTimeout('https://sonujson-v5.pages.dev/Data/willow.json', 4000)
+      .then(function (r) { return r.json(); })
+      .catch(function () {
+        return fetchWithTimeout('https://sonujson-v3.pages.dev/Data/willow.json', 4000)
+          .then(function (r2) { return r2.json(); })
+          .catch(function () { return null; });
+      });
     window._channelsJsonFetch = fetchWithTimeout('./channels.json', 3500)
       .then(function (r) { return r.json(); })
       .catch(function () { return null; });
@@ -2844,20 +2852,247 @@
       align-items: start;
     }
 
-    .stream-directory-grid.has-sports {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .stream-directory-grid.has-sports.has-matches {
-      grid-template-columns: 1fr 1fr 1fr;
+    .stream-directory-grid.has-matches {
+      grid-template-columns: 1fr 1.1fr;
     }
 
     @media (max-width: 992px) {
-      .stream-directory-grid.has-sports,
-      .stream-directory-grid.has-sports.has-matches,
       .stream-directory-grid.has-matches {
         grid-template-columns: 1fr;
         gap: 36px;
+      }
+    }
+
+    /* ─── WILLOW MATCHES GRID ─── */
+    .willow-matches-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .willow-card {
+      background: var(--surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+    }
+
+    .willow-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 77, 109, 0.45);
+      box-shadow: 0 8px 30px rgba(255, 77, 109, 0.18);
+    }
+
+    .willow-card.is-selected {
+      border-color: rgba(255, 77, 109, 0.85);
+      box-shadow: 0 0 0 1px rgba(255, 77, 109, 0.45), 0 8px 30px rgba(255, 77, 109, 0.25);
+    }
+
+    .willow-card.is-upcoming {
+      cursor: default;
+    }
+
+    .willow-card-thumb-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #0d0b14;
+      overflow: hidden;
+    }
+
+    .willow-card-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .3s ease;
+    }
+
+    .willow-card:hover .willow-card-thumb {
+      transform: scale(1.03);
+    }
+
+    .willow-card-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 2;
+      padding: 3px 9px;
+      border-radius: var(--r-pill);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .willow-card-badge.is-live {
+      background: rgba(255, 0, 0, 0.85);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
+    }
+
+    .willow-card-badge.is-upcoming {
+      background: rgba(20, 20, 28, 0.85);
+      color: var(--text-2);
+      border: 1px solid var(--glass-border);
+    }
+
+    .willow-card-time {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--r-pill);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .willow-card-body {
+      padding: 16px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .willow-card-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-1);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .willow-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid var(--glass-border-2);
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .willow-card-servers-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-2);
+      font-weight: 500;
+    }
+
+    .willow-card-play-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--r-pill);
+      background: rgba(255, 77, 109, 0.14);
+      border: 1px solid rgba(255, 77, 109, 0.35);
+      color: #ff4d6d;
+      font-weight: 600;
+      font-size: 11.5px;
+      transition: background .2s ease, color .2s ease, border-color .2s ease;
+    }
+
+    .willow-card:hover .willow-card-play-tag {
+      background: #ff4d6d;
+      color: #fff;
+      border-color: #ff4d6d;
+    }
+
+    /* ─── SERVER STRIP (Bottom of Player like match.html) ──── */
+    .server-strip {
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border-top: 1px solid var(--glass-border-2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .server-strip-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--highlight);
+      flex-shrink: 0;
+      opacity: 0.9;
+    }
+
+    .server-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+
+    .server-pills .ch-btn {
+      padding: 8px 16px;
+      font-size: 12.5px;
+      white-space: nowrap;
+      border-radius: var(--r-pill);
+      flex-shrink: 0;
+    }
+
+    .tag-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: var(--r-pill);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-2);
+      letter-spacing: 0.3px;
+    }
+
+    .server-pills .ch-btn.active .tag-badge {
+      background: rgba(255, 77, 109, 0.28);
+      color: #fff;
+    }
+
+    @media (max-width: 480px) {
+      .willow-matches-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .willow-card-body {
+        padding: 14px 14px 16px;
+      }
+      .server-strip {
+        padding: 10px 14px;
+        gap: 8px;
+      }
+      .server-pills .ch-btn {
+        padding: 7px 12px;
+        font-size: 12px;
       }
     }
   </style>
@@ -3001,6 +3236,12 @@
           </svg>
         </button>
       </div>
+
+      <!-- Server Selector Strip (bottom of player like matches.html) -->
+      <div class="server-strip" id="serverStrip" style="display: none;">
+        <span class="server-strip-label">Servers:</span>
+        <div class="server-pills" id="serverPills"></div>
+      </div>
     </div>
     <div class="player-note-banner"
       style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-border-2);border-radius:var(--r-md, 12px);font-size:13px;color:var(--text-2);text-align:center">
@@ -3123,22 +3364,6 @@
         </div>
       </div>
 
-      <!-- RIGHT SIDE OF LIVE CHANNELS: Sports HD Channels from sports.json -->
-      <div class="stream-col" id="sportsChannelsCol">
-        <div class="s-label">Sports Channels</div>
-        <div class="s-title">Star &amp; Sony Sports</div>
-        <div class="s-desc">Live cricket, football &amp; multi-language sports broadcast streams.</div>
-        <div class="match-card" style="margin-top:20px">
-          <div class="match-card-header">
-            <div class="match-card-title">Sports HD Feeds</div>
-            <div class="match-card-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;border-color:rgba(34,211,160,0.3)">HD LIVE</div>
-          </div>
-          <div class="ch-grid" id="sportsChGrid">
-            <div style="padding:16px;color:var(--text-3);font-size:13px;grid-column:1/-1;text-align:center">Loading sports channels...</div>
-          </div>
-        </div>
-      </div>
-
       <!-- RIGHT SIDE: Live & Upcoming Matches -->
       <div class="stream-col" id="liveMatchesSection" style="display:none">
         <div class="s-label">Live &amp; Upcoming Matches</div>
@@ -3150,6 +3375,37 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ WILLOW CRICKET EVENTS & MATCHES ═══════════════ -->
+  <div class="section" id="willow-events">
+    <div class="s-label" style="color:#ff4d6d">Cricket Tournaments</div>
+    <div class="s-title">Willow Live Matches</div>
+    <div class="s-desc">Tap any live match stream to start watching immediately in HD quality.</div>
+
+    <div id="willowMatchesGrid" class="willow-matches-grid" style="margin-top:24px">
+      <div style="padding:24px;color:var(--text-3);font-size:14px;grid-column:1/-1;text-align:center">Loading Willow cricket matches...</div>
+    </div>
+  </div>
+
+  <div class="divider" id="sportsDivider"></div>
+
+  <!-- ═══ SPORTS CHANNELS: Star & Sony Sports ═══════════════ -->
+  <div class="section" id="sportsChannelsCol">
+    <div class="s-label">Sports Channels</div>
+    <div class="s-title">Star &amp; Sony Sports</div>
+    <div class="s-desc">Live cricket, football &amp; multi-language sports broadcast streams.</div>
+    <div class="match-card" style="margin-top:20px">
+      <div class="match-card-header">
+        <div class="match-card-title">Sports HD Feeds</div>
+        <div class="match-card-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;border-color:rgba(34,211,160,0.3)">HD LIVE</div>
+      </div>
+      <div class="ch-grid" id="sportsChGrid">
+        <div style="padding:16px;color:var(--text-3);font-size:13px;grid-column:1/-1;text-align:center">Loading sports channels...</div>
+      </div>
     </div>
   </div>
 
@@ -3442,10 +3698,20 @@
     //  STATE
     // ════════════════════════════════════════════════════
     var channels = [];
+    var willowStreams = {};
     var cur = null;
     var retryMap = {};
     var stallTimer = null;
     var lowLatMode = true;   // toggled by L key - fed into LiveStreamConfig.buildHlsConfig
+
+    function findChannel(id) {
+      if (!id) return null;
+      if (willowStreams && willowStreams[id]) return willowStreams[id];
+      for (var i = 0; i < channels.length; i++) {
+        if (channels[i].id === id) return channels[i];
+      }
+      return null;
+    }
 
     var ALLOWED = new Set([
       'eng', 'main2', 'sony1', 'sony3', 'main5', 'fox1hd', 'fox2hd', 'cricbuzz', 'cricbuzz2', 'willow', 'willow2', 'willow3', 'zee', 'tnt1', 'tnt sports 1'
@@ -3583,10 +3849,7 @@
       if (chOrId && typeof chOrId === 'object') {
         name = channelDisplayName(chOrId);
       } else {
-        var ch = null;
-        for (var i = 0; i < channels.length; i++) {
-          if (channels[i].id === chOrId) { ch = channels[i]; break; }
-        }
+        var ch = findChannel(chOrId);
         name = ch ? channelDisplayName(ch) : getMeta(chOrId).name;
       }
       setLivePageTitle(name);
@@ -3768,7 +4031,7 @@
     function isMatchChannel(ch) {
       if (!ch || !ch.id) return false;
       var id = ch.id.toString().toLowerCase();
-      if (id.indexOf('cine_dyn_') === 0 || id.indexOf('cricket_dyn_') === 0) return true;
+      if (id.indexOf('cine_dyn_') === 0 || id.indexOf('cricket_dyn_') === 0 || id.indexOf('willow_m_') === 0) return true;
       var excluded = ['hindi_mobile', 'fc1', 'willow_cricbuzz', 'sony_ten_eng', 'skysports', 'willow_ios'];
       return excluded.indexOf(id) !== -1;
     }
@@ -3894,10 +4157,7 @@
     //  CHANNEL SWITCH
     // ════════════════════════════════════════════════════
     function switchChannel(id, skipScroll) {
-      var ch = null;
-      for (var i = 0; i < channels.length; i++) {
-        if (channels[i].id === id) { ch = channels[i]; break; }
-      }
+      var ch = findChannel(id);
       if (!ch) return;
       cur = id;
       retryMap[id] = 0;
@@ -3906,6 +4166,15 @@
         var on = pills[j].dataset.id === id;
         pills[j].classList.toggle('active', on);
         pills[j].setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+
+      var sStrip = document.getElementById('serverStrip');
+      if (sStrip && (!id || id.indexOf('willow_m_') !== 0)) {
+        sStrip.style.display = 'none';
+        var selCards = document.querySelectorAll('.willow-card.is-selected');
+        for (var k = 0; k < selCards.length; k++) {
+          selCards[k].classList.remove('is-selected');
+        }
       }
 
       var m = getMeta(id);
@@ -4416,18 +4685,18 @@
     function renderSportsChannels(data) {
       var sportsGridEl = document.getElementById('sportsChGrid');
       var sportsColEl = document.getElementById('sportsChannelsCol');
-      var dirGridEl = document.getElementById('streamDirectoryGrid');
+      var sportsDivEl = document.getElementById('sportsDivider');
       if (!sportsGridEl || !sportsColEl) return;
 
       var chList = (data && Array.isArray(data.channels)) ? data.channels : [];
       if (chList.length === 0) {
         sportsColEl.style.display = 'none';
-        if (dirGridEl) dirGridEl.classList.remove('has-sports');
+        if (sportsDivEl) sportsDivEl.style.display = 'none';
         return;
       }
 
-      if (dirGridEl) dirGridEl.classList.add('has-sports');
       sportsColEl.style.display = '';
+      if (sportsDivEl) sportsDivEl.style.display = '';
 
       function buildSportsBtn(ch, isActive) {
         var sid = 'sports_' + String(ch.id).toLowerCase();
@@ -4525,9 +4794,209 @@
       }).catch(function () { });
     }
 
+    function renderWillowServerStrip(match, activeServerIdx) {
+      var bar = document.getElementById('serverStrip');
+      var container = document.getElementById('serverPills');
+      if (!bar || !container) return;
+      var streams = (match && Array.isArray(match._servers)) ? match._servers : [];
+
+      if (streams.length === 0) {
+        bar.style.display = 'none';
+        return;
+      }
+
+      bar.style.display = 'flex';
+      container.innerHTML = '';
+      streams.forEach(function (s, idx) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ch-btn' + (idx === activeServerIdx ? ' active' : '');
+        btn.dataset.id = s.streamId;
+        btn.setAttribute('aria-pressed', idx === activeServerIdx ? 'true' : 'false');
+        btn.innerHTML = '<span>' + s.label + '</span><span class="tag-badge">HD • DRM</span>';
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var allPills = container.querySelectorAll('.ch-btn');
+          for (var p = 0; p < allPills.length; p++) {
+            var isCur = allPills[p] === btn;
+            allPills[p].classList.toggle('active', isCur);
+            allPills[p].setAttribute('aria-pressed', isCur ? 'true' : 'false');
+          }
+          switchChannel(s.streamId);
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function renderWillowMatches(data) {
+      var gridEl = document.getElementById('willowMatchesGrid');
+      var secEl = document.getElementById('willow-events');
+      if (!gridEl) return;
+
+      var matches = (data && Array.isArray(data.Matches)) ? data.Matches : [];
+      if (matches.length === 0) {
+        if (secEl) secEl.style.display = 'none';
+        return;
+      }
+      if (secEl) secEl.style.display = '';
+
+      var liveMatches = [];
+      var upcomingMatches = [];
+      matches.forEach(function (m) {
+        if (!m) return;
+        var st = (m.status || '').toUpperCase();
+        if (st === 'LIVE') liveMatches.push(m);
+        else upcomingMatches.push(m);
+      });
+
+      var sortedMatches = liveMatches.concat(upcomingMatches);
+      var frag = document.createDocumentFragment();
+
+      sortedMatches.forEach(function (m, mIdx) {
+        var isLive = (m.status || '').toUpperCase() === 'LIVE';
+        var card = document.createElement('div');
+        card.className = 'willow-card' + (isLive ? ' is-live' : ' is-upcoming');
+
+        var thumbWrap = document.createElement('div');
+        thumbWrap.className = 'willow-card-thumb-wrap';
+
+        if (m.image) {
+          var img = document.createElement('img');
+          img.className = 'willow-card-thumb';
+          img.src = m.image;
+          img.alt = m.event_name || 'Cricket Match';
+          img.loading = 'lazy';
+          img.onerror = function () {
+            this.style.display = 'none';
+          };
+          thumbWrap.appendChild(img);
+        }
+
+        var badge = document.createElement('div');
+        badge.className = 'willow-card-badge ' + (isLive ? 'is-live' : 'is-upcoming');
+        badge.innerHTML = isLive
+          ? '<span class="live-dot" style="background:#22d3a0;box-shadow:0 0 6px #22d3a0"></span> LIVE'
+          : 'UPCOMING';
+        thumbWrap.appendChild(badge);
+
+        if (m.time) {
+          var timeEl = document.createElement('div');
+          timeEl.className = 'willow-card-time';
+          timeEl.textContent = m.time;
+          thumbWrap.appendChild(timeEl);
+        }
+
+        card.appendChild(thumbWrap);
+
+        var body = document.createElement('div');
+        body.className = 'willow-card-body';
+
+        var title = document.createElement('div');
+        title.className = 'willow-card-title';
+        title.textContent = m.event_name || 'Cricket Match';
+        body.appendChild(title);
+
+        var servers = [];
+        var drmKey = m.drm_key || m.key || m.drmKey || '';
+        var rawServers = m.CnpTV || m.streams || m.servers || m.links || {};
+
+        function addServer(sLabel, url, sKey, sIdx) {
+          if (!url || typeof url !== 'string') return;
+          var mId = (m.id !== undefined && m.id !== null) ? m.id : mIdx;
+          var streamId = 'willow_m_' + mId + '_' + sIdx;
+          var streamIframeUrl = '/cricket/willow.html?id=' + encodeURIComponent(mId) +
+            '&s=' + (sIdx + 1) +
+            '&mpd=' + encodeURIComponent(url) +
+            (drmKey ? ('&key=' + encodeURIComponent(drmKey)) : '') +
+            '&title=' + encodeURIComponent(m.event_name || 'Willow Cricket');
+
+          var chObj = {
+            id: streamId,
+            name: (m.event_name || 'Match') + ' (' + sLabel + ')',
+            type: 'iframe',
+            iframeSrc: streamIframeUrl,
+            category: 'Willow HD'
+          };
+
+          ALLOWED.add(streamId);
+          META[streamId] = {
+            name: m.event_name || 'Willow Match',
+            sub: sLabel + ' · Willow HD Live'
+          };
+
+          willowStreams[streamId] = chObj;
+
+          servers.push({
+            key: sKey,
+            label: sLabel,
+            url: url,
+            streamId: streamId,
+            chObj: chObj
+          });
+        }
+
+        if (Array.isArray(rawServers)) {
+          rawServers.forEach(function (s, sIdx) {
+            var url = (typeof s === 'string') ? s : (s && (s.url || s.manifest || s.stream || s.src));
+            var sLabel = (s && s.name) ? s.name : ('Server ' + (sIdx + 1));
+            addServer(sLabel, url, 'server' + (sIdx + 1), sIdx);
+          });
+        } else if (typeof rawServers === 'object' && rawServers !== null) {
+          var sKeys = Object.keys(rawServers);
+          sKeys.forEach(function (k, sIdx) {
+            var url = rawServers[k];
+            var sLabel = 'Server ' + (sIdx + 1);
+            if (k.indexOf('cloudfront') !== -1) sLabel += ' (CF)';
+            else if (k.indexOf('fastly') !== -1) sLabel += ' (Fastly)';
+            else if (k.indexOf('amazon') !== -1) sLabel += ' (AWS)';
+            else if (k.indexOf('akamai') !== -1) sLabel += ' (Akamai)';
+            addServer(sLabel, url, k, sIdx);
+          });
+        }
+        m._servers = servers;
+
+        var footer = document.createElement('div');
+        footer.className = 'willow-card-footer';
+        if (isLive && servers.length > 0) {
+          footer.innerHTML = '<span class="willow-card-servers-count"><span class="live-dot" style="background:#22d3a0;box-shadow:0 0 6px #22d3a0"></span> ' + servers.length + ' Live Server' + (servers.length > 1 ? 's' : '') + '</span><span class="willow-card-play-tag"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Watch</span>';
+        } else {
+          footer.innerHTML = '<span class="willow-card-servers-count">' + (isLive ? 'Stream starting shortly...' : 'Starts at scheduled time') + '</span>';
+        }
+        body.appendChild(footer);
+
+        if (isLive && servers.length > 0) {
+          card.addEventListener('click', function () {
+            var allCards = document.querySelectorAll('.willow-card');
+            for (var c = 0; c < allCards.length; c++) allCards[c].classList.remove('is-selected');
+            card.classList.add('is-selected');
+
+            renderWillowServerStrip(m, 0);
+            switchChannel(servers[0].streamId);
+            var pEl = document.getElementById('player');
+            if (pEl) pEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
+
+        card.appendChild(body);
+        frag.appendChild(card);
+      });
+
+      gridEl.innerHTML = '';
+      gridEl.appendChild(frag);
+    }
+
     if (window._sportsJsonFetch) {
       window._sportsJsonFetch.then(renderSportsChannels).catch(function () {
         var el = document.getElementById('sportsChannelsCol');
+        if (el) el.style.display = 'none';
+        var d = document.getElementById('sportsDivider');
+        if (d) d.style.display = 'none';
+      });
+    }
+
+    if (window._willowJsonFetch) {
+      window._willowJsonFetch.then(renderWillowMatches).catch(function () {
+        var el = document.getElementById('willow-events');
         if (el) el.style.display = 'none';
       });
     }
