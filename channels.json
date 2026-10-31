@@ -52,7 +52,7 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://playupp.pages.dev/cricket/willow",
-      "active": true
+      "active": false
     },
     {
       "id": "willowAllrounder",
@@ -70,15 +70,6 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://trend48.st/live-tv?ch=willow-usa",
-      "active": true
-    },
-    {
-      "id": "main5",
-      "name": "Willow Live 2",
-      "subtitle": "Willow Live 2",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://taifood-blog.asia/embed/247-willow",
       "active": true
     },
     {
@@ -106,7 +97,7 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://thedaddy.pk/stream/stream-370.php",
-      "active": false
+      "active": true
     },
     {
       "id": "cricbuzz",
@@ -127,31 +118,13 @@
       "active": true
     },
     {
-      "id": "willow",
-      "name": "Willow",
-      "subtitle": "Willow Live",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://embedindia.st/embed/247-willow",
-      "active": false
-    },
-    {
-      "id": "willow2",
-      "name": "Willow 2",
-      "subtitle": "Willow Live",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://embed.st/embed/admin/admin-willow-cricket/4",
-      "active": false
-    },
-    {
       "id": "zee",
       "name": "Zee Cinema",
       "subtitle": "Movies · Hindi",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://zee-seven.vercel.app/",
-      "active": false
+      "active": true
     }
   ],
   "usageRules": {
