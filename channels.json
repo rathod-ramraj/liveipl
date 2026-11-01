@@ -6,7 +6,16 @@
       "subtitle": "Sony Liv English",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://playupp.pages.dev/cricket/sonyLivEng",
+      "streamUrl": "https://allrounder3-0.pages.dev/eng",
+      "active": true
+    },
+      {
+      "id": "sonyeng2",
+      "name": "Sony Liv English 2",
+      "subtitle": "Sony Liv English 2",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://allrounder-live12.pages.dev/channel/fox1.html",
       "active": true
     },
     {
@@ -15,7 +24,16 @@
       "subtitle": "Sony Liv Hindi",
       "category": "Live Channel",
       "type": "iframe",
-      "streamUrl": "https://playupp.pages.dev/cricket/sonyLivHin",
+      "streamUrl": "https://allrounder3-0.pages.dev/cricket/sony-3",
+      "active": true
+    },
+      {
+      "id": "sonylivehd",
+      "name": "Sony Liv Iphone",
+      "subtitle": "Sony Liv Iphone",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://allrounder-live12.pages.dev/hotstar",
       "active": true
     },
     {
@@ -25,7 +43,7 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://playupp.pages.dev/cricket/sonyLivtel",
-      "active": true
+      "active": false
     },
     {
       "id": "sspeng",
