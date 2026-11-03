@@ -257,6 +257,7 @@ video.mode-cover{object-fit:cover}
 <div id="status"></div>
 
 <div id="pc">
+  <oneflix-badge></oneflix-badge>
   <div id="brightness-dimmer"></div>
   <video id="v" autoplay playsinline webkit-playsinline preload="auto" muted x5-video-player-type="h5" x5-video-player-fullscreen="true"></video>
   <div id="gesture-overlay" class="gesture-overlay">
@@ -1135,5 +1136,6 @@ async function startPlayer(){
 document.addEventListener("DOMContentLoaded", startPlayer);
 })();
 </script>
+<script src="../js/oneflix-badge.js" defer></script>
 </body>
 </html>
