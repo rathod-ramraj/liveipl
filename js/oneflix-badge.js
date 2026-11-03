@@ -16,37 +16,44 @@
   }
 
   var CSS_TEXT = [
-    'oneflix-badge { display: contents; }',
+    'oneflix-badge {',
+    '  display: block !important;',
+    '  position: absolute !important;',
+    '  top: 0 !important;',
+    '  left: 0 !important;',
+    '  pointer-events: none !important;',
+    '  z-index: 99999 !important;',
+    '}',
     '.oneflix-player-badge {',
-    '  position: absolute;',
-    '  top: 14px;',
-    '  left: 14px;',
-    '  z-index: 9999;',
-    '  display: inline-flex;',
+    '  position: absolute !important;',
+    '  top: 14px !important;',
+    '  left: 14px !important;',
+    '  z-index: 99999 !important;',
+    '  display: inline-flex !important;',
     '  align-items: center;',
     '  gap: 7px;',
     '  padding: 6px 12px 6px 8px;',
-    '  background: rgba(14, 12, 22, 0.72);',
+    '  background: rgba(14, 12, 22, 0.76);',
     '  backdrop-filter: blur(12px);',
     '  -webkit-backdrop-filter: blur(12px);',
-    '  border: 1px solid rgba(255, 255, 255, 0.16);',
+    '  border: 1px solid rgba(255, 255, 255, 0.18);',
     '  border-radius: 999px;',
-    '  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);',
+    '  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15);',
     '  text-decoration: none;',
     '  color: #ffffff;',
     '  cursor: pointer;',
     '  user-select: none;',
     '  -webkit-user-select: none;',
-    '  pointer-events: auto;',
+    '  pointer-events: auto !important;',
     '  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),',
     '              background 0.22s ease,',
     '              border-color 0.22s ease,',
     '              box-shadow 0.22s ease;',
     '}',
     '.oneflix-player-badge:hover {',
-    '  background: rgba(22, 16, 32, 0.92);',
-    '  border-color: rgba(229, 9, 20, 0.65);',
-    '  box-shadow: 0 6px 24px rgba(229, 9, 20, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.22);',
+    '  background: rgba(22, 16, 32, 0.95);',
+    '  border-color: rgba(229, 9, 20, 0.7);',
+    '  box-shadow: 0 6px 24px rgba(229, 9, 20, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);',
     '  transform: translateY(-1px) scale(1.03);',
     '}',
     '.oneflix-player-badge:active {',
@@ -68,14 +75,10 @@
     '  line-height: 1;',
     '  text-transform: uppercase;',
     '}',
-    '.player-ratio.is-iframe-active > .oneflix-player-badge,',
-    '.player-ratio.is-iframe-active > oneflix-badge {',
-    '  display: none !important;',
-    '}',
     '@media (max-width: 480px) {',
     '  .oneflix-player-badge {',
-    '    top: 10px;',
-    '    left: 10px;',
+    '    top: 10px !important;',
+    '    left: 10px !important;',
     '    padding: 4px 9px 4px 6px;',
     '    gap: 5px;',
     '  }',
@@ -151,6 +154,13 @@
       }
       var parent = self.parentElement;
       if (parent) {
+        var iframe = parent.querySelector('iframe');
+        if (iframe && iframe.style.display !== 'none' && iframe.parentElement) {
+          if (self.parentElement !== iframe.parentElement) {
+            iframe.parentElement.appendChild(self);
+          }
+          return;
+        }
         var shakaCont = parent.querySelector('.shaka-video-container');
         if (shakaCont && self.parentElement !== shakaCont) {
           shakaCont.appendChild(self);
@@ -161,20 +171,48 @@
   }
 
   // Auto-mount into player containers if not already present
-  var targets = ['#playerRatio', '#player-container', '#pc'];
+  var targets = ['#playerRatio', '#player-container', '#pc', '.wbid-frame-wrap', '#wbid-frame-wrap'];
+
+  function resolveHost(container) {
+    if (!container) return null;
+    var iframe = container.querySelector('iframe');
+    if (iframe && iframe.style.display !== 'none' && iframe.parentElement) {
+      return iframe.parentElement;
+    }
+    var shakaCont = container.querySelector('.shaka-video-container');
+    if (shakaCont) {
+      return shakaCont;
+    }
+    return container;
+  }
+
+  function ensureBadgeIn(container) {
+    var host = resolveHost(container);
+    if (!host) return;
+    var badge = container.querySelector('oneflix-badge');
+    var iframe = host.querySelector('iframe');
+    if (!badge) {
+      badge = document.createElement('oneflix-badge');
+      badge.appendChild(createBadge());
+      host.appendChild(badge);
+    } else if (badge.parentElement !== host) {
+      host.appendChild(badge);
+    }
+    if (badge && iframe && iframe.parentElement === host) {
+      var badgeIdx = Array.prototype.indexOf.call(host.children, badge);
+      var iframeIdx = Array.prototype.indexOf.call(host.children, iframe);
+      if (badgeIdx !== -1 && iframeIdx !== -1 && badgeIdx < iframeIdx) {
+        host.appendChild(badge);
+      }
+    }
+  }
 
   function autoMount() {
     injectStyles();
     for (var i = 0; i < targets.length; i++) {
       var container = document.querySelector(targets[i]);
       if (container) {
-        var host = container.querySelector('.shaka-video-container') || container;
-        var existing = container.querySelector('.oneflix-player-badge') || container.querySelector('oneflix-badge');
-        if (!existing) {
-          host.appendChild(createBadge());
-        } else if (host !== container && existing.parentElement !== host) {
-          host.appendChild(existing);
-        }
+        ensureBadgeIn(container);
       }
     }
   }
@@ -185,18 +223,21 @@
     autoMount();
   }
 
-  // Monitor DOM for dynamic Shaka UI insertion
+  // Monitor DOM for dynamic iframe or Shaka UI insertion so badge is always on top
   if (typeof MutationObserver !== 'undefined') {
+    var isUpdating = false;
     var observer = new MutationObserver(function () {
-      for (var i = 0; i < targets.length; i++) {
-        var container = document.querySelector(targets[i]);
-        if (container) {
-          var shakaCont = container.querySelector('.shaka-video-container');
-          var badge = container.querySelector('.oneflix-player-badge') || container.querySelector('oneflix-badge');
-          if (shakaCont && badge && badge.parentElement !== shakaCont) {
-            shakaCont.appendChild(badge);
+      if (isUpdating) return;
+      isUpdating = true;
+      try {
+        for (var i = 0; i < targets.length; i++) {
+          var container = document.querySelector(targets[i]);
+          if (container) {
+            ensureBadgeIn(container);
           }
         }
+      } finally {
+        isUpdating = false;
       }
     });
     observer.observe(document.body || document.documentElement, { childList: true, subtree: true });

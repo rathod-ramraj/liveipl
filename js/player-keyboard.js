@@ -11,11 +11,11 @@
   function resolveFullscreenTarget(elRatio) {
     if (document.body.classList.contains('wbid-active')) {
       var wbWrap = document.getElementById('wbid-frame-wrap');
+      if (wbWrap) return wbWrap;
       var wbIframe = document.getElementById('wbid-iframe');
       if (wbIframe && isActiveSrc(wbIframe.getAttribute('src') || wbIframe.src)) {
         return wbIframe;
       }
-      if (wbWrap) return wbWrap;
       return document.getElementById('wbid-overlay');
     }
 
@@ -25,11 +25,6 @@
     if (video) {
       var vsrc = video.currentSrc || video.getAttribute('src') || '';
       if (!vsrc || video.readyState > 0) return video;
-    }
-
-    var iframe = elRatio.querySelector('iframe');
-    if (iframe && isActiveSrc(iframe.getAttribute('data-stream-src') || iframe.getAttribute('src') || iframe.src)) {
-      return iframe;
     }
 
     return elRatio;
