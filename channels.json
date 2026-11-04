@@ -64,6 +64,15 @@
       "active": true
     },
     {
+      "id": "ssptelugu",
+      "name": "Star Sports HD Telugu",
+      "subtitle": "Star Sports HD",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://playupp.pages.dev/cricket/test.html?id=TU1HD",
+      "active": true
+    },
+    {
       "id": "willowPlayup",
       "name": "Willow Live",
       "subtitle": "Willow",
