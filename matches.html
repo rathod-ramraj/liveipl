@@ -1456,8 +1456,9 @@
     (function () {
       "use strict";
 
-      const API_URL = "https://all-sports.freedekholive-577.workers.dev/cricket.json";
-      const FALLBACK_API_URL = "/api/cricket";
+      const API_URL = "https://sonujson-v5.pages.dev/Data/willow.json";
+      const FALLBACK_API_URL = "https://sonujson-v3.pages.dev/Data/willow.json";
+      const TERTIARY_API_URL = "/api/cricket";
 
       let allMatches = [];
       let currentMatch = null;
@@ -1654,15 +1655,117 @@
         } catch (_) {}
       }
 
+      // Extract stream sources from CnpTV or dashStreams
+      function extractStreams(m) {
+        if (Array.isArray(m.dashStreams) && m.dashStreams.length > 0) return m.dashStreams;
+        const streams = [];
+        const drmKey = m.drm_key || m.key || m.drmKey || "";
+        const rawServers = m.CnpTV || m.streams || m.servers || m.links || {};
+
+        if (Array.isArray(rawServers)) {
+          rawServers.forEach((s, sIdx) => {
+            const url = typeof s === "string" ? s : (s && (s.url || s.manifest || s.stream || s.src));
+            if (!url) return;
+            const title = (s && s.name) ? s.name : ("Server " + (sIdx + 1));
+            streams.push({
+              title: title,
+              type: url.includes(".mpd") ? "dash" : (url.includes(".m3u8") ? "hls" : "embed"),
+              url: url,
+              key: (s && s.key) ? s.key : drmKey
+            });
+          });
+        } else if (typeof rawServers === "object" && rawServers !== null) {
+          Object.keys(rawServers).forEach((k, sIdx) => {
+            const url = rawServers[k];
+            if (!url || typeof url !== "string") return;
+            let label = "Server " + (sIdx + 1);
+            if (k.includes("fastly")) label = "Fastly HD";
+            else if (k.includes("amazon")) label = "Amazon HD";
+            else if (k.includes("akamai")) label = "Akamai HD";
+            else if (k.includes("cloudfront")) label = "Cloudfront HD";
+            else if (k.includes("server")) label = k.replace(/_/g, " ").toUpperCase();
+            streams.push({
+              title: label,
+              type: url.includes(".mpd") ? "dash" : (url.includes(".m3u8") ? "hls" : "embed"),
+              url: url,
+              key: drmKey
+            });
+          });
+        }
+        return streams;
+      }
+
+      // Normalize match from Willow or Cricket API format
+      function normalizeMatch(m, idx) {
+        const id = (m.id !== undefined && m.id !== null) ? String(m.id) : ("match_" + idx);
+        const statusRaw = (m.status || "").toLowerCase();
+        const isLive = statusRaw === "live";
+        const status = isLive ? "live" : "upcoming";
+        const title = m.event_name || m.title || "Cricket Match";
+
+        let teamA = "TBA";
+        let teamB = "TBA";
+        let eventName = title;
+
+        if (m.event && (m.event.teamA || m.event.teamB)) {
+          teamA = m.event.teamA || "TBA";
+          teamB = m.event.teamB || "TBA";
+          eventName = m.event.name || title;
+        } else {
+          const dashParts = title.split(/\s*[-–—]\s*/);
+          const vsPart = dashParts.find(p => /\bvs\b/i.test(p)) || title;
+          const vsSplit = vsPart.split(/\s+vs\s+/i);
+          if (vsSplit.length >= 2) {
+            teamA = vsSplit[0].trim();
+            teamB = vsSplit[1].trim();
+            if (dashParts.length > 1) {
+              eventName = dashParts.filter(p => !/\bvs\b/i.test(p)).join(" - ");
+            }
+          } else if (dashParts.length > 1) {
+            teamA = dashParts[0].trim();
+            teamB = dashParts[dashParts.length - 1].trim();
+            eventName = dashParts.slice(0, -1).join(" - ");
+          } else {
+            teamA = title;
+            teamB = "Live";
+          }
+        }
+
+        const image = m.image || (m.event && (m.event.logo || m.event.teamAFlag)) || "favicon.png";
+        const flagA = (m.event && m.event.teamAFlag) || image;
+        const flagB = (m.event && m.event.teamBFlag) || image;
+        const time = m.time || (m.event && m.event.startTimeIST ? m.event.startTimeIST.replace(/:\d{2}\s/, " ") : "Live Now");
+
+        return {
+          id: id,
+          title: title,
+          status: status,
+          event: {
+            name: eventName,
+            teamA: teamA,
+            teamB: teamB,
+            teamAFlag: flagA,
+            teamBFlag: flagB,
+            logo: image,
+            startTimeIST: time
+          },
+          dashStreams: extractStreams(m),
+          raw: m
+        };
+      }
+
       // Fetch match schedule from API with fallback
       async function fetchMatches(isManual) {
         let loaded = false;
+        let rawData = null;
+
         try {
           const res = await fetch(API_URL, { cache: "no-store" });
           if (res.ok) {
             const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-              allMatches = data;
+            const list = Array.isArray(data) ? data : (data && Array.isArray(data.Matches) ? data.Matches : null);
+            if (list && list.length > 0) {
+              rawData = list;
               loaded = true;
             }
           }
@@ -1673,8 +1776,9 @@
             const fbRes = await fetch(FALLBACK_API_URL, { cache: "no-store" });
             if (fbRes.ok) {
               const fbData = await fbRes.json();
-              if (Array.isArray(fbData) && fbData.length > 0) {
-                allMatches = fbData;
+              const fbList = Array.isArray(fbData) ? fbData : (fbData && Array.isArray(fbData.Matches) ? fbData.Matches : null);
+              if (fbList && fbList.length > 0) {
+                rawData = fbList;
                 loaded = true;
               }
             }
@@ -1683,7 +1787,31 @@
           }
         }
 
-        if (loaded) {
+        if (!loaded) {
+          try {
+            const tRes = await fetch(TERTIARY_API_URL, { cache: "no-store" });
+            if (tRes.ok) {
+              const tData = await tRes.json();
+              const tList = Array.isArray(tData) ? tData : (tData && Array.isArray(tData.Matches) ? tData.Matches : null);
+              if (tList && tList.length > 0) {
+                rawData = tList;
+                loaded = true;
+              }
+            }
+          } catch (_) {}
+        }
+
+        if (loaded && rawData) {
+          const normalized = rawData.map(normalizeMatch);
+          const live = normalized.filter(m => m.status === "live");
+          const upcoming = normalized.filter(m => m.status !== "live");
+          allMatches = live.concat(upcoming);
+
+          if (currentMatch) {
+            const updated = allMatches.find(m => String(m.id) === String(currentMatch.id));
+            if (updated) currentMatch = updated;
+          }
+
           renderMatchesGrid();
         } else if (!allMatches.length) {
           document.getElementById("matchesGrid").innerHTML = `
@@ -1711,10 +1839,11 @@
           const flagA = ev.teamAFlag || "favicon.png";
           const flagB = ev.teamBFlag || "favicon.png";
           const time = ev.startTimeIST ? ev.startTimeIST.replace(/:\d{2}\s/, " ") : "Live Now";
-          const isSelected = currentMatch && currentMatch.id === m.id;
+          const isSelected = currentMatch && String(currentMatch.id) === String(m.id);
+          const safeId = String(m.id).replace(/'/g, "\\'");
 
           return `
-            <div class="match-card ${isSelected ? 'is-selected' : ''}" onclick="window.selectMatchById(${m.id})">
+            <div class="match-card ${isSelected ? 'is-selected' : ''}" onclick="window.selectMatchById('${safeId}')">
               <div class="match-card-header">
                 <span class="match-card-title">${m.title || ev.name || 'Cricket Match'}</span>
                 <span class="match-card-badge">${m.status === 'live' ? 'LIVE' : 'UPCOMING'}</span>
@@ -1740,13 +1869,13 @@
       }
 
       window.selectMatchById = function (matchId) {
-        const found = allMatches.find(m => m.id === matchId);
+        const found = allMatches.find(m => String(m.id) === String(matchId));
         if (found) selectMatch(found, 0, true);
       };
 
       window.selectMatchStream = function (matchId, streamIdx, event) {
         if (event) event.stopPropagation();
-        const found = allMatches.find(m => m.id === matchId);
+        const found = allMatches.find(m => String(m.id) === String(matchId));
         if (found) selectMatch(found, streamIdx, true);
       };
 

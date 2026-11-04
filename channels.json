@@ -106,16 +106,7 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://taifood-blog.asia/embed/247-fox-cricket",
-      "active": true
-    },
-    {
-      "id": "cricbuzzthedaddy",
-      "name": "Cricbuzz",
-      "subtitle": "Cricbuzz Live",
-      "category": "Live Channel",
-      "type": "iframe",
-      "streamUrl": "https://thedaddy.pk/stream/stream-370.php",
-      "active": true
+      "active": false
     },
     {
       "id": "cricbuzz",
@@ -136,13 +127,22 @@
       "active": true
     },
     {
+      "id": "TNTsportstflix",
+      "name": "TNT Sports 2",
+      "subtitle": "TNT Sports",
+      "category": "Live Channel",
+      "type": "iframe",
+      "streamUrl": "https://api.touchcric.vip/DRM2/player.php?id=270",
+      "active": true
+    },
+    {
       "id": "zee",
       "name": "Zee Cinema",
       "subtitle": "Movies · Hindi",
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://zee-seven.vercel.app/",
-      "active": true
+      "active": false
     }
   ],
   "usageRules": {
