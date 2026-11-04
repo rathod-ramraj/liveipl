@@ -133,7 +133,7 @@
       "category": "Live Channel",
       "type": "iframe",
       "streamUrl": "https://api.touchcric.vip/DRM2/player.php?id=270",
-      "active": true
+      "active": false
     },
     {
       "id": "zee",
