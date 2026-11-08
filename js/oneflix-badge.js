@@ -10,6 +10,14 @@
 
   var TARGET_URL = 'https://oneflixx.pages.dev/';
 
+  function isEmbeddedInPlayUp() {
+    try {
+      return window.self !== window.top && window.parent.location.hostname === window.location.hostname;
+    } catch (_) {
+      return false;
+    }
+  }
+
   function getLogoSrc() {
     var isSub = window.location.pathname.indexOf('/cricket/') !== -1;
     return isSub ? '../public/oneflix-icon.png' : '/public/oneflix-icon.png';
@@ -147,6 +155,10 @@
     OneFlixBadgeElement.prototype = Object.create(HTMLElement.prototype);
     OneFlixBadgeElement.prototype.constructor = OneFlixBadgeElement;
     OneFlixBadgeElement.prototype.connectedCallback = function () {
+      if (isEmbeddedInPlayUp()) {
+        this.style.display = 'none';
+        return;
+      }
       injectStyles();
       var self = this;
       if (!self.querySelector('.oneflix-player-badge')) {
@@ -187,6 +199,7 @@
   }
 
   function ensureBadgeIn(container) {
+    if (isEmbeddedInPlayUp()) return;
     var host = resolveHost(container);
     if (!host) return;
     var badge = container.querySelector('oneflix-badge');
@@ -209,6 +222,7 @@
 
   function autoMount() {
     injectStyles();
+    if (isEmbeddedInPlayUp()) return;
     for (var i = 0; i < targets.length; i++) {
       var container = document.querySelector(targets[i]);
       if (container) {
@@ -227,7 +241,7 @@
   if (typeof MutationObserver !== 'undefined') {
     var isUpdating = false;
     var observer = new MutationObserver(function () {
-      if (isUpdating) return;
+      if (isUpdating || isEmbeddedInPlayUp()) return;
       isUpdating = true;
       try {
         for (var i = 0; i < targets.length; i++) {
