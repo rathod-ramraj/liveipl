@@ -60,11 +60,81 @@ def fetch_json(url, timeout=20):
     return None
 
 
+NON_CRICKET_SPORTS = {
+    'football', 'soccer', 'basketball', 'nba', 'tennis', 'hockey', 'baseball', 'mlb',
+    'nfl', 'rugby', 'volleyball', 'handball', 'badminton', 'table tennis', 'mma', 'ufc',
+    'wwe', 'wrestling', 'boxing', 'f1', 'formula 1', 'formula1', 'motogp', 'motorsport',
+    'kabaddi', 'golf', 'darts', 'snooker', 'swimming', 'athletics'
+}
+
+NON_CRICKET_LEAGUES = {
+    'premier league', 'la liga', 'serie a', 'bundesliga', 'ligue 1', 'champions league',
+    'europa league', 'mls', 'isl', 'fifa', 'copa', 'fa cup', 'carabao',
+    'euroleague', 'atp', 'wta', 'grand slam', 'wimbledon', 'us open', 'french open',
+    'australian open', 'formula 1', 'motogp', 'nascar', 'ufc', 'wwe'
+}
+
+CRICKET_INDICATORS = {
+    'cricket', 't20', 'odi', 'test match', 'test (', 'test(', 'day 1', 'day 2', 'day 3', 'day 4', 'day 5',
+    'ipl', 'bbl', 'psl', 'cpl', 'wpl', 'bpl', 'hundred', 'ranji', 'super smash',
+    'willow', 'cricbuzz', 'star sports', 'icc', 'bcci', 'asia cup', 'world cup', 't10',
+    'ashes', 'trophy'
+}
+
+
+def is_cricket_match(item):
+    """
+    Strictly verifies whether a match item is cricket.
+    Rejects any non-cricket sports (football, basketball, tennis, combat, etc.).
+    """
+    if not isinstance(item, dict):
+        return False
+
+    # Check explicit sport property (common in multi-sport APIs like dilzzy)
+    sport = str(item.get('sport') or '').strip().lower()
+    if sport:
+        return 'cricket' in sport
+
+    # Check category property
+    category = str(item.get('category') or '').strip().lower()
+    if category:
+        if 'cricket' in category:
+            return True
+        if any(ns in category for ns in NON_CRICKET_SPORTS):
+            return False
+
+    # Check event_type / sport_type
+    event_type = str(item.get('event_type') or item.get('sport_type') or '').strip().lower()
+    if event_type:
+        if 'cricket' in event_type:
+            return True
+        if any(ns in event_type for ns in NON_CRICKET_SPORTS):
+            return False
+
+    # Check league / tournament name
+    league = str(item.get('league') or item.get('tournament') or '').strip().lower()
+    if league:
+        if any(nl in league for nl in NON_CRICKET_LEAGUES):
+            return False
+        if any(ci in league for ci in CRICKET_INDICATORS):
+            return True
+
+    # Check title / event_name / match teams text
+    text = f"{item.get('title', '')} {item.get('event_name', '')} {item.get('name', '')} {item.get('teams', '')}".lower()
+    if any(nl in text for nl in NON_CRICKET_LEAGUES):
+        return False
+    if any(ns in text for ns in ('ufc ', 'wwe ', 'formula 1', 'grand prix', 'motogp', 'nba ', 'nhl ', 'nfl ')):
+        return False
+
+    return True
+
+
 def normalize_matches(raw_data):
     """
     Normalizes cricket match data from different API schemas into the
     standard array format expected by the frontend (with id, title,
     status, event details, and dashStreams).
+    Strictly filters to include only cricket matches.
     """
     if isinstance(raw_data, list):
         raw_list = raw_data
@@ -76,15 +146,10 @@ def normalize_matches(raw_data):
     if not raw_list:
         return []
 
-    # If items contain a 'sport' field (e.g. multi-sport feeds), filter for cricket
-    has_sports = any('sport' in m for m in raw_list if isinstance(m, dict))
-    if has_sports:
-        cricket_items = [
-            m for m in raw_list
-            if isinstance(m, dict) and m.get('sport', '').lower() == 'cricket'
-        ]
-        if cricket_items:
-            raw_list = cricket_items
+    # Strictly filter for cricket matches only
+    raw_list = [m for m in raw_list if is_cricket_match(m)]
+    if not raw_list:
+        return []
 
     normalized = []
     for idx, m in enumerate(raw_list):
