@@ -19,6 +19,23 @@
     }
   }
 
+  function isDocFullscreen() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  }
+
+  function updateBadgeVisibility(badge) {
+    if (!badge || badge.hasAttribute('in-nav') || badge.closest('nav')) return;
+    if (isEmbeddedInPlayUp()) {
+      if (isDocFullscreen()) {
+        badge.style.removeProperty('display');
+      } else {
+        badge.style.setProperty('display', 'none', 'important');
+      }
+    } else {
+      badge.style.removeProperty('display');
+    }
+  }
+
   function formatCount(num) {
     if (typeof num !== 'number' || isNaN(num) || num < 0) num = 0;
     return num >= 1000 ? (num / 1000).toFixed(1) + 'k' : num.toLocaleString();
@@ -165,6 +182,30 @@
     '    font-size: 10px;',
     '    letter-spacing: 0.4px;',
     '  }',
+    '}',
+    '',
+    '/* Fullscreen persistent visibility */',
+    ':fullscreen player-live-badge:not([in-nav]),',
+    ':-webkit-full-screen player-live-badge:not([in-nav]),',
+    '.shaka-video-container:fullscreen player-live-badge:not([in-nav]),',
+    '.shaka-video-container:-webkit-full-screen player-live-badge:not([in-nav]),',
+    '.player-ratio:fullscreen player-live-badge:not([in-nav]),',
+    '.player-ratio:-webkit-full-screen player-live-badge:not([in-nav]),',
+    '#player-container:fullscreen player-live-badge:not([in-nav]),',
+    '#player-container:-webkit-full-screen player-live-badge:not([in-nav]),',
+    '.is-fullscreen player-live-badge:not([in-nav]),',
+    '.player-mobile-fs player-live-badge:not([in-nav]) {',
+    '  display: block !important;',
+    '  visibility: visible !important;',
+    '  opacity: 1 !important;',
+    '  z-index: 2147483647 !important;',
+    '}',
+    '/* Avoid collision with fullscreen exit button */',
+    '.player-ratio:fullscreen player-live-badge:not([in-nav]) .player-live-count-badge,',
+    '.player-ratio:-webkit-full-screen player-live-badge:not([in-nav]) .player-live-count-badge,',
+    '.is-fullscreen player-live-badge:not([in-nav]) .player-live-count-badge,',
+    '.player-mobile-fs player-live-badge:not([in-nav]) .player-live-count-badge {',
+    '  right: 56px !important;',
     '}'
   ].join('\n');
 
@@ -243,10 +284,8 @@
       var self = this;
       var isNav = self.hasAttribute('in-nav') || !!self.closest('nav');
 
-      // Prevent duplicate badge inside iframe if parent player is already on PlayUp
-      if (!isNav && isEmbeddedInPlayUp()) {
-        self.style.display = 'none';
-        return;
+      if (!isNav) {
+        updateBadgeVisibility(self);
       }
 
       if (!self.querySelector('.player-live-count-badge')) {
@@ -333,7 +372,6 @@
   }
 
   function ensureBadgeIn(container) {
-    if (isEmbeddedInPlayUp()) return;
     var host = resolveHost(container);
     if (!host) return;
     var badge = container.querySelector('player-live-badge:not([in-nav])');
@@ -345,6 +383,7 @@
     } else if (badge.parentElement !== host) {
       host.appendChild(badge);
     }
+    updateBadgeVisibility(badge);
     if (badge && iframe && iframe.parentElement === host) {
       var badgeIdx = Array.prototype.indexOf.call(host.children, badge);
       var iframeIdx = Array.prototype.indexOf.call(host.children, iframe);
@@ -356,7 +395,6 @@
 
   function autoMount() {
     injectStyles();
-    if (isEmbeddedInPlayUp()) return;
     for (var i = 0; i < targets.length; i++) {
       var container = document.querySelector(targets[i]);
       if (container) {
@@ -375,7 +413,7 @@
   if (typeof MutationObserver !== 'undefined') {
     var isUpdating = false;
     var observer = new MutationObserver(function () {
-      if (isUpdating || isEmbeddedInPlayUp()) return;
+      if (isUpdating) return;
       isUpdating = true;
       try {
         for (var i = 0; i < targets.length; i++) {
@@ -390,4 +428,14 @@
     });
     observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
   }
+
+  // Fullscreen change listener to ensure badges update visibility when entering/exiting fullscreen
+  ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      var badges = document.querySelectorAll('player-live-badge:not([in-nav])');
+      for (var i = 0; i < badges.length; i++) {
+        updateBadgeVisibility(badges[i]);
+      }
+    });
+  });
 })();

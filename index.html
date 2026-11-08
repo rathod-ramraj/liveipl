@@ -1270,6 +1270,29 @@
       inset: 0 !important;
       width: 100% !important;
       height: 100% !important;
+      z-index: 1 !important;
+    }
+
+    .player-ratio:fullscreen oneflix-badge,
+    .player-ratio:fullscreen player-live-badge:not([in-nav]),
+    .player-ratio:-webkit-full-screen oneflix-badge,
+    .player-ratio:-webkit-full-screen player-live-badge:not([in-nav]),
+    .is-fullscreen oneflix-badge,
+    .is-fullscreen player-live-badge:not([in-nav]),
+    .player-mobile-fs oneflix-badge,
+    .player-mobile-fs player-live-badge:not([in-nav]) {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 99999 !important;
+      position: absolute !important;
+    }
+
+    .player-ratio:fullscreen player-live-badge:not([in-nav]) .player-live-count-badge,
+    .player-ratio:-webkit-full-screen player-live-badge:not([in-nav]) .player-live-count-badge,
+    .is-fullscreen player-live-badge:not([in-nav]) .player-live-count-badge,
+    .player-mobile-fs player-live-badge:not([in-nav]) .player-live-count-badge {
+      right: 56px !important;
     }
 
     .player-ph {
@@ -3833,13 +3856,6 @@
     }
 
     function resolveFsTarget() {
-      if (window.PlayerKeyboard && PlayerKeyboard.resolveFullscreenTarget) {
-        return PlayerKeyboard.resolveFullscreenTarget(elRatio);
-      }
-      var video = elRatio && elRatio.querySelector('video');
-      if (video) return video;
-      var iframe = elRatio && elRatio.querySelector('iframe');
-      if (iframe) return iframe;
       return elRatio;
     }
 

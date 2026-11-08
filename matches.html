@@ -32,6 +32,7 @@
   <script src="./js/live-users.js" defer></script>
   <script src="./js/pwa-installer.js" defer></script>
   <script src="./js/oneflix-badge.js" defer></script>
+  <script src="./js/player-live-badge.js" defer></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
@@ -676,6 +677,25 @@
       height: 100vh !important;
       max-width: 100vw;
       max-height: 100vh;
+    }
+
+    .player-ratio:fullscreen oneflix-badge,
+    .player-ratio:fullscreen player-live-badge:not([in-nav]),
+    .player-ratio:-webkit-full-screen oneflix-badge,
+    .player-ratio:-webkit-full-screen player-live-badge:not([in-nav]),
+    .is-fullscreen oneflix-badge,
+    .is-fullscreen player-live-badge:not([in-nav]) {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      z-index: 99999 !important;
+      position: absolute !important;
+    }
+
+    .player-ratio:fullscreen player-live-badge:not([in-nav]) .player-live-count-badge,
+    .player-ratio:-webkit-full-screen player-live-badge:not([in-nav]) .player-live-count-badge,
+    .is-fullscreen player-live-badge:not([in-nav]) .player-live-count-badge {
+      right: 56px !important;
     }
 
     video {
@@ -1336,6 +1356,7 @@
         <!-- 16:9 Video Canvas -->
         <div class="player-ratio" id="playerRatio">
           <oneflix-badge></oneflix-badge>
+          <player-live-badge></player-live-badge>
           <div id="shaka-container">
             <video id="video" playsinline preload="metadata"></video>
           </div>

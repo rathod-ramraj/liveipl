@@ -9,14 +9,6 @@
   }
 
   function resolveFullscreenTarget(elRatio) {
-    if (!elRatio) return null;
-
-    var video = elRatio.querySelector('video');
-    if (video) {
-      var vsrc = video.currentSrc || video.getAttribute('src') || '';
-      if (!vsrc || video.readyState > 0) return video;
-    }
-
     return elRatio;
   }
 

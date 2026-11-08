@@ -18,6 +18,23 @@
     }
   }
 
+  function isDocFullscreen() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  }
+
+  function updateBadgeVisibility(badge) {
+    if (!badge) return;
+    if (isEmbeddedInPlayUp()) {
+      if (isDocFullscreen()) {
+        badge.style.removeProperty('display');
+      } else {
+        badge.style.setProperty('display', 'none', 'important');
+      }
+    } else {
+      badge.style.removeProperty('display');
+    }
+  }
+
   function getLogoSrc() {
     var isSub = window.location.pathname.indexOf('/cricket/') !== -1;
     return isSub ? '../public/oneflix-icon.png' : '/public/oneflix-icon.png';
@@ -98,6 +115,23 @@
     '    font-size: 10px;',
     '    letter-spacing: 0.6px;',
     '  }',
+    '}',
+    '',
+    '/* Fullscreen persistent visibility */',
+    ':fullscreen oneflix-badge,',
+    ':-webkit-full-screen oneflix-badge,',
+    '.shaka-video-container:fullscreen oneflix-badge,',
+    '.shaka-video-container:-webkit-full-screen oneflix-badge,',
+    '.player-ratio:fullscreen oneflix-badge,',
+    '.player-ratio:-webkit-full-screen oneflix-badge,',
+    '#player-container:fullscreen oneflix-badge,',
+    '#player-container:-webkit-full-screen oneflix-badge,',
+    '.is-fullscreen oneflix-badge,',
+    '.player-mobile-fs oneflix-badge {',
+    '  display: block !important;',
+    '  visibility: visible !important;',
+    '  opacity: 1 !important;',
+    '  z-index: 2147483647 !important;',
     '}'
   ].join('\n');
 
@@ -155,15 +189,12 @@
     OneFlixBadgeElement.prototype = Object.create(HTMLElement.prototype);
     OneFlixBadgeElement.prototype.constructor = OneFlixBadgeElement;
     OneFlixBadgeElement.prototype.connectedCallback = function () {
-      if (isEmbeddedInPlayUp()) {
-        this.style.display = 'none';
-        return;
-      }
       injectStyles();
       var self = this;
       if (!self.querySelector('.oneflix-player-badge')) {
         self.appendChild(createBadge());
       }
+      updateBadgeVisibility(self);
       var parent = self.parentElement;
       if (parent) {
         var iframe = parent.querySelector('iframe');
@@ -199,7 +230,6 @@
   }
 
   function ensureBadgeIn(container) {
-    if (isEmbeddedInPlayUp()) return;
     var host = resolveHost(container);
     if (!host) return;
     var badge = container.querySelector('oneflix-badge');
@@ -211,6 +241,7 @@
     } else if (badge.parentElement !== host) {
       host.appendChild(badge);
     }
+    updateBadgeVisibility(badge);
     if (badge && iframe && iframe.parentElement === host) {
       var badgeIdx = Array.prototype.indexOf.call(host.children, badge);
       var iframeIdx = Array.prototype.indexOf.call(host.children, iframe);
@@ -222,7 +253,6 @@
 
   function autoMount() {
     injectStyles();
-    if (isEmbeddedInPlayUp()) return;
     for (var i = 0; i < targets.length; i++) {
       var container = document.querySelector(targets[i]);
       if (container) {
@@ -241,7 +271,7 @@
   if (typeof MutationObserver !== 'undefined') {
     var isUpdating = false;
     var observer = new MutationObserver(function () {
-      if (isUpdating || isEmbeddedInPlayUp()) return;
+      if (isUpdating) return;
       isUpdating = true;
       try {
         for (var i = 0; i < targets.length; i++) {
@@ -256,4 +286,14 @@
     });
     observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
   }
+
+  // Fullscreen change listener to ensure badges update visibility when entering/exiting fullscreen
+  ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      var badges = document.querySelectorAll('oneflix-badge');
+      for (var i = 0; i < badges.length; i++) {
+        updateBadgeVisibility(badges[i]);
+      }
+    });
+  });
 })();
