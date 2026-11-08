@@ -22,7 +22,7 @@
   <meta property="og:description"
     content="PlayUp is your destination for live cricket, movies, series and entertainment. Explore the latest cricket and entertainment content in one place.">
   <meta property="og:url" content="https://playupp.pages.dev/">
-  <meta property="og:image" content="https://playupp.pages.dev/favicon.png">
+  <meta property="og:image" content="https://playupp.pages.dev/public/favicon.png">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
@@ -30,15 +30,15 @@
   <meta name="twitter:description"
     content="PlayUp is your destination for live cricket, movies, series and entertainment. Explore the latest cricket and entertainment content in one place.">
   <!-- Favicon for Google Search & Browsers -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
-  <link rel="shortcut icon" href="/favicon.ico">
-  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
+  <link rel="icon" type="image/png" sizes="48x48" href="/public/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/public/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/public/icon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/public/favicon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/public/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/public/icon-512.png">
+  <link rel="shortcut icon" href="/public/favicon.ico">
+  <link rel="manifest" href="/public/manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -84,7 +84,7 @@
       "@type": "Organization",
       "name": "PlayUp",
       "url": "https://playupp.pages.dev/",
-      "logo": "https://playupp.pages.dev/favicon.png"
+      "logo": "https://playupp.pages.dev/public/favicon.png"
     }
   }
   </script>
@@ -104,7 +104,7 @@
       "url": "https://playupp.pages.dev/"
     },
     "image": [
-      "https://playupp.pages.dev/favicon.png"
+      "https://playupp.pages.dev/public/favicon.png"
     ],
     "offers": {
       "@type": "Offer",
@@ -121,7 +121,7 @@
       "@type": "Organization",
       "name": "PlayUp",
       "url": "https://playupp.pages.dev/",
-      "logo": "https://playupp.pages.dev/favicon.png"
+      "logo": "https://playupp.pages.dev/public/favicon.png"
     }
   }
   </script>
@@ -3143,7 +3143,7 @@
     <div class="nav-right">
       <div class="nav-menu" id="navMenu">
         <a href="#channels" class="nav-link">Channels</a>
-        <button type="button" id="wbid-nav-btn" class="nav-link nav-link-btn">Watch by ID</button>
+        <a href="/cricket/playup.html" class="nav-link">New Version</a>
         <a href="https://oneflixx.pages.dev/" class="nav-link" target="_blank" rel="noopener noreferrer">OneFlix</a>
       </div>
       <a href="#live-matches" class="nav-link nav-cta">Live Matches</a>
@@ -3194,7 +3194,7 @@
       <div class="player-bar">
         <div class="player-info">
           <div class="ch-icon">
-            <img src="favicon.png" alt="PlayUp Free Live Cricket Logo">
+            <img src="/public/favicon.png" alt="PlayUp Free Live Cricket Logo">
           </div>
           <div class="player-info-text">
             <div class="ch-name-row">
@@ -3253,6 +3253,10 @@
         <span class="server-strip-label">Servers:</span>
         <div class="server-pills" id="serverPills"></div>
       </div>
+    </div>
+    <div class="error-box" id="errorBox"
+      style="display:none;margin-top:12px;padding:12px 16px;border-radius:var(--r-md, 12px);background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;font-size:14px;text-align:center">
+      ⚠ Invalid or unavailable stream ID. Please check the link.
     </div>
     <div class="player-note-banner"
       style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-border-2);border-radius:var(--r-md, 12px);font-size:13px;color:var(--text-2);text-align:center">
@@ -3690,7 +3694,6 @@
       <div>Disclaimer: We only link to streams available on the internet. We do not host any content.</div>
     </div>
   </footer>
-  <!-- <script src="devtools-guard.js"></script> -->
   <script>
     // ════════════════════════════════════════════════════
     //  CACHED DOM REFS  (resolved once at startup)
@@ -3823,7 +3826,7 @@
 
     function getMeta(id) {
       var m = META[id] || { name: id.toUpperCase(), sub: 'Live Channel' };
-      return { name: cleanChannelName(m.name), sub: m.sub, logo: m.logo || 'favicon.png' };
+      return { name: cleanChannelName(m.name), sub: m.sub, logo: m.logo || '/public/favicon.png' };
     }
 
     function iframeSiteLabel(src) {
@@ -4168,6 +4171,8 @@
     //  CHANNEL SWITCH
     // ════════════════════════════════════════════════════
     function switchChannel(id, skipScroll) {
+      var errEl = document.getElementById('errorBox');
+      if (errEl) errEl.style.display = 'none';
       var ch = findChannel(id);
       if (!ch) return;
       cur = id;
@@ -4193,8 +4198,8 @@
       elMeta.textContent = m.sub + ' · HD Live';
       var elIcon = document.querySelector('.player-info .ch-icon img');
       if (elIcon) {
-        elIcon.src = m.logo || 'favicon.png';
-        elIcon.onerror = function () { this.onerror = null; this.src = 'favicon.png'; };
+        elIcon.src = m.logo || '/public/favicon.png';
+        elIcon.onerror = function () { this.onerror = null; this.src = '/public/favicon.png'; };
       }
       if (!skipScroll) {
         updatePageTitle(ch);
@@ -4893,8 +4898,8 @@
         var teamA = ev.teamA || '';
         var teamB = ev.teamB || '';
         var tournamentLogo = formatLogoUrl(ev.logo || m.logo);
-        var flagA = formatLogoUrl(ev.teamAFlag) || tournamentLogo || 'favicon.png';
-        var flagB = formatLogoUrl(ev.teamBFlag) || tournamentLogo || 'favicon.png';
+        var flagA = formatLogoUrl(ev.teamAFlag) || tournamentLogo || '/public/favicon.png';
+        var flagB = formatLogoUrl(ev.teamBFlag) || tournamentLogo || '/public/favicon.png';
         var matchTitle = (teamA && teamB)
           ? (teamA + ' vs ' + teamB + (ev.name ? ' (' + ev.name + ')' : (m.title ? ' (' + m.title + ')' : '')))
           : (m.event_name || m.title || 'Cricket Match');
@@ -4923,12 +4928,12 @@
 
           matchupDiv.innerHTML = tourHtml +
             '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:64px;text-align:center">' +
-              '<img src="' + flagA + '" style="width:48px;height:48px;object-fit:contain;border-radius:50%;background:rgba(255,255,255,0.06);padding:3px;border:1px solid rgba(255,255,255,0.15);box-shadow:0 4px 14px rgba(0,0,0,0.5)" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=\'favicon.png\'">' +
+              '<img src="' + flagA + '" style="width:48px;height:48px;object-fit:contain;border-radius:50%;background:rgba(255,255,255,0.06);padding:3px;border:1px solid rgba(255,255,255,0.15);box-shadow:0 4px 14px rgba(0,0,0,0.5)" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=\'/public/favicon.png\'">' +
               '<span style="font-size:12px;font-weight:700;color:var(--text-1);max-width:85px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (teamA || 'Team 1') + '</span>' +
             '</div>' +
             '<span style="font-size:12px;font-weight:800;color:#ff4d6d;letter-spacing:1px;background:rgba(255,77,109,0.12);padding:4px 8px;border-radius:6px;border:1px solid rgba(255,77,109,0.25)">VS</span>' +
             '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:64px;text-align:center">' +
-              '<img src="' + flagB + '" style="width:48px;height:48px;object-fit:contain;border-radius:50%;background:rgba(255,255,255,0.06);padding:3px;border:1px solid rgba(255,255,255,0.15);box-shadow:0 4px 14px rgba(0,0,0,0.5)" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=\'favicon.png\'">' +
+              '<img src="' + flagB + '" style="width:48px;height:48px;object-fit:contain;border-radius:50%;background:rgba(255,255,255,0.06);padding:3px;border:1px solid rgba(255,255,255,0.15);box-shadow:0 4px 14px rgba(0,0,0,0.5)" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=\'/public/favicon.png\'">' +
               '<span style="font-size:12px;font-weight:700;color:var(--text-1);max-width:85px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (teamB || 'Team 2') + '</span>' +
             '</div>';
           thumbWrap.appendChild(matchupDiv);
@@ -4962,7 +4967,7 @@
         titleRow.style.cssText = 'display:flex;align-items:flex-start;gap:10px;';
 
         var cardLogo = tournamentLogo || flagA;
-        if (cardLogo && cardLogo !== 'favicon.png') {
+        if (cardLogo && cardLogo !== 'favicon.png' && cardLogo !== '/public/favicon.png') {
           var logoImg = document.createElement('img');
           logoImg.src = cardLogo;
           logoImg.alt = '';
@@ -5005,7 +5010,7 @@
           META[streamId] = {
             name: matchTitle,
             sub: sLabel + ' · Live Match',
-            logo: (tournamentLogo && tournamentLogo !== 'favicon.png') ? tournamentLogo : flagA
+            logo: (tournamentLogo && tournamentLogo !== 'favicon.png' && tournamentLogo !== '/public/favicon.png') ? tournamentLogo : flagA
           };
 
           willowStreams[streamId] = chObj;
@@ -5096,6 +5101,75 @@
       window._cricketFetch.then(renderLiveMatches).catch(function () { });
     }
 
+    const API_URL = "https://allrounderid2.pages.dev/id.json";
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const errorBox = document.getElementById("errorBox") || { style: {} };
+
+    function setPlayerIframe(src) {
+      if (errorBox) errorBox.style.display = "none";
+      var streamId = id || 'stream';
+      var customCh = {
+        id: streamId,
+        name: 'Stream ' + streamId,
+        type: 'iframe',
+        iframeSrc: src
+      };
+      if (elName) elName.textContent = customCh.name;
+      if (elMeta) elMeta.textContent = 'Live Stream · HD';
+      setStream(customCh);
+    }
+
+    function updateActiveServer(serverId) {
+      var pills = document.querySelectorAll('.ch-btn');
+      for (var j = 0; j < pills.length; j++) {
+        var on = serverId && pills[j].dataset.id === serverId;
+        pills[j].classList.toggle('active', !!on);
+        pills[j].setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+    }
+
+    function loadStaticServer(server) {
+      if (!server) return;
+      if (errorBox) errorBox.style.display = "none";
+      switchChannel(server.id, true);
+      updateActiveServer(server.id);
+    }
+
+    function initInitialStream() {
+      const STREAM_SERVERS = channels;
+
+      // ─── INITIAL STREAM LOAD ───
+      if (id) {
+        const localMatch = STREAM_SERVERS.find(s => s.id.toLowerCase() === id.toLowerCase());
+        if (localMatch) {
+          loadStaticServer(localMatch);
+        } else {
+          fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+              if (!data.iframes || !Array.isArray(data.iframes)) {
+                throw new Error("Invalid response");
+              }
+              const match = data.iframes.find(item => String(item.id) === String(id));
+              if (match && match.iframeSrc) {
+                setPlayerIframe(match.iframeSrc);
+                updateActiveServer(null);
+              } else {
+                throw new Error("Stream not found");
+              }
+            })
+            .catch(() => {
+              errorBox.style.display = "block";
+            });
+        }
+      } else if (STREAM_SERVERS.length > 0) {
+        loadStaticServer(STREAM_SERVERS[0]);
+      } else {
+        errorBox.style.display = "block";
+      }
+    }
+
     window._channelsJsonFetch.then(function (channelsJsonData) {
       var jsonList = (channelsJsonData && Array.isArray(channelsJsonData.channels)) ? channelsJsonData.channels : [];
 
@@ -5166,7 +5240,7 @@
 
       if (channels.length > 0) {
         renderChannelGrid(channels);
-        if (!cur) switchChannel(channels[0].id, true);
+        initInitialStream();
       }
     }).catch(function (err) {
       console.error('Channel fetch error:', err);
@@ -5190,7 +5264,7 @@
         renderLiveMatches(window._latestCricketMatches);
       }
       renderChannelGrid(channels);
-      if (!cur) switchChannel('eng', true);
+      initInitialStream();
     });
 
     // ════════════════════════════════════════════════════

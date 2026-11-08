@@ -12,7 +12,7 @@
 
   function getLogoSrc() {
     var isSub = window.location.pathname.indexOf('/cricket/') !== -1;
-    return isSub ? '../oneflix-icon.png' : '/oneflix-icon.png';
+    return isSub ? '../public/oneflix-icon.png' : '/public/oneflix-icon.png';
   }
 
   var CSS_TEXT = [

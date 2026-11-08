@@ -35,3 +35,4 @@ User-agent: CCBot
 Disallow: /
 
 Sitemap: https://playupp.pages.dev/sitemap.xml
+Sitemap: https://playupp.pages.dev/public/sitemap.xml

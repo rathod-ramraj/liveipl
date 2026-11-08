@@ -17,7 +17,7 @@ const BLOCKED_UA = [
 ];
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon\\.png|favicon\\.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|public/|favicon\\.png|favicon\\.ico).*)'],
 };
 
 function isBlockedUA(ua) {

@@ -1,0 +1,38 @@
+# PlayUp robots.txt - Free Live Cricket Streaming
+# Allow Google, Bing, and search engines to index public cricket pages
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: *
+Allow: /
+Disallow: /.git/
+Disallow: /.trunk/
+Disallow: /.vscode/
+Disallow: /scratch/
+Disallow: /admin/
+Disallow: /private/
+
+# Block AI scrapers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+Sitemap: https://playupp.pages.dev/sitemap.xml
+Sitemap: https://playupp.pages.dev/public/sitemap.xml

@@ -10,15 +10,15 @@
   <meta name="description" content="Watch live cricket matches and tournaments on PlayUp with high-definition streams and multiple server fallbacks.">
   <link rel="canonical" href="https://playupp.pages.dev/matches">
 
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
-  <link rel="shortcut icon" href="/favicon.ico">
-  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
+  <link rel="icon" type="image/png" sizes="48x48" href="/public/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/public/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/public/icon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/public/favicon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/public/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/public/icon-512.png">
+  <link rel="shortcut icon" href="/public/favicon.ico">
+  <link rel="manifest" href="/public/manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1318,7 +1318,7 @@
       <div class="nav-menu" id="navMenu">
         <a href="./" class="nav-link nav-hide-desktop">Home</a>
         <a href="./#channels" class="nav-link">Channels</a>
-        <a href="./#wbid" class="nav-link nav-link-btn" id="wbid-nav-btn">Watch by ID</a>
+        <a href="/cricket/playup.html" class="nav-link">New Version</a>
         <a href="https://oneflixx.pages.dev/" class="nav-link" target="_blank" rel="noopener noreferrer">OneFlix</a>
       </div>
       <a href="./matches" class="nav-link nav-cta active">Live Matches</a>
@@ -1342,7 +1342,7 @@
         <div class="player-bar">
           <div class="player-info">
             <div class="ch-icon">
-              <img id="playerLogo" src="/favicon.png" alt="PlayUp Free Live Cricket Logo">
+              <img id="playerLogo" src="/public/favicon.png" alt="PlayUp Free Live Cricket Logo">
             </div>
             <div class="player-info-text">
               <div class="ch-name-row">
@@ -1731,7 +1731,7 @@
           }
         }
 
-        const image = m.image || (m.event && (m.event.logo || m.event.teamAFlag)) || "favicon.png";
+        const image = m.image || (m.event && (m.event.logo || m.event.teamAFlag)) || "/public/favicon.png";
         const flagA = (m.event && m.event.teamAFlag) || image;
         const flagB = (m.event && m.event.teamBFlag) || image;
         const time = m.time || (m.event && m.event.startTimeIST ? m.event.startTimeIST.replace(/:\d{2}\s/, " ") : "Live Now");
@@ -1836,8 +1836,8 @@
           const ev = m.event || {};
           const teamA = ev.teamA || "TBA";
           const teamB = ev.teamB || "TBA";
-          const flagA = ev.teamAFlag || "favicon.png";
-          const flagB = ev.teamBFlag || "favicon.png";
+          const flagA = ev.teamAFlag || "/public/favicon.png";
+          const flagB = ev.teamBFlag || "/public/favicon.png";
           const time = ev.startTimeIST ? ev.startTimeIST.replace(/:\d{2}\s/, " ") : "Live Now";
           const isSelected = currentMatch && String(currentMatch.id) === String(m.id);
           const safeId = String(m.id).replace(/'/g, "\\'");
@@ -1850,13 +1850,13 @@
               </div>
               <div class="match-teams-row">
                 <div class="match-team">
-                  <img class="match-team-flag" src="${flagA}" alt="${teamA}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='favicon.png'">
+                  <img class="match-team-flag" src="${flagA}" alt="${teamA}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='/public/favicon.png'">
                   <span class="match-team-name">${teamA}</span>
                 </div>
                 <span class="match-vs-divider">VS</span>
                 <div class="match-team right">
                   <span class="match-team-name">${teamB}</span>
-                  <img class="match-team-flag" src="${flagB}" alt="${teamB}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='favicon.png'">
+                  <img class="match-team-flag" src="${flagB}" alt="${teamB}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='/public/favicon.png'">
                 </div>
               </div>
               <div style="font-size: 11.5px; color: var(--text-3); display:flex; justify-content:space-between; align-items:center;">
@@ -1897,10 +1897,10 @@
 
         const logoEl = document.getElementById("playerLogo");
         logoEl.setAttribute("referrerpolicy", "no-referrer");
-        logoEl.onerror = function () { this.onerror = null; this.src = "favicon.png"; };
+        logoEl.onerror = function () { this.onerror = null; this.src = "/public/favicon.png"; };
         if (ev.teamAFlag) logoEl.src = ev.teamAFlag;
         else if (ev.logo) logoEl.src = ev.logo.replace(/^http:\/\//i, "https://");
-        else logoEl.src = "favicon.png";
+        else logoEl.src = "/public/favicon.png";
 
         // Render Server / Stream Strip
         renderServerStrip();
