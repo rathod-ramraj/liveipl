@@ -8,7 +8,6 @@
 (function (global) {
   'use strict';
 
-  var sg = null;
   var streaming = false;
   var iframeActive = false;
   var playerVisible = true;
@@ -47,50 +46,24 @@
     root.classList.toggle('perf-pause-animations', pauseFx);
   }
 
-  function syncShapeGrid() {
-    if (!sg) return;
-    if (isMobile()) {
-      sg.freeze && sg.freeze();
-      return;
-    }
-    if ((streaming || iframeActive) && playerVisible) {
-      sg.freeze && sg.freeze();
-    } else if (isLowPowerDevice() && sg.freeze) {
-      sg.freeze();
-    } else if (sg.unfreeze) {
-      sg.unfreeze();
-    } else if (sg.resume) {
-      sg.resume();
-    }
-  }
-
   function setShapeGrid(handle) {
-    sg = handle;
-    if (isMobile() && sg && sg.freeze) {
-      sg.freeze();
-    } else {
-      syncShapeGrid();
-    }
     applyRootClasses();
   }
 
   function setStreaming(active) {
     streaming = !!active;
     applyRootClasses();
-    syncShapeGrid();
   }
 
   function setIframeActive(active) {
     iframeActive = !!active;
     if (iframeActive) streaming = true;
     applyRootClasses();
-    syncShapeGrid();
   }
 
   function setPlayerVisible(visible) {
     playerVisible = !!visible;
     applyRootClasses();
-    syncShapeGrid();
   }
 
   function watchVideoIn(container) {
@@ -191,19 +164,8 @@
     observeSections();
     if (opts.playerEl) observePlayer(opts.playerEl);
 
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) {
-        if (sg && sg.freeze) sg.freeze();
-      } else {
-        syncShapeGrid();
-      }
-    });
-
     if (mqMobile.addEventListener) {
-      mqMobile.addEventListener('change', function () {
-        applyRootClasses();
-        syncShapeGrid();
-      });
+      mqMobile.addEventListener('change', applyRootClasses);
     }
     if (mqReduceMotion.addEventListener) {
       mqReduceMotion.addEventListener('change', applyRootClasses);
