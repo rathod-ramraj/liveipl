@@ -7,3 +7,7 @@
 # dependencies
 node_modules
 package-lock.json
+
+# agents
+.agents/
+skills-lock.json

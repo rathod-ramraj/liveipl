@@ -55,8 +55,6 @@
     }
     if ((streaming || iframeActive) && playerVisible) {
       sg.freeze && sg.freeze();
-    } else if (document.body.classList.contains('wbid-active')) {
-      sg.freeze && sg.freeze();
     } else if (isLowPowerDevice() && sg.freeze) {
       sg.freeze();
     } else if (sg.unfreeze) {
@@ -213,7 +211,7 @@
   }
 
   function isPlaybackActive() {
-    return streaming || iframeActive || document.body.classList.contains('wbid-active');
+    return streaming || iframeActive;
   }
 
   global.PerfController = {

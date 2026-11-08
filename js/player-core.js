@@ -26,8 +26,7 @@
     var root = document.documentElement;
     return (
       root.classList.contains('perf-streaming') ||
-      root.classList.contains('perf-iframe-active') ||
-      (document.body && document.body.classList.contains('wbid-active'))
+      root.classList.contains('perf-iframe-active')
     );
   }
 

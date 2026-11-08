@@ -54,7 +54,7 @@
       --surface-2: rgba(255, 255, 255, 0.04);
       --glass-border: rgba(38, 35, 53, 0.55);
       --glass-border-2: rgba(38, 35, 53, 0.35);
-      --highlight: #ff0000;
+      --highlight: #3b82f6;
       --text-1: #ffffff;
       --text-2: rgba(255, 255, 255, 0.65);
       --text-3: rgba(255, 255, 255, 0.35);
@@ -87,7 +87,7 @@
       background-color: var(--bg);
       background-image: 
         radial-gradient(ellipse 90% 60% at 50% -15%, rgba(130, 40, 160, 0.18) 0%, transparent 70%),
-        radial-gradient(circle at 10% 20%, rgba(255, 0, 0, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
         radial-gradient(circle at 90% 30%, rgba(201, 60, 255, 0.1) 0%, transparent 40%);
       background-attachment: fixed;
     }
@@ -345,26 +345,44 @@
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
     }
 
-    .nav-logo .live-badge {
+    .nav-logo .live-badge,
+    .player-actions .player-live-badge,
+    .player-live-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       font-size: 11px;
       font-weight: 700;
-      letter-spacing: .75px;
+      letter-spacing: .65px;
       text-transform: uppercase;
-      color: #ff4d6d;
-      background: rgba(255, 77, 109, 0.14);
-      border: 1px solid rgba(255, 77, 109, 0.35);
+      color: #60a5fa !important;
+      background: rgba(59, 130, 246, 0.12) !important;
+      border: 1px solid rgba(59, 130, 246, 0.32) !important;
       padding: 5px 12px;
       border-radius: var(--r-pill);
       margin-left: 6px;
       flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.18);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
-    .nav-logo .live-dot {
+    .nav-logo .live-badge .live-dot,
+    .player-actions .player-live-badge .live-dot,
+    .player-live-badge .live-dot {
       width: 7px;
       height: 7px;
+      background: #3b82f6 !important;
+      box-shadow: 0 0 6px #3b82f6 !important;
+    }
+
+    .view-eye-icon {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+      stroke: currentColor;
+      display: inline-block;
+      vertical-align: middle;
     }
 
     .live-badge {
@@ -765,8 +783,8 @@
       transition: border-color 0.2s, color 0.2s;
     }
     .sp-fit-btn:hover .fit-pill {
-      border-color: #ff0000;
-      color: #ff0000;
+      border-color: #3b82f6;
+      color: #3b82f6;
     }
 
     .shaka-controls-container button { color: #fff !important; }
@@ -850,9 +868,9 @@
 
     .ch-btn.active {
       color: var(--text-1);
-      border-color: rgba(255, 0, 0, 0.55);
-      background: rgba(255, 0, 0, 0.12);
-      box-shadow: 0 0 0 1px rgba(255, 0, 0, 0.28), 0 4px 16px rgba(255, 0, 0, 0.2);
+      border-color: rgba(59, 130, 246, 0.55);
+      background: rgba(59, 130, 246, 0.12);
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.28), 0 4px 16px rgba(59, 130, 246, 0.2);
     }
 
     .tag-badge {
@@ -866,7 +884,7 @@
     }
 
     .ch-btn.active .tag-badge {
-      background: rgba(255, 0, 0, 0.35);
+      background: rgba(59, 130, 246, 0.35);
       color: #fff;
     }
 
@@ -962,9 +980,9 @@
     }
 
     .match-card-badge {
-      background: rgba(255, 77, 109, 0.2);
-      color: #ff4d6d;
-      border: 1px solid rgba(255, 77, 109, 0.4);
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.4);
       padding: 3px 9px;
       border-radius: var(--r-pill);
       font-size: 11px;
@@ -981,8 +999,8 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #ff4d6d;
-      box-shadow: 0 0 6px #ff4d6d;
+      background: #3b82f6;
+      box-shadow: 0 0 6px #3b82f6;
     }
 
     .match-teams-row {
@@ -1310,8 +1328,11 @@
   <nav id="site-nav">
     <a href="./" class="nav-logo" id="navLogoHome">
       <span class="nav-logo-text">PlayUp</span>
-      <div class="live-badge" title="Active Visitors">
-        <div class="live-dot"></div><span id="navLiveUsersCount">1 Online</span>
+      <div class="live-badge" title="Live Views">
+        <svg class="view-eye-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg><span id="navLiveUsersCount">1</span>
       </div>
     </a>
     <div class="nav-right">
@@ -1353,8 +1374,11 @@
             </div>
           </div>
           <div class="player-actions">
-            <div class="live-badge player-live-badge" title="Active Viewers">
-              <div class="live-dot"></div><span id="playerLiveUsersCount">Live</span>
+            <div class="live-badge player-live-badge" title="Live Views">
+              <svg class="view-eye-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg><span id="playerLiveUsersCount">1</span>
             </div>
             <button type="button" class="btn btn-ghost btn-sm player-fs-btn" id="playerFsBtn"
               aria-label="Toggle full screen" title="Full Screen">
@@ -1539,7 +1563,7 @@
           seekBarColors: {
             base: "rgba(255,255,255,0.2)",
             buffered: "rgba(255,255,255,0.45)",
-            played: "#ff0000"
+            played: "#3b82f6"
           }
         });
 
@@ -1642,7 +1666,7 @@
             shape: "square",
             backgroundColor: "#121019",
             borderColor: "#262335",
-            hoverFillColor: "rgba(255, 0, 0, 0.18)",
+            hoverFillColor: "rgba(59, 130, 246, 0.18)",
             hoverTrailAmount: window.PerfController && PerfController.isMobile() ? 0 : 3,
             vignetteEdge: "rgba(5, 3, 14, 0.44)"
           });

@@ -171,7 +171,7 @@
   }
 
   // Auto-mount into player containers if not already present
-  var targets = ['#playerRatio', '#player-container', '#pc', '.wbid-frame-wrap', '#wbid-frame-wrap'];
+  var targets = ['#playerRatio', '#player-container', '#pc'];
 
   function resolveHost(container) {
     if (!container) return null;

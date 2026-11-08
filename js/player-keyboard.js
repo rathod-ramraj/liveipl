@@ -9,16 +9,6 @@
   }
 
   function resolveFullscreenTarget(elRatio) {
-    if (document.body.classList.contains('wbid-active')) {
-      var wbWrap = document.getElementById('wbid-frame-wrap');
-      if (wbWrap) return wbWrap;
-      var wbIframe = document.getElementById('wbid-iframe');
-      if (wbIframe && isActiveSrc(wbIframe.getAttribute('src') || wbIframe.src)) {
-        return wbIframe;
-      }
-      return document.getElementById('wbid-overlay');
-    }
-
     if (!elRatio) return null;
 
     var video = elRatio.querySelector('video');
@@ -98,8 +88,6 @@
           exitFs();
           return;
         }
-
-        if (document.body.classList.contains('wbid-active')) return;
 
         if (key === 'r' || key === 'R') {
           e.preventDefault();

@@ -39,7 +39,7 @@
 
   function formatCount(num) {
     if (typeof num !== 'number' || isNaN(num) || num < 0) num = 0;
-    return (num >= 1000 ? (num / 1000).toFixed(1) + 'k' : num.toLocaleString()) + ' Online';
+    return num >= 1000 ? (num / 1000).toFixed(1) + 'k' : num.toLocaleString();
   }
 
   function updateBadges(count) {
