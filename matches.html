@@ -28,7 +28,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <script src="./ShapeGrid.js" defer></script>
   <script src="./js/perf-controller.js" defer></script>
   <script src="./js/live-users.js" defer></script>
   <script src="./js/pwa-installer.js" defer></script>
@@ -49,7 +48,8 @@
 
   <style>
     :root {
-      --bg: #121019;
+      --bg: #0a0c10;
+      --border: rgba(255, 255, 255, 0.07);
       --surface: rgba(255, 255, 255, 0.08);
       --surface-2: rgba(255, 255, 255, 0.04);
       --glass-border: rgba(38, 35, 53, 0.55);
@@ -84,27 +84,35 @@
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
-      background-color: var(--bg);
-      background-image: 
-        radial-gradient(ellipse 90% 60% at 50% -15%, rgba(130, 40, 160, 0.18) 0%, transparent 70%),
-        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
-        radial-gradient(circle at 90% 30%, rgba(201, 60, 255, 0.1) 0%, transparent 40%);
-      background-attachment: fixed;
+      background: var(--bg);
+      color: var(--text-1);
     }
 
-    /* ─── SHAPEGRID BACKGROUND ───────────────────────── */
-    #sg-global-bg {
+    /* ─── BG GRID (from cricket/playup.html) ─── */
+    body::before {
+      content: '';
       position: fixed;
       inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
       z-index: 0;
-      pointer-events: none !important;
-      contain: strict;
-      transform: translateZ(0);
     }
-    #sg-global-bg canvas {
-      width: 100% !important;
-      height: 100% !important;
-      display: block;
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body>*:not(#site-nav) {
+      position: relative;
+      z-index: 1;
     }
 
     /* Pause infinite UI motion during playback / mobile grid-off (same look when idle) */
@@ -120,10 +128,6 @@
     html.perf-streaming .ch-btn {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
-    }
-
-    html.perf-pause-animations #sg-global-bg canvas {
-      will-change: auto;
     }
 
     @keyframes slideDown {
@@ -1251,9 +1255,6 @@
 </head>
 <body>
 
-  <!-- Full-Viewport ShapeGrid Canvas -->
-  <div id="sg-global-bg" aria-hidden="true"></div>
-
   <!-- ═══ NAVBAR (1:1 with index.html) ═══════════════════ -->
   <nav id="site-nav">
     <a href="./" class="nav-logo" id="navLogoHome">
@@ -1537,9 +1538,6 @@
           if (window.PerfController) PerfController.setStreaming(false);
         });
 
-        // Initialize ShapeGrid if available
-        initShapeGrid();
-
         fetchMatches();
       }
 
@@ -1581,33 +1579,6 @@
           fetchMatches(true);
         }
       };
-
-      function initShapeGrid() {
-        var el = document.getElementById("sg-global-bg");
-        if (!el || !window.ShapeGridApp) {
-          setTimeout(() => { if (window.ShapeGridApp) initShapeGrid(); }, 200);
-          return;
-        }
-        try {
-          var sgHandle = window.ShapeGridApp.init(el, {
-            direction: "diagonal",
-            speed: 0.28,
-            squareSize: 40,
-            shape: "square",
-            backgroundColor: "#121019",
-            borderColor: "#262335",
-            hoverFillColor: "rgba(59, 130, 246, 0.18)",
-            hoverTrailAmount: window.PerfController && PerfController.isMobile() ? 0 : 3,
-            vignetteEdge: "rgba(5, 3, 14, 0.44)"
-          });
-          if (window.PerfController) {
-            PerfController.setShapeGrid(sgHandle);
-            if (PerfController.isMobile() && sgHandle.setSpeedMultiplier) {
-              sgHandle.setSpeedMultiplier(0);
-            }
-          }
-        } catch (_) {}
-      }
 
       // Extract stream sources from CnpTV or dashStreams
       function extractStreams(m) {

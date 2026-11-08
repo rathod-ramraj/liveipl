@@ -134,9 +134,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
 
-  <!-- ShapeGrid background - no deps, deferred -->
-  <script src="./ShapeGrid.js" defer></script>
-
   <!-- DNS + TCP warm-up for API and HLS.js CDN -->
   <link rel="preconnect" href="https://allrounderid2.pages.dev" crossorigin>
   <link rel="dns-prefetch" href="https://allrounderid2.pages.dev">
@@ -308,7 +305,8 @@
     }
 
     :root {
-      --bg: #121019;
+      --bg: #0a0c10;
+      --border: rgba(255, 255, 255, 0.07);
       --surface: rgba(255, 255, 255, 0.08);
       --surface-2: rgba(255, 255, 255, 0.04);
       --glass-border: rgba(38, 35, 53, 0.55);
@@ -348,18 +346,29 @@
       min-height: 100dvh;
     }
 
-    /* Edge shade - matches violet/charcoal grid scene */
+    /* ─── BG GRID (from cricket/playup.html) ─── */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      z-index: 1;
-      background:
-        radial-gradient(ellipse 85% 75% at 50% 42%, transparent 0%, rgba(8, 6, 14, 0.5) 100%);
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
       pointer-events: none;
+      z-index: 0;
     }
 
-    body>*:not(#dt-block):not(#sg-global-bg):not(#ks-toast):not(#oneflix-fab):not(#site-nav) {
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body>*:not(#dt-block):not(#ks-toast):not(#oneflix-fab):not(#site-nav) {
       position: relative;
       z-index: 2;
     }
@@ -625,7 +634,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 16px;
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
       animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
@@ -777,6 +786,10 @@
       background: rgba(255, 255, 255, 0.08);
     }
 
+    .nav-channels-mobile {
+      display: none !important;
+    }
+
     .nav-cta {
       background: var(--btn-primary-bg, #ffffff) !important;
       color: var(--btn-primary-fg, #0a0a0f) !important;
@@ -856,27 +869,6 @@
       background: #3b82f6;
       border-radius: 50%;
       animation: livepulse 1.8s ease-in-out infinite;
-    }
-
-    /* ─── SHAPEGRID FULL-VIEWPORT BACKGROUND ─────────── */
-    #sg-global-bg {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none !important;
-      contain: strict;
-      transform: translateZ(0);
-    }
-
-    #sg-global-bg canvas {
-      width: 100% !important;
-      height: 100% !important;
-      display: block;
-      will-change: transform;
-    }
-
-    html.perf-pause-animations #sg-global-bg canvas {
-      will-change: auto;
     }
 
     /* ─── HERO (centered landing layout) ─────────────── */
@@ -1864,7 +1856,7 @@
         width: calc(100% - 32px);
         height: 50px;
         padding: 0 8px 0 12px;
-        gap: 8px;
+        gap: 14px;
       }
 
       .nav-logo-text {
@@ -2164,8 +2156,8 @@
         width: fit-content;
         max-width: calc(100% - 24px);
         height: 48px;
-        padding: 0 6px 0 12px;
-        gap: 8px;
+        padding: 0 8px 0 12px;
+        gap: 16px;
       }
 
       .nav-logo {
@@ -2186,15 +2178,36 @@
       }
 
       .nav-right {
-        gap: 4px;
+        gap: 6px;
       }
 
       .nav-toggle {
-        display: inline-flex;
+        display: none !important;
+      }
+
+      .nav-channels-mobile {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        padding: 5.5px 8px !important;
+        font-size: 12.5px !important;
+        font-weight: 500;
+        color: var(--text-2);
+        background: none !important;
+        border: none !important;
+        text-decoration: none;
+        transition: color .2s;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .nav-channels-mobile:hover,
+      .nav-channels-mobile:active {
+        color: var(--text-1);
+        background: none !important;
       }
 
       .nav-cta {
-        padding: 5.5px 11px !important;
+        padding: 5.5px 12px !important;
         font-size: 12.5px !important;
         margin-left: 0;
       }
@@ -2250,7 +2263,11 @@
 
     @media (max-width: 380px) {
       #site-nav {
-        padding: 0 4px 0 10px;
+        padding: 0 6px 0 10px;
+        gap: 10px;
+      }
+
+      .nav-right {
         gap: 4px;
       }
 
@@ -2262,6 +2279,11 @@
         font-size: 9px;
         padding: 2.5px 5.5px;
         letter-spacing: .4px;
+      }
+
+      .nav-channels-mobile {
+        padding: 5px 6px !important;
+        font-size: 11.5px !important;
       }
 
       .nav-cta {
@@ -2763,9 +2785,6 @@
 
 <body>
 
-  <!-- ═══ SHAPEGRID GLOBAL BACKGROUND ═════════════════ -->
-  <div id="sg-global-bg" aria-hidden="true"></div>
-
   <!-- ═══ DEVTOOLS BLOCK OVERLAY ══════════════════════ -->
   <div id="dt-block">
     <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -2797,6 +2816,7 @@
         <a href="#channels" class="nav-link">Channels</a>
         <a href="https://oneflixx.pages.dev/" class="nav-link" target="_blank" rel="noopener noreferrer">OneFlix</a>
       </div>
+      <a href="#channels" class="nav-link nav-channels-mobile">Channels</a>
       <a href="#live-matches" class="nav-link nav-cta">Live Matches</a>
       <button type="button" class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu" aria-expanded="false">
         <span class="nav-toggle-icon">
@@ -4903,43 +4923,6 @@
         if (btn && btn.color) r.style.setProperty('--btn-primary-fg', btn.color);
       }
 
-      function tryInitShapeGrid(pal) {
-        var el = document.getElementById('sg-global-bg');
-        if (!el || !window.ShapeGridApp) return;
-        var hoverFill = pal && pal.highlight
-          ? hexToRgba(pal.highlight, 0.2)
-          : 'rgba(115, 95, 165, 0.2)';
-        try {
-          var sgHandle = window.ShapeGridApp.init(el, {
-            direction: 'diagonal',
-            speed: 0.28,
-            squareSize: 40,
-            shape: 'square',
-            backgroundColor: '#121019',
-            borderColor: '#262335',
-            hoverFillColor: hoverFill,
-            hoverTrailAmount: window.PerfController && PerfController.isMobile() ? 0 : 3,
-            vignetteEdge: 'rgba(5, 3, 14, 0.44)',
-          });
-          window._sgHandle = sgHandle;
-          if (window.PerfController) {
-            PerfController.setShapeGrid(sgHandle);
-          }
-        } catch (e) { console.warn('ShapeGrid init error:', e); }
-      }
-
-      function waitForShapeGrid(pal) {
-        var tries = 0;
-        function tick() {
-          if (window.ShapeGridApp) {
-            tryInitShapeGrid(pal);
-            return;
-          }
-          if (++tries < 50) setTimeout(tick, 40);
-        }
-        tick();
-      }
-
       function run() {
         fetch('./Design.json')
           .then(function (res) { return res.json(); })
@@ -4947,11 +4930,8 @@
             var ds = data.design_system || {};
             var pal = ds.style && ds.style.color_palette;
             applyDesignPalette(pal, ds.components || {});
-            waitForShapeGrid(pal);
           })
-          .catch(function () {
-            waitForShapeGrid(null);
-          });
+          .catch(function () { });
       }
 
       if (document.readyState !== 'loading') run();
