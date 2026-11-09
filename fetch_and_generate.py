@@ -13,9 +13,9 @@ from datetime import datetime
 
 # API Sources in priority order
 API_SOURCES = [
-    ("Primary", "https://dilzzy-all-sports.pages.dev/data/matches.json"),
+    ("Primary", "https://allrounderlive.com/api/cricket.json"),
     ("Fallback", "https://sonujson-v5.pages.dev/Data/willow.json"),
-    ("Tertiary", "https://allrounderlive.com/api/cricket.json"),
+    ("Tertiary", "https://dilzzy-all-sports.pages.dev/data/matches.json"),
 ]
 
 API_DIR = "api"
