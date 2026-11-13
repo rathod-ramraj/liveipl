@@ -2,19 +2,6 @@
 <html lang="en">
 
 <head>
-  <script>
-    (function () {
-      try {
-        var ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
-        var isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua);
-        var isSmallTouch = (window.innerWidth <= 768 || window.screen.width <= 768) && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-        if (isMobileUA || isSmallTouch) {
-          var dest = (window.location.protocol === 'file:' ? './cricket/playup.html' : '/cricket/playup.html');
-          window.location.replace(dest + (window.location.search || '') + (window.location.hash || ''));
-        }
-      } catch (_) { }
-    })();
-  </script>
   <script disable-devtool-auto src="https://cdn.jsdelivr.net/npm/disable-devtool@latest/disable-devtool.min.js" url="about:blank"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2930,11 +2917,11 @@
     </a>
     <div class="nav-right">
       <div class="nav-menu" id="navMenu">
-        <a href="/cricket/playup.html" class="nav-link">Old Version</a>
+        <a href="/cricket/playup.html" class="nav-link">Change Version</a>
         <a href="#channels" class="nav-link">Channels</a>
         <a href="https://oneflixx.pages.dev/" class="nav-link" target="_blank" rel="noopener noreferrer">OneFlix</a>
       </div>
-      <a href="#channels" class="nav-link nav-channels-mobile">Channels</a>
+      <a href="/cricket/playup.html" class="nav-link nav-channels-mobile">Change Version</a>
       <a href="#live-matches" class="nav-link nav-cta">Live Matches</a>
       <button type="button" class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu" aria-expanded="false">
         <span class="nav-toggle-icon">

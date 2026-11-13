@@ -71,7 +71,7 @@
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 520px;
+            max-width: 820px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -135,7 +135,7 @@
             position: relative;
             z-index: 5;
             width: 100%;
-            max-width: 520px;
+            max-width: 820px;
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -283,8 +283,14 @@
         /* ─── SERVERS ─── */
         .server-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
             gap: 10px;
+        }
+
+        @media (max-width: 440px) {
+            .server-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
         }
 
         .server-btn {
@@ -633,6 +639,304 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
+
+        /* ─── SPORTS MATCH CAROUSELS ─── */
+        .sports-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .s-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--accent2);
+            margin-bottom: 2px;
+        }
+
+        .s-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .s-desc {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .scroll-arrows {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-bottom: 2px;
+        }
+
+        .btn-scroll-arrow {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-scroll-arrow:hover {
+            background: rgba(59, 130, 246, 0.18);
+            border-color: rgba(59, 130, 246, 0.45);
+            color: #ffffff;
+            transform: scale(1.06);
+        }
+
+        .btn-scroll-arrow:active {
+            transform: scale(0.96);
+        }
+
+        .willow-matches-grid {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 16px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x mandatory;
+            overscroll-behavior-x: contain;
+            padding: 4px 2px 14px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.03);
+        }
+
+        .willow-matches-grid::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .willow-matches-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 999px;
+        }
+
+        .willow-matches-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 999px;
+        }
+
+        .willow-matches-grid::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.32);
+        }
+
+        .loading-matches {
+            padding: 24px 16px;
+            color: var(--muted);
+            font-size: 13px;
+            width: 100%;
+            flex: 1 0 100%;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+        }
+
+        .willow-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex: 0 0 320px;
+            width: 320px;
+            scroll-snap-align: start;
+            transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            cursor: pointer;
+        }
+
+        .willow-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(59, 130, 246, 0.45);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .willow-card.is-selected {
+            border-color: #3b82f6;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+        }
+
+        .willow-card.is-upcoming,
+        .willow-card.is-ended {
+            cursor: pointer;
+        }
+
+        .willow-card-thumb-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000000;
+            overflow: hidden;
+        }
+
+        .willow-card-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .3s ease;
+        }
+
+        .willow-card:hover .willow-card-thumb {
+            transform: scale(1.03);
+        }
+
+        .willow-card-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .willow-card-badge.is-live {
+            background: #3b82f6;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.45);
+        }
+
+        .willow-card-badge.is-upcoming,
+        .willow-card-badge.is-ended {
+            background: rgba(20, 20, 28, 0.85);
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+
+        .willow-card .live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #fff;
+            display: inline-block;
+        }
+
+        .willow-card-time {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.72);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 999px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .willow-card-body {
+            padding: 14px 16px 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .willow-card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .willow-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .willow-card-servers-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .willow-card-play-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.14);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            color: #60a5fa;
+            font-weight: 600;
+            font-size: 11.5px;
+            transition: background .2s ease, color .2s ease, border-color .2s ease;
+        }
+
+        .willow-card:hover .willow-card-play-tag {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #3b82f6;
+        }
+
+        @media (max-width: 640px) {
+            .scroll-arrows {
+                display: none !important;
+            }
+
+            .willow-matches-grid {
+                gap: 12px;
+                padding-bottom: 12px;
+            }
+
+            .willow-card {
+                flex: 0 0 min(84vw, 300px);
+                width: min(84vw, 300px);
+            }
+        }
     </style>
 </head>
 
@@ -683,8 +987,149 @@
 
         <!-- SERVERS CARD -->
         <div class="card">
-            <div class="card-title">Streaming Servers</div>
+            <div class="card-title" id="serverCardHeader" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <span id="serverCardTitle" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Streaming Servers</span>
+                <button type="button" id="backToChannelsBtn" style="display:none;background:none;border:none;color:var(--accent2);font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;padding:0">← 24/7 Channels</button>
+            </div>
             <div class="server-grid" id="serverGrid"></div>
+        </div>
+
+        <!-- ═══ 1. LIVE CRICKET MATCHES ═══ -->
+        <div class="divider" id="cricketDivider">Live Cricket</div>
+        <div class="sports-section" id="cricketSection">
+            <div class="section-header">
+                <div>
+                    <div class="s-label">Cricket Tournaments</div>
+                    <div class="s-title">Live Cricket Matches</div>
+                    <div class="s-desc">Tap any live match stream to start watching immediately in HD quality.</div>
+                </div>
+                <div class="scroll-arrows">
+                    <button type="button" class="btn-scroll-arrow" id="scrollCricketLeft" aria-label="Scroll cricket left">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <button type="button" class="btn-scroll-arrow" id="scrollCricketRight" aria-label="Scroll cricket right">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="cricketMatchesGrid" class="willow-matches-grid">
+                <div class="loading-matches">Loading live cricket matches...</div>
+            </div>
+        </div>
+
+        <!-- ═══ 2. WILLOW LIVE MATCHES ═══ -->
+        <div class="divider" id="willowDivider">Willow Live</div>
+        <div class="sports-section" id="willowSection">
+            <div class="section-header">
+                <div>
+                    <div class="s-label">Willow Cricket</div>
+                    <div class="s-title">Willow Matches</div>
+                    <div class="s-desc">Official Willow cricket streams and multi-server tournament feeds.</div>
+                </div>
+                <div class="scroll-arrows">
+                    <button type="button" class="btn-scroll-arrow" id="scrollWillowLeft" aria-label="Scroll willow left">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <button type="button" class="btn-scroll-arrow" id="scrollWillowRight" aria-label="Scroll willow right">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="willowMatchesGrid" class="willow-matches-grid">
+                <div class="loading-matches">Loading Willow matches...</div>
+            </div>
+        </div>
+
+        <!-- ═══ 3. FANCODE LIVE MATCHES ═══ -->
+        <div class="divider" id="fancodeDivider">FanCode Live</div>
+        <div class="sports-section" id="fancodeSection">
+            <div class="section-header">
+                <div>
+                    <div class="s-label">FanCode Live</div>
+                    <div class="s-title">FanCode Matches</div>
+                    <div class="s-desc">Exclusive live cricket, football, kabaddi &amp; multi-sport streams from FanCode.</div>
+                </div>
+                <div class="scroll-arrows">
+                    <button type="button" class="btn-scroll-arrow" id="scrollFancodeLeft" aria-label="Scroll fancode left">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <button type="button" class="btn-scroll-arrow" id="scrollFancodeRight" aria-label="Scroll fancode right">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="fancodeMatchesGrid" class="willow-matches-grid">
+                <div class="loading-matches">Loading FanCode matches...</div>
+            </div>
+        </div>
+
+        <!-- ═══ 4. SONY LIV LIVE MATCHES ═══ -->
+        <div class="divider" id="sonylivDivider">Sony LIV Sports</div>
+        <div class="sports-section" id="sonylivSection">
+            <div class="section-header">
+                <div>
+                    <div class="s-label">Sony LIV Sports</div>
+                    <div class="s-title">Sony LIV Matches</div>
+                    <div class="s-desc">Live coverage of international cricket, tennis, UEFA &amp; racing on Sony LIV.</div>
+                </div>
+                <div class="scroll-arrows">
+                    <button type="button" class="btn-scroll-arrow" id="scrollSonylivLeft" aria-label="Scroll sonyliv left">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <button type="button" class="btn-scroll-arrow" id="scrollSonylivRight" aria-label="Scroll sonyliv right">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="sonylivMatchesGrid" class="willow-matches-grid">
+                <div class="loading-matches">Loading Sony LIV matches...</div>
+            </div>
+        </div>
+
+        <!-- ═══ 5. LIVE FOOTBALL MATCHES ═══ -->
+        <div class="divider" id="footballDivider">Live Football</div>
+        <div class="sports-section" id="footballSection">
+            <div class="section-header">
+                <div>
+                    <div class="s-label">Football Tournaments</div>
+                    <div class="s-title">Live Football Matches</div>
+                    <div class="s-desc">Premier League, Champions League, La Liga &amp; international football streams.</div>
+                </div>
+                <div class="scroll-arrows">
+                    <button type="button" class="btn-scroll-arrow" id="scrollFootballLeft" aria-label="Scroll football left">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <button type="button" class="btn-scroll-arrow" id="scrollFootballRight" aria-label="Scroll football right">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="footballMatchesGrid" class="willow-matches-grid">
+                <div class="loading-matches">Loading football matches...</div>
+            </div>
+        </div>
+
+        <!-- ═══ 6. LIVE WORLD SPORTS ═══ -->
+        <div class="divider" id="worldSportsDivider">World Sports</div>
+        <div class="sports-section" id="worldSportsSection">
+            <div class="section-header">
+                <div>
+                    <div class="s-label">Global Sports</div>
+                    <div class="s-title">Live World Sports</div>
+                    <div class="s-desc">Tennis, basketball, racing &amp; international sports broadcast streams.</div>
+                </div>
+                <div class="scroll-arrows">
+                    <button type="button" class="btn-scroll-arrow" id="scrollWorldSportsLeft" aria-label="Scroll world sports left">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <button type="button" class="btn-scroll-arrow" id="scrollWorldSportsRight" aria-label="Scroll world sports right">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="worldSportsGrid" class="willow-matches-grid">
+                <div class="loading-matches">Loading world sports...</div>
+            </div>
         </div>
 
         <div class="divider">Community</div>
@@ -752,6 +1197,8 @@
             const playerContainer = document.getElementById("player-container");
             const errorBox = document.getElementById("errorBox");
             const serverGrid = document.getElementById("serverGrid");
+            const serverCardTitle = document.getElementById("serverCardTitle");
+            const backToChannelsBtn = document.getElementById("backToChannelsBtn");
 
             // ─── MODAL ───
             const modal = document.getElementById("joinModal");
@@ -802,6 +1249,9 @@
 
             function loadStaticServer(server) {
                 if (!server || !server.url) return;
+                if (serverCardTitle) serverCardTitle.textContent = "Streaming Servers";
+                if (backToChannelsBtn) backToChannelsBtn.style.display = "none";
+                document.querySelectorAll(".willow-card").forEach(c => c.classList.remove("is-selected"));
                 setPlayerIframe(server.url);
                 updateActiveServer(server.id);
             }
@@ -919,6 +1369,412 @@
                     });
                 };
             }
+
+            // ─── BACK TO CHANNELS ───
+            if (backToChannelsBtn) {
+                backToChannelsBtn.addEventListener("click", function () {
+                    if (serverCardTitle) serverCardTitle.textContent = "Streaming Servers";
+                    backToChannelsBtn.style.display = "none";
+                    document.querySelectorAll(".willow-card").forEach(c => c.classList.remove("is-selected"));
+                    renderServerButtons();
+                    if (STREAM_SERVERS.length > 0) {
+                        const cur = STREAM_SERVERS.find(s => s.id === currentServerId) || STREAM_SERVERS[0];
+                        loadStaticServer(cur);
+                    }
+                });
+            }
+
+            // ─── CAROUSEL SCROLL BUTTONS ───
+            function wireScrollArrow(btnLeftId, btnRightId, gridId) {
+                const btnL = document.getElementById(btnLeftId);
+                const btnR = document.getElementById(btnRightId);
+                const grid = document.getElementById(gridId);
+                if (btnL && grid) {
+                    btnL.addEventListener("click", function () {
+                        const step = grid.firstElementChild ? (grid.firstElementChild.offsetWidth + 20) : 340;
+                        grid.scrollBy({ left: -step, behavior: "smooth" });
+                    });
+                }
+                if (btnR && grid) {
+                    btnR.addEventListener("click", function () {
+                        const step = grid.firstElementChild ? (grid.firstElementChild.offsetWidth + 20) : 340;
+                        grid.scrollBy({ left: step, behavior: "smooth" });
+                    });
+                }
+            }
+
+            wireScrollArrow("scrollCricketLeft", "scrollCricketRight", "cricketMatchesGrid");
+            wireScrollArrow("scrollWillowLeft", "scrollWillowRight", "willowMatchesGrid");
+            wireScrollArrow("scrollFancodeLeft", "scrollFancodeRight", "fancodeMatchesGrid");
+            wireScrollArrow("scrollSonylivLeft", "scrollSonylivRight", "sonylivMatchesGrid");
+            wireScrollArrow("scrollFootballLeft", "scrollFootballRight", "footballMatchesGrid");
+            wireScrollArrow("scrollWorldSportsLeft", "scrollWorldSportsRight", "worldSportsGrid");
+
+            // ─── SPORTS MATCH PARSING & RENDERING ───
+            function formatLogoUrl(url) {
+                if (!url) return "";
+                let s = String(url).replace(/^http:\/\//i, "https://");
+                if (s.includes("api.sofascore.com")) {
+                    s = s.replace("api.sofascore.com", "img.sofascore.com").replace(/\/dark$/, "");
+                }
+                return s;
+            }
+
+            function renderMatchServers(m, activeIdx) {
+                if (!serverGrid) return;
+                serverGrid.innerHTML = "";
+                m.servers.forEach((s, idx) => {
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "server-btn" + (idx === activeIdx ? " active" : "");
+                    btn.innerHTML = `<span class="server-dot"></span><span>${s.label}</span>`;
+                    btn.addEventListener("click", function () {
+                        serverGrid.querySelectorAll(".server-btn").forEach(b => b.classList.remove("active"));
+                        btn.classList.add("active");
+                        setPlayerIframe(s.playUrl);
+                        const playerWrap = document.querySelector(".player-wrap");
+                        if (playerWrap) playerWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+                    });
+                    serverGrid.appendChild(btn);
+                });
+            }
+
+            function playMatch(m, cardEl, serverIdx) {
+                if (!m || !m.servers || !m.servers.length) return;
+                document.querySelectorAll(".willow-card").forEach(c => c.classList.remove("is-selected"));
+                if (cardEl) cardEl.classList.add("is-selected");
+
+                const sIdx = (serverIdx >= 0 && serverIdx < m.servers.length) ? serverIdx : 0;
+                const s = m.servers[sIdx];
+                setPlayerIframe(s.playUrl);
+
+                if (serverCardTitle) serverCardTitle.textContent = m.matchTitle;
+                if (backToChannelsBtn) backToChannelsBtn.style.display = "inline-block";
+
+                renderMatchServers(m, sIdx);
+
+                const playerWrap = document.querySelector(".player-wrap");
+                if (playerWrap) playerWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+
+            function parseMatch(m, defaultCat, mIdx) {
+                if (!m) return null;
+                const statusRaw = String(m.status || (m.event && m.event.status) || "upcoming").toLowerCase();
+                const isLive = statusRaw === "live" || statusRaw.includes("in progress");
+                const isEnded = statusRaw === "ended" || statusRaw.includes("completed") || statusRaw.includes("finished");
+                const isUpcoming = !isLive && !isEnded;
+
+                const ev = m.event || {};
+                const teamA = ev.teamA || m.team_1 || m.team1 || m.teamA || "";
+                const teamB = ev.teamB || m.team_2 || m.team2 || m.teamB || "";
+                const tournamentName = m.series || ev.name || m.league || m.tournament || m.event_name || m.category || m.sport || defaultCat;
+                const tournamentLogo = formatLogoUrl(ev.logo || m.logo);
+                const flagA = formatLogoUrl(ev.teamAFlag || m.teamAFlag || m.team1Flag) || tournamentLogo || "../public/favicon.png";
+                const flagB = formatLogoUrl(ev.teamBFlag || m.teamBFlag || m.team2Flag) || tournamentLogo || "../public/favicon.png";
+
+                let matchTitle = "";
+                if (teamA && teamB) {
+                    matchTitle = teamA + " vs " + teamB + (tournamentName ? " (" + tournamentName + ")" : "");
+                } else if (m.match_name && m.event_name) {
+                    matchTitle = m.event_name + " — " + m.match_name;
+                } else {
+                    matchTitle = m.title || m.event_name || m.name || (defaultCat + " Match");
+                }
+
+                const posterUrl = m.thumbnail || m.image || m.poster || m.src || m.cover_image || "";
+
+                let timeStr = m.time || m.startTime || "";
+                if (!timeStr && ev.startTimeIST) {
+                    const tParts = ev.startTimeIST.split(" ");
+                    timeStr = (tParts.length >= 3) ? (tParts[1].replace(/:\d{2}$/, "") + " " + tParts[2]) : ev.startTimeIST;
+                }
+
+                const drmKey = m.drm_key || m.key || m.drmKey || "";
+                const servers = [];
+
+                function addServer(sLabel, url, sKeyVal) {
+                    if (!url || typeof url !== "string") return;
+                    let cleanUrl = url.trim();
+                    if (cleanUrl.startsWith("//")) cleanUrl = "https:" + cleanUrl;
+                    else if (cleanUrl.startsWith("/")) cleanUrl = "https://allrounderlive.in" + cleanUrl;
+
+                    const isMpd = cleanUrl.includes(".mpd");
+                    const isM3u8 = cleanUrl.includes(".m3u8");
+                    const keyVal = sKeyVal || drmKey;
+                    let playUrl = "";
+                    if (isMpd || isM3u8 || keyVal) {
+                        playUrl = "./willow.html?mpd=" + encodeURIComponent(cleanUrl) +
+                            (keyVal ? ("&key=" + encodeURIComponent(keyVal)) : "") +
+                            "&title=" + encodeURIComponent(matchTitle);
+                    } else {
+                        playUrl = cleanUrl;
+                    }
+
+                    servers.push({
+                        label: sLabel,
+                        url: cleanUrl,
+                        playUrl: playUrl,
+                        key: keyVal
+                    });
+                }
+
+                if (m.auto_streams && typeof m.auto_streams === "object") {
+                    Object.keys(m.auto_streams).forEach(lang => {
+                        const langObj = m.auto_streams[lang];
+                        if (langObj && langObj.streams && typeof langObj.streams === "object") {
+                            Object.keys(langObj.streams).forEach(res => {
+                                const sUrl = langObj.streams[res];
+                                if (sUrl && typeof sUrl === "string") {
+                                    addServer(lang + " " + res, sUrl, "");
+                                }
+                            });
+                        }
+                    });
+                }
+
+                if (Array.isArray(m.dashStreams) && m.dashStreams.length > 0) {
+                    m.dashStreams.forEach((s, idx) => {
+                        addServer(s.title || s.name || ("Server " + (idx + 1)), s.url || s.manifest || s.stream || s.src, s.key || "");
+                    });
+                } else if (Array.isArray(m.streams) && m.streams.length > 0) {
+                    m.streams.forEach((s, idx) => {
+                        const url = (typeof s === "string") ? s : (s && (s.link || s.url || s.manifest || s.stream || s.src));
+                        const sLabel = (s && s.title) ? s.title : ((s && s.name) ? s.name : ("Server " + (idx + 1)));
+                        const sKey = (s && (s.api || s.key)) ? (s.api || s.key) : "";
+                        addServer(sLabel, url, sKey);
+                    });
+                } else if (typeof m.streams === "object" && m.streams !== null) {
+                    Object.keys(m.streams).forEach((k, idx) => {
+                        const url = m.streams[k];
+                        if (url && typeof url === "string") addServer(k, url, "");
+                    });
+                } else if (typeof m.CnpTV === "object" && m.CnpTV !== null) {
+                    Object.keys(m.CnpTV).forEach((k, idx) => {
+                        const url = m.CnpTV[k];
+                        let label = "Server " + (idx + 1);
+                        if (k.includes("cloudfront")) label += " (CF)";
+                        else if (k.includes("fastly")) label += " (Fastly)";
+                        else if (k.includes("amazon")) label += " (AWS)";
+                        else if (k.includes("akamai")) label += " (Akamai)";
+                        addServer(label, url, drmKey);
+                    });
+                }
+
+                if (servers.length === 0) {
+                    if (m.video_url) addServer("Server 1 (Direct)", m.video_url, drmKey);
+                    if (m.dai_url && m.dai_url !== m.video_url) addServer("Server 2 (DAI)", m.dai_url, drmKey);
+                    if (m.pub_url && m.pub_url !== m.video_url && m.pub_url !== m.dai_url) addServer("Server 3 (Pub)", m.pub_url, drmKey);
+                    const singleUrl = m.stream_url || m.url || m.mpd || m.m3u8 || m.stream || m.adfree_url || m.stream_link || m.page_url || m.embedUrl || m.iframe;
+                    if (singleUrl && servers.length === 0) {
+                        addServer("Live Feed", singleUrl, drmKey);
+                    }
+                }
+
+                return {
+                    id: m.id || m.match_id || ("m_" + mIdx),
+                    isLive: isLive,
+                    isUpcoming: isUpcoming,
+                    isEnded: isEnded,
+                    matchTitle: matchTitle,
+                    tournamentName: tournamentName,
+                    tournamentLogo: tournamentLogo,
+                    teamA: teamA,
+                    teamB: teamB,
+                    flagA: flagA,
+                    flagB: flagB,
+                    posterUrl: posterUrl,
+                    timeStr: timeStr,
+                    servers: servers
+                };
+            }
+
+            function renderMatchesGrid(gridEl, rawData, category, emptyText) {
+                if (!gridEl) return;
+                let items = [];
+                if (Array.isArray(rawData)) items = rawData;
+                else if (rawData && Array.isArray(rawData.events)) items = rawData.events;
+                else if (rawData && Array.isArray(rawData.matches)) items = rawData.matches;
+                else if (rawData && Array.isArray(rawData.Matches)) items = rawData.Matches;
+
+                const parsed = items.map((m, idx) => parseMatch(m, category, idx)).filter(Boolean);
+                if (parsed.length === 0) {
+                    gridEl.innerHTML = `<div class="loading-matches">${emptyText || "No live matches scheduled right now."}</div>`;
+                    return;
+                }
+
+                const liveList = parsed.filter(m => m.isLive);
+                const upcomingList = parsed.filter(m => m.isUpcoming);
+                const endedList = parsed.filter(m => m.isEnded);
+                const sorted = liveList.concat(upcomingList).concat(endedList);
+
+                const frag = document.createDocumentFragment();
+
+                sorted.forEach(m => {
+                    const card = document.createElement("div");
+                    card.className = "willow-card" + (m.isLive ? " is-live" : (m.isEnded ? " is-ended" : " is-upcoming"));
+
+                    const thumbWrap = document.createElement("div");
+                    thumbWrap.className = "willow-card-thumb-wrap";
+
+                    if (m.posterUrl) {
+                        const img = document.createElement("img");
+                        img.className = "willow-card-thumb";
+                        img.src = m.posterUrl;
+                        img.alt = m.matchTitle;
+                        img.loading = "lazy";
+                        img.referrerPolicy = "no-referrer";
+                        img.onerror = function () { this.style.display = "none"; };
+                        thumbWrap.appendChild(img);
+                    } else {
+                        const matchup = document.createElement("div");
+                        matchup.style.cssText = "display:flex;align-items:center;justify-content:center;height:100%;gap:16px;background:#000;padding:16px;position:relative;";
+
+                        let tourHtml = "";
+                        if (m.tournamentLogo) {
+                            tourHtml = `<div style="position:absolute;top:10px;left:10px;z-index:2;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.8);padding:3px 9px 3px 6px;border-radius:999px;border:1px solid rgba(255,255,255,0.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)">
+                                <img src="${m.tournamentLogo}" alt="" style="width:16px;height:16px;object-fit:contain;border-radius:50%" referrerpolicy="no-referrer" onerror="this.parentElement.style.display='none'">
+                                <span style="font-size:10px;font-weight:700;color:var(--text);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.tournamentName || category}</span>
+                            </div>`;
+                        }
+
+                        matchup.innerHTML = tourHtml +
+                            `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:64px;text-align:center">
+                                <img src="${m.flagA}" style="width:46px;height:46px;object-fit:contain;border-radius:50%;background:rgba(255,255,255,0.06);padding:3px;border:1px solid rgba(255,255,255,0.15);box-shadow:0 4px 14px rgba(0,0,0,0.5)" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='../public/favicon.png'">
+                                <span style="font-size:12px;font-weight:700;color:var(--text);max-width:85px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.teamA || "Team 1"}</span>
+                            </div>
+                            <span style="font-size:12px;font-weight:800;color:#60a5fa;letter-spacing:1px;background:rgba(59,130,246,0.12);padding:4px 8px;border-radius:6px;border:1px solid rgba(59,130,246,0.25)">VS</span>
+                            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:64px;text-align:center">
+                                <img src="${m.flagB}" style="width:46px;height:46px;object-fit:contain;border-radius:50%;background:rgba(255,255,255,0.06);padding:3px;border:1px solid rgba(255,255,255,0.15);box-shadow:0 4px 14px rgba(0,0,0,0.5)" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='../public/favicon.png'">
+                                <span style="font-size:12px;font-weight:700;color:var(--text);max-width:85px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.teamB || "Team 2"}</span>
+                            </div>`;
+                        thumbWrap.appendChild(matchup);
+                    }
+
+                    const badge = document.createElement("div");
+                    badge.className = "willow-card-badge " + (m.isLive ? "is-live" : (m.isEnded ? "is-ended" : "is-upcoming"));
+                    badge.innerHTML = m.isLive
+                        ? '<span class="live-dot"></span> LIVE'
+                        : (m.isEnded ? "ENDED" : "UPCOMING");
+                    thumbWrap.appendChild(badge);
+
+                    if (m.timeStr) {
+                        const timeEl = document.createElement("div");
+                        timeEl.className = "willow-card-time";
+                        timeEl.textContent = m.timeStr;
+                        thumbWrap.appendChild(timeEl);
+                    }
+
+                    card.appendChild(thumbWrap);
+
+                    const body = document.createElement("div");
+                    body.className = "willow-card-body";
+
+                    const titleRow = document.createElement("div");
+                    titleRow.style.cssText = "display:flex;align-items:flex-start;gap:10px;";
+
+                    const cardLogo = m.tournamentLogo || m.flagA;
+                    if (cardLogo && !cardLogo.includes("favicon.png")) {
+                        const logoImg = document.createElement("img");
+                        logoImg.src = cardLogo;
+                        logoImg.alt = "";
+                        logoImg.style.cssText = "width:24px;height:24px;object-fit:contain;border-radius:6px;background:rgba(255,255,255,0.06);padding:2px;border:1px solid rgba(255,255,255,0.12);flex-shrink:0;margin-top:1px;";
+                        logoImg.referrerPolicy = "no-referrer";
+                        logoImg.onerror = function () { this.style.display = "none"; };
+                        titleRow.appendChild(logoImg);
+                    }
+
+                    const titleEl = document.createElement("div");
+                    titleEl.className = "willow-card-title";
+                    titleEl.textContent = m.matchTitle;
+                    titleRow.appendChild(titleEl);
+                    body.appendChild(titleRow);
+
+                    const footer = document.createElement("div");
+                    footer.className = "willow-card-footer";
+                    if (m.isLive && m.servers.length > 0) {
+                        footer.innerHTML = `<span class="willow-card-servers-count"><span class="live-dot" style="background:#22c55e"></span> ${m.servers.length} Live Server${m.servers.length > 1 ? "s" : ""}</span><span class="willow-card-play-tag"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Watch</span>`;
+                    } else if (m.servers.length > 0) {
+                        footer.innerHTML = `<span class="willow-card-servers-count">${m.servers.length} Server${m.servers.length > 1 ? "s" : ""}</span><span class="willow-card-play-tag"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Watch</span>`;
+                    } else {
+                        footer.innerHTML = `<span class="willow-card-servers-count">${m.isEnded ? "Match Ended" : "Starts at scheduled time"}</span>`;
+                    }
+                    body.appendChild(footer);
+
+                    if (m.servers.length > 0) {
+                        card.addEventListener("click", function () {
+                            playMatch(m, card, 0);
+                        });
+                    }
+
+                    card.appendChild(body);
+                    frag.appendChild(card);
+                });
+
+                gridEl.innerHTML = "";
+                gridEl.appendChild(frag);
+            }
+
+            function loadSportsApis() {
+                const APIS = [
+                    {
+                        url: "https://sonujson-v5.pages.dev/Data/events/cricket.json",
+                        gridId: "cricketMatchesGrid",
+                        category: "Cricket",
+                        emptyText: "No live cricket matches scheduled right now."
+                    },
+                    {
+                        url: "https://sonujson-v5.pages.dev/Data/willow.json",
+                        gridId: "willowMatchesGrid",
+                        category: "Willow Cricket",
+                        emptyText: "No live Willow matches scheduled right now."
+                    },
+                    {
+                        url: "https://raw.githubusercontent.com/kajju027/Fancode-Events-Json/refs/heads/main/fancode.json?t=1794558070732",
+                        gridId: "fancodeMatchesGrid",
+                        category: "FanCode",
+                        emptyText: "No live FanCode matches scheduled right now."
+                    },
+                    {
+                        url: "https://raw.githubusercontent.com/kajju027/SonyLiv-Events-Json/refs/heads/main/sonyliv.json?t=1794558070733",
+                        gridId: "sonylivMatchesGrid",
+                        category: "Sony LIV",
+                        emptyText: "No live Sony LIV matches scheduled right now."
+                    },
+                    {
+                        url: "https://sonujson-v5.pages.dev/Data/events/football.json",
+                        gridId: "footballMatchesGrid",
+                        category: "Football",
+                        emptyText: "No live football matches scheduled right now."
+                    },
+                    {
+                        url: "https://matchdekho.in/api/world-sports.json",
+                        gridId: "worldSportsGrid",
+                        category: "World Sports",
+                        emptyText: "No live world sports matches scheduled right now. Check back soon!"
+                    }
+                ];
+
+                APIS.forEach(api => {
+                    const gridEl = document.getElementById(api.gridId);
+                    if (!gridEl) return;
+                    fetch(api.url)
+                        .then(res => {
+                            if (!res.ok) throw new Error("HTTP " + res.status);
+                            return res.json();
+                        })
+                        .then(data => {
+                            renderMatchesGrid(gridEl, data, api.category, api.emptyText);
+                        })
+                        .catch(err => {
+                            console.warn("Failed loading " + api.category + " API:", err);
+                            if (gridEl) {
+                                gridEl.innerHTML = `<div class="loading-matches">${api.emptyText}</div>`;
+                            }
+                        });
+                });
+            }
+
+            loadSportsApis();
 
         });
     </script>
