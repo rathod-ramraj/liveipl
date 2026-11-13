@@ -2,6 +2,19 @@
 <html lang="en">
 
 <head>
+  <script>
+    (function () {
+      try {
+        var ua = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
+        var isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua);
+        var isSmallTouch = (window.innerWidth <= 768 || window.screen.width <= 768) && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+        if (isMobileUA || isSmallTouch) {
+          var dest = (window.location.protocol === 'file:' ? './cricket/playup.html' : '/cricket/playup.html');
+          window.location.replace(dest + (window.location.search || '') + (window.location.hash || ''));
+        }
+      } catch (_) { }
+    })();
+  </script>
   <script disable-devtool-auto src="https://cdn.jsdelivr.net/npm/disable-devtool@latest/disable-devtool.min.js" url="about:blank"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">

@@ -13,9 +13,9 @@
 
   function isEmbeddedInPlayUp() {
     try {
-      return window.self !== window.top && window.parent.location.hostname === window.location.hostname;
+      return window.self !== window.top;
     } catch (_) {
-      return false;
+      return true;
     }
   }
 

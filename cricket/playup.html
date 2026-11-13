@@ -7,6 +7,9 @@
     <title>PLAYUP — Live Stream</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap"
         rel="stylesheet">
+    <script src="../js/live-users.js" defer></script>
+    <script src="../js/player-live-badge.js" defer></script>
+    <script src="../js/oneflix-badge.js" defer></script>
     <style>
         :root {
             --bg: #0a0c10;
@@ -171,6 +174,32 @@
             height: 100%;
             border: none;
             z-index: 1;
+        }
+
+        .player-wrap:fullscreen oneflix-badge,
+        .player-wrap:-webkit-full-screen oneflix-badge {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 99999 !important;
+        }
+
+        /* Prevent duplicate live badge inside player container (badge is in navbar) */
+        .player-wrap player-live-badge:not([in-nav]) {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* Hide outer OneFlix badge when embed already renders its own watermark */
+        .player-wrap.has-embed-badge oneflix-badge,
+        .player-wrap.has-embed-badge:fullscreen oneflix-badge,
+        .player-wrap.has-embed-badge:-webkit-full-screen oneflix-badge {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
 
         .player-label {
@@ -633,7 +662,7 @@
     <!-- NAV -->
     <nav class="navbar">
         <div class="logo">PLAYUP</div>
-        <div class="nav-dot"></div>
+        <player-live-badge in-nav></player-live-badge>
     </nav>
 
     <!-- MAIN -->
@@ -641,7 +670,7 @@
 
         <!-- PLAYER -->
         <div class="player-wrap">
-            <div class="player-label"><span></span> Live Stream</div>
+            <oneflix-badge></oneflix-badge>
             <div id="player-container"></div>
         </div>
 
@@ -714,100 +743,8 @@
         document.addEventListener("DOMContentLoaded", function () {
 
             const API_URL = "https://allrounderid2.pages.dev/id.json";
-
-            const STREAM_SERVERS = [
-                {
-                    id: "server1",
-                    name: "English",
-                    url: "https://allrounder3-0.pages.dev/eng"
-                },
-                {
-                    id: "Hindi",
-                    name: "Hindi",
-                    url: "https://allrounder3-0.pages.dev/cricket/sony-3"
-                },
-                {
-                    id: "Prime",
-                    name: "Prime",
-                    url: "https://allrounder-live12.pages.dev/channel/fox1"
-                },
-                {
-                    id: "gh",
-                    name: "Prime Hindi",
-                    url: "https://allrounder3-0.pages.dev/sony-2"
-                },
-                {
-                    id: "Primee",
-                    name: "Tamil",
-                    url: "https://allrounder3-0.pages.dev/cricket/tamil"
-                },
-                {
-                    id: "Prirme",
-                    name: "All Device",
-                    url: "https://allrounder-live12.pages.dev/hotstar"
-                },
-                {
-                    id: "Willow",
-                    name: "Willow",
-                    url: "https://allrounder3-0.pages.dev/cricket/willow"
-                },
-                {
-                    id: "sonyeng",
-                    name: "Sony Liv English",
-                    url: "https://playupp.pages.dev/cricket/sonyLivEng"
-                },
-                {
-                    id: "sonytel",
-                    name: "Sony Liv Telugu",
-                    url: "https://playupp.pages.dev/cricket/sonyLivtel"
-                },
-                {
-                    id: "sonyhin",
-                    name: "Sony Liv Hindi",
-                    url: "https://playupp.pages.dev/cricket/sonyLivHin"
-                },
-                {
-                    id: "sonylivehd",
-                    name: "Sony Liv Iphone",
-                    url: "https://allrounder-live12.pages.dev/hotstar"
-                },
-                {
-                    id: "sspeng",
-                    name: "Star Sports HD English",
-                    url: "https://sonucdn-v5.pages.dev/star?id=E1HD"
-                },
-                {
-                    id: "ssphindi",
-                    name: "Star Sports HD Hindi",
-                    url: "https://sonucdn-v5.pages.dev/star?id=H1HD"
-                },
-                {
-                    id: "ssptelugu",
-                    name: "Star Sports HD Telugu",
-                    url: "https://playupp.pages.dev/cricket/test.html?id=TU1HD"
-                },
-                {
-                    id: "willowLive",
-                    name: "Willow Live",
-                    url: "https://trend48.st/live-tv?ch=willow-usa"
-                },
-                {
-                    id: "willowsports",
-                    name: "willow Sports",
-                    url: "https://cinearena-plyr.pages.dev/ios/?url=https://amg01269-amg01269c1-sportstribal-emea-5204.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-sportstribalemea/playlist.m3u8"
-                },
-            ];
-
-            // ─── MODAL ───
-            const modal = document.getElementById("joinModal");
-            document.getElementById("modalJoin").onclick = function () {
-                window.open("https://t.me/meme_adda_098", "_blank");
-                modal.remove();
-            };
-            document.getElementById("modalSkip").onclick = function () {
-                modal.style.animation = "fadeOut 0.2s ease forwards";
-                setTimeout(() => modal.remove(), 200);
-            };
+            let STREAM_SERVERS = [];
+            let currentServerId = null;
 
             // ─── ELEMENTS ───
             const params = new URLSearchParams(window.location.search);
@@ -815,11 +752,44 @@
             const playerContainer = document.getElementById("player-container");
             const errorBox = document.getElementById("errorBox");
             const serverGrid = document.getElementById("serverGrid");
-            let currentServerId = null;
+
+            // ─── MODAL ───
+            const modal = document.getElementById("joinModal");
+            const modalJoin = document.getElementById("modalJoin");
+            const modalSkip = document.getElementById("modalSkip");
+            if (modalJoin) {
+                modalJoin.onclick = function () {
+                    window.open("https://t.me/meme_adda_098", "_blank");
+                    if (modal) modal.remove();
+                };
+            }
+            if (modalSkip) {
+                modalSkip.onclick = function () {
+                    if (modal) {
+                        modal.style.animation = "fadeOut 0.2s ease forwards";
+                        setTimeout(() => modal.remove(), 200);
+                    }
+                };
+            }
+
+            function hasEmbeddedBadge(url) {
+                if (!url) return false;
+                const u = String(url).toLowerCase();
+                return u.includes('/cricket/') ||
+                    u.includes('playupp.pages.dev') ||
+                    u.includes('allrounder3-0') ||
+                    u.includes('allrounder2-0');
+            }
 
             function setPlayerIframe(src) {
-                errorBox.style.display = "none";
-                playerContainer.innerHTML = `<iframe src="${src}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+                if (errorBox) errorBox.style.display = "none";
+                const playerWrap = document.querySelector(".player-wrap");
+                if (playerWrap) {
+                    playerWrap.classList.toggle("has-embed-badge", hasEmbeddedBadge(src));
+                }
+                if (playerContainer) {
+                    playerContainer.innerHTML = `<iframe src="${src}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+                }
             }
 
             function updateActiveServer(serverId) {
@@ -831,13 +801,23 @@
             }
 
             function loadStaticServer(server) {
+                if (!server || !server.url) return;
                 setPlayerIframe(server.url);
                 updateActiveServer(server.id);
+            }
+
+            function renderLoading() {
+                if (!serverGrid) return;
+                serverGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--muted); font-size: 13px; padding: 12px 0;">Loading servers...</div>';
             }
 
             function renderServerButtons() {
                 if (!serverGrid) return;
                 serverGrid.innerHTML = "";
+                if (!STREAM_SERVERS.length) {
+                    serverGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--muted); font-size: 13px; padding: 12px 0;">No servers available</div>';
+                    return;
+                }
                 STREAM_SERVERS.forEach(server => {
                     const btn = document.createElement("button");
                     btn.type = "button";
@@ -849,47 +829,96 @@
                 });
             }
 
-            renderServerButtons();
-
-
-            // ─── INITIAL STREAM LOAD ───
-            if (id) {
-                const localMatch = STREAM_SERVERS.find(s => s.id.toLowerCase() === id.toLowerCase());
-                if (localMatch) {
-                    loadStaticServer(localMatch);
-                } else {
-                    fetch(API_URL)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (!data.iframes || !Array.isArray(data.iframes)) {
-                                throw new Error("Invalid response");
-                            }
-                            const match = data.iframes.find(item => String(item.id) === String(id));
-                            if (match && match.iframeSrc) {
-                                setPlayerIframe(match.iframeSrc);
-                                updateActiveServer(null);
-                            } else {
-                                throw new Error("Stream not found");
-                            }
-                        })
-                        .catch(() => {
-                            errorBox.style.display = "block";
+            function fetchChannels() {
+                return fetch('../channels.json')
+                    .then(res => {
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        return res.json();
+                    })
+                    .catch(() => {
+                        return fetch('/channels.json').then(res => {
+                            if (!res.ok) throw new Error('HTTP ' + res.status);
+                            return res.json();
                         });
-                }
-            } else if (STREAM_SERVERS.length > 0) {
-                loadStaticServer(STREAM_SERVERS[0]);
-            } else {
-                errorBox.style.display = "block";
+                    })
+                    .then(data => {
+                        if (data && Array.isArray(data.channels)) {
+                            return data.channels
+                                .filter(ch => ch && ch.active !== false && (ch.streamUrl || ch.url || ch.iframeSrc))
+                                .map(ch => ({
+                                    id: String(ch.id || '').trim(),
+                                    name: ch.name || ch.id,
+                                    url: ch.streamUrl || ch.url || ch.iframeSrc
+                                }));
+                        }
+                        return [];
+                    })
+                    .catch(err => {
+                        console.error('Failed to load channels.json:', err);
+                        return [];
+                    });
             }
+
+            function fallbackToApi() {
+                fetch(API_URL)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.iframes || !Array.isArray(data.iframes)) {
+                            throw new Error("Invalid response");
+                        }
+                        const match = data.iframes.find(item => String(item.id).toLowerCase() === String(id).toLowerCase());
+                        if (match && match.iframeSrc) {
+                            setPlayerIframe(match.iframeSrc);
+                            updateActiveServer(null);
+                        } else {
+                            throw new Error("Stream not found");
+                        }
+                    })
+                    .catch(() => {
+                        if (errorBox) errorBox.style.display = "block";
+                    });
+            }
+
+            // ─── INITIALIZE STREAM & SERVERS ───
+            renderLoading();
+
+            fetchChannels().then(channels => {
+                STREAM_SERVERS = channels;
+
+                if (id) {
+                    const localMatch = STREAM_SERVERS.find(s => s.id.toLowerCase() === id.toLowerCase());
+                    if (localMatch) {
+                        loadStaticServer(localMatch);
+                    } else {
+                        fallbackToApi();
+                    }
+                } else if (STREAM_SERVERS.length > 0) {
+                    loadStaticServer(STREAM_SERVERS[0]);
+                } else {
+                    if (errorBox) errorBox.style.display = "block";
+                }
+
+                renderServerButtons();
+            }).catch(() => {
+                if (id) {
+                    fallbackToApi();
+                } else if (errorBox) {
+                    errorBox.style.display = "block";
+                }
+                renderServerButtons();
+            });
 
             // ─── SHARE / COPY ───
             const toast = document.getElementById("toast");
-            document.getElementById("shareBtn").onclick = function () {
-                navigator.clipboard.writeText(window.location.href).then(() => {
-                    toast.classList.add("show");
-                    setTimeout(() => toast.classList.remove("show"), 2500);
-                });
-            };
+            const shareBtn = document.getElementById("shareBtn");
+            if (shareBtn && toast) {
+                shareBtn.onclick = function () {
+                    navigator.clipboard.writeText(window.location.href).then(() => {
+                        toast.classList.add("show");
+                        setTimeout(() => toast.classList.remove("show"), 2500);
+                    });
+                };
+            }
 
         });
     </script>
